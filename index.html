@@ -2,262 +2,251 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="V³ studio" />
+<meta name="theme-color" content="#ffffff" />
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="logo.png" />
 <title>V³ studio</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700&display=swap" rel="stylesheet" />
 <style>
-  :root { --ink:#111; --muted:#8d8d8d; }
+  :root { --ink:#111; }
   * { box-sizing: border-box; }
   html, body { margin:0; height:100%; background:#fff; color:var(--ink); font-family:Manrope, sans-serif; }
   button, a, input { font-family:inherit; }
   .scene { position:fixed; inset:0; display:none; }
   .scene.on { display:flex; }
-  #home { align-items:center; justify-content:center; flex-direction:column; background:#fff; }
-  .logo { height:min(220px, 38vh); width:auto; }
-  #start {
-    margin-top:48px; border:0; background:transparent; cursor:pointer;
-    letter-spacing:.28em; font-size:13px; text-transform:uppercase;
-    opacity:0; transform:translateY(8px); transition:opacity 1.6s ease, transform 1.6s ease, letter-spacing .4s;
+  #home { align-items:center; justify-content:center; flex-direction:column; background:#fff; padding-bottom:env(safe-area-inset-bottom); }
+  .logo { height:min(210px, 36vh); width:auto; }
+  .btn {
+    border:1px solid #111; border-radius:30px; background:transparent; color:#111;
+    padding:14px 28px; font-size:14px; font-weight:500; cursor:pointer;
+    opacity:0; transform:translateY(8px); transition:opacity 1.4s ease, transform 1.4s ease;
   }
-  #start.show { opacity:1; transform:none; }
-  #start:hover { letter-spacing:.36em; }
+  .btn.show { opacity:1; transform:none; }
+  .btn.light { border-color:#fff; color:#fff; }
   #film { background:#000; align-items:center; justify-content:center; }
   #film video { width:100%; height:100%; object-fit:cover; }
   .cap {
-    position:absolute; left:0; right:0; bottom:12vh; text-align:center;
-    color:#fff; font-size:clamp(22px, 4vw, 42px); font-weight:500;
-    letter-spacing:-.03em; text-shadow:0 10px 40px rgba(0,0,0,.35);
-    opacity:0; transition:opacity .6s ease;
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    text-align:center; color:#fff; font-weight:700; letter-spacing:-.03em;
+    font-size:clamp(28px, 7vw, 52px); line-height:1.12; padding:24px;
+    text-shadow:0 12px 40px rgba(0,0,0,.35); opacity:0; transition:opacity .45s ease;
   }
   .cap.on { opacity:1; }
   #after, #how {
     background:#000; color:#fff; align-items:center; justify-content:center;
-    flex-direction:column; text-align:center; padding:32px;
+    flex-direction:column; text-align:center; padding:28px 24px 40px;
   }
-  #after p, #how p { max-width:18em; font-size:clamp(22px, 3.4vw, 36px); line-height:1.3; font-weight:500; letter-spacing:-.03em; margin:0 0 28px; }
-  .ghost {
-    border:0; background:transparent; color:#fff; cursor:pointer;
-    letter-spacing:.22em; text-transform:uppercase; font-size:12px;
-  }
-  .ghost span { display:block; height:1px; background:#fff; margin-top:8px; transform:scaleX(.4); transition:transform .4s; }
-  .ghost:hover span { transform:scaleX(1); }
-  .steps { display:grid; grid-template-columns:repeat(3, minmax(0, 220px)); gap:28px; margin-bottom:36px; text-align:left; }
-  .steps b { display:block; font-size:12px; letter-spacing:.16em; margin-bottom:10px; font-weight:500; }
-  .steps p { font-size:15px; line-height:1.45; margin:0; font-weight:400; max-width:none; }
+  .cipher { max-width:16em; font-size:clamp(26px, 6vw, 42px); font-weight:700; line-height:1.25; letter-spacing:-.03em; min-height:2.6em; }
+  #how .steps { display:grid; gap:18px; margin-bottom:36px; text-align:left; width:min(420px, 100%); }
+  #how .steps p { margin:0; font-size:22px; font-weight:500; }
   #gallery { background:#0c0c0c; color:#fff; display:none; flex-direction:column; }
   #gallery.on { display:flex; }
-  .rail {
-    display:flex; gap:22px; overflow-x:auto; scroll-snap-type:x mandatory;
-    padding:48px 18vw 18px; scrollbar-width:none;
-  }
+  .gtop { padding:28px 24px 0; font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:#cfcfcf; }
+  .rail { display:flex; gap:18px; overflow-x:auto; scroll-snap-type:x mandatory; padding:18px 16vw 12px; scrollbar-width:none; }
   .rail::-webkit-scrollbar { display:none; }
-  .card {
-    flex:0 0 46vw; scroll-snap-align:center; transition:transform .45s ease, opacity .45s;
-    transform:scale(.86); opacity:.55;
-  }
+  .card { flex:0 0 62vw; scroll-snap-align:center; transform:scale(.88); opacity:.5; transition:transform .4s ease, opacity .4s; }
   .card.focus { transform:scale(1); opacity:1; }
-  .card img { width:100%; height:52vh; object-fit:cover; display:block; }
-  .note { width:min(720px, calc(100% - 48px)); margin:8px auto 0; }
-  .note-top { display:flex; justify-content:space-between; gap:16px; align-items:flex-start; }
-  .note h2 { margin:0; font-size:18px; font-weight:500; }
-  .x {
-    border:0; background:transparent; color:#fff; font-size:22px; cursor:pointer; line-height:1;
-  }
-  .full { max-height:0; overflow:hidden; color:#bdbdbd; font-size:14px; line-height:1.5; transition:max-height .45s ease, margin .45s; }
-  .full.open { max-height:180px; margin-top:12px; }
-  .discuss {
-    margin:22px auto 28px; display:block; border:0; background:transparent; color:#fff;
-    letter-spacing:.22em; text-transform:uppercase; font-size:12px; cursor:pointer;
-  }
-  #talk { background:#111; color:#fff; display:none; flex-direction:column; }
-  #talk.on { display:flex; }
-  .more { text-align:center; font-size:12px; letter-spacing:.18em; text-transform:uppercase; color:#9a9a9a; padding:18px 0 8px; }
-  .ticker { overflow:hidden; border-top:1px solid #2a2a2a; border-bottom:1px solid #2a2a2a; }
-  .ticker-track { display:flex; gap:36px; width:max-content; animation:marquee 36s linear infinite; padding:12px 0; }
-  .ticker a { color:#fff; text-decoration:none; display:flex; align-items:center; gap:8px; font-size:13px; letter-spacing:.08em; }
-  @keyframes marquee { to { transform:translateX(-50%); } }
-  .chat { flex:1; display:flex; flex-direction:column; width:min(760px, 100%); margin:0 auto; }
-  .log { flex:1; overflow:auto; padding:22px 20px; display:flex; flex-direction:column; gap:10px; }
-  .bubble { max-width:80%; padding:12px 14px; font-size:14px; line-height:1.45; }
-  .us { background:#1c1c1c; }
+  .card img { width:100%; height:46vh; object-fit:cover; display:block; }
+  .note { width:min(640px, calc(100% - 40px)); margin:6px auto 0; }
+  .note-top { display:flex; justify-content:space-between; gap:12px; }
+  .x { border:0; background:transparent; color:#fff; font-size:22px; cursor:pointer; }
+  .full { max-height:0; overflow:hidden; color:#bdbdbd; font-size:14px; line-height:1.5; transition:max-height .4s ease; }
+  .full.open { max-height:160px; margin-top:10px; }
+  .discuss { margin:18px auto 24px; }
+  #shell { background:#111; color:#fff; display:none; flex-direction:column; align-items:center; padding:28px 16px 92px; }
+  #shell.on { display:flex; }
+  .panel { width:min(520px, 100%); margin-top:8vh; border:1px solid #2a2a2a; border-radius:22px; background:#161616; min-height:360px; display:flex; flex-direction:column; }
+  .panel h2 { margin:0; padding:18px 18px 0; font-size:18px; font-weight:700; }
+  .log { flex:1; overflow:auto; padding:14px 16px; display:flex; flex-direction:column; gap:8px; }
+  .bubble { max-width:86%; padding:10px 12px; font-size:14px; line-height:1.4; border-radius:14px; }
+  .us { background:#222; }
   .you { margin-left:auto; border:1px solid #333; }
-  form { display:flex; gap:8px; padding:14px 20px 22px; }
-  input { flex:1; background:transparent; border:0; border-bottom:1px solid #333; color:#fff; font-size:15px; padding:10px 0; outline:none; }
-  form button { border:0; background:transparent; color:#fff; letter-spacing:.14em; text-transform:uppercase; font-size:12px; cursor:pointer; }
-  @media (max-width:800px) {
-    .steps { grid-template-columns:1fr; }
-    .card { flex-basis:78vw; }
-    .card img { height:42vh; }
+  form { display:flex; gap:8px; padding:10px 14px 14px; }
+  input { flex:1; background:transparent; border:0; border-bottom:1px solid #333; color:#fff; font-size:15px; padding:8px 0; outline:none; }
+  form button { border:0; background:transparent; color:#fff; cursor:pointer; }
+  .links { padding:8px 18px 18px; display:flex; flex-direction:column; }
+  .links a { color:#fff; text-decoration:none; padding:12px 0; border-bottom:1px solid #2a2a2a; }
+  .dock {
+    position:fixed; left:0; right:0; bottom:0; z-index:8;
+    display:flex; justify-content:space-around; gap:4px;
+    padding:12px 10px calc(12px + env(safe-area-inset-bottom));
+    background:#0d0d0d; border-top:1px solid #2a2a2a;
+    opacity:0; transform:translateY(16px); pointer-events:none;
+    transition:opacity 1s ease, transform 1s ease;
   }
+  .dock.on { opacity:1; transform:none; pointer-events:auto; }
+  .dock button { border:0; background:transparent; color:#9a9a9a; font-size:11px; cursor:pointer; }
+  .dock button.on { color:#fff; }
+  @media (max-width:800px) { .card { flex-basis:78vw; } }
 </style>
 </head>
 <body>
 <section class="scene on" id="home">
   <img class="logo" src="logo.png" alt="V³ studio" />
-  <button id="start" type="button">Начать</button>
+  <button class="btn" id="start" type="button">дизайн для бизнеса</button>
 </section>
 
 <section class="scene" id="film">
-  <video id="vid" playsinline preload="auto">
+  <video id="vid" playsinline webkit-playsinline preload="auto">
     <source src="ink.mp4" type="video/mp4" />
   </video>
   <div class="cap" id="cap"></div>
 </section>
 
 <section class="scene" id="after">
-  <p>Мы делаем дизайн и создаём концепты развития для вашего проекта. Мы любим то, что делаем.</p>
-  <button class="ghost" id="howBtn" type="button">Как мы работаем<span></span></button>
+  <div class="cipher" id="cipher"></div>
+  <button class="btn light" id="howBtn" type="button" style="margin-top:36px">как мы работаем</button>
 </section>
 
 <section class="scene" id="how">
   <div class="steps">
-    <article><b>01</b><p>Мы слушаем и проникаемся.</p></article>
-    <article><b>02</b><p>Мы думаем и изобретаем.</p></article>
-    <article><b>03</b><p>Мы работаем и внедряем.</p></article>
+    <p>1 слушаем</p>
+    <p>2 думаем</p>
+    <p>3 внедряем</p>
   </div>
-  <button class="ghost" id="see" type="button">Посмотреть<span></span></button>
+  <button class="btn light" id="see" type="button">посмотреть</button>
 </section>
 
 <section class="scene" id="gallery">
+  <div class="gtop">примеры размышлений</div>
   <div class="rail" id="rail"></div>
   <div class="note">
     <div class="note-top">
-      <h2 id="gtitle">Чернила, из которых собирается лицо проекта</h2>
-      <button class="x" id="expand" type="button" aria-label="Развернуть">+</button>
+      <h2 id="gtitle">Жест, из которого собирается проект</h2>
+      <button class="x" id="expand" type="button">+</button>
     </div>
-    <div class="full" id="full">Каждый кадр — не украшение, а способ показать характер. Сначала жест, потом система: как место звучит, выглядит и возвращает своих.</div>
+    <div class="full" id="full">Кадр не украшение. Сначала характер, потом понятный ход.</div>
   </div>
-  <button class="discuss" id="discuss" type="button">Обсудим?</button>
+  <button class="btn light discuss" id="discuss" type="button">обсудим?</button>
 </section>
 
-<section class="scene" id="talk">
-  <div class="more">Тут ещё больше про нас</div>
-  <div class="ticker"><div class="ticker-track" id="ticker"></div></div>
-  <div class="chat">
-    <div class="log" id="log"></div>
-    <form id="form">
-      <input id="msg" placeholder="Напишите, на какой вы стадии" />
-      <button type="submit">Отправить</button>
-    </form>
-  </div>
+<section class="scene" id="shell">
+  <div class="panel" id="panel"></div>
 </section>
-
+<nav class="dock" id="dock">
+  <button type="button" data-tab="studio">о студии</button>
+  <button type="button" data-tab="contacts">контакты</button>
+  <button type="button" data-tab="cabinet">личный кабинет</button>
+  <button type="button" data-tab="prices">тарифы</button>
+</nav>
 <script>
-const home = document.getElementById('home');
-const film = document.getElementById('film');
-const after = document.getElementById('after');
-const how = document.getElementById('how');
-const gallery = document.getElementById('gallery');
-const talk = document.getElementById('talk');
-function show(el) {
-  [home, film, after, how, gallery, talk].forEach(s => s.classList.remove('on'));
-  el.classList.add('on');
+const scenes = ['home','film','after','how','gallery','shell'].map(id => document.getElementById(id));
+function show(id) {
+  scenes.forEach(s => s.classList.toggle('on', s.id === id));
+  document.getElementById('dock').classList.toggle('on', id === 'shell');
 }
-setTimeout(() => document.getElementById('start').classList.add('show'), 700);
+setTimeout(() => document.getElementById('start').classList.add('show'), 800);
 
 const lines = [
-  [0.4, 'дизайн'],
-  [3.2, 'который неравнодушен'],
-  [6.2, 'эстетика, которая дышит'],
-  [9.4, 'функциональность, которая держит']
+  [0.6, 'дизайн<br>который не равнодушен'],
+  [4.2, 'креативность<br>которая дышит'],
+  [8.0, 'эстетика<br>и функционал'],
+  [12.2, 'привлекает<br>внимание']
 ];
 const cap = document.getElementById('cap');
 const vid = document.getElementById('vid');
+let capKey = '';
 document.getElementById('start').onclick = () => {
-  show(film);
+  show('film');
   vid.currentTime = 0;
   vid.muted = false;
-  vid.play();
+  const play = vid.play();
+  if (play) play.catch(() => { vid.muted = true; vid.play(); });
 };
 vid.ontimeupdate = () => {
-  let text = '';
-  lines.forEach(([t, line]) => { if (vid.currentTime >= t) text = line; });
-  if (cap.textContent !== text) {
+  let html = '';
+  lines.forEach(([t, line]) => { if (vid.currentTime >= t) html = line; });
+  if (html !== capKey) {
+    capKey = html;
     cap.classList.remove('on');
-    setTimeout(() => { cap.textContent = text; cap.classList.add('on'); }, 180);
+    setTimeout(() => { cap.innerHTML = html; cap.classList.add('on'); }, 160);
   }
 };
-vid.onended = () => { cap.classList.remove('on'); show(after); };
+vid.onended = () => { cap.classList.remove('on'); show('after'); cipher(); };
 
-document.getElementById('howBtn').onclick = () => show(how);
-document.getElementById('see').onclick = () => { show(gallery); buildRail(); };
+function cipher() {
+  const phrase = 'Мы делаем дизайн. Мы любим то что мы делаем.';
+  const box = document.getElementById('cipher');
+  const chars = phrase.split('');
+  const glyphs = 'АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЩЭЮЯ';
+  let open = chars.map(c => c === ' ');
+  box.textContent = chars.map((c,i) => open[i] ? c : glyphs[Math.floor(Math.random()*glyphs.length)]).join('');
+  const timer = setInterval(() => {
+    const closed = open.map((v,i) => !v && chars[i] !== ' ' ? i : -1).filter(i => i >= 0);
+    if (!closed.length) { clearInterval(timer); box.textContent = phrase; document.getElementById('howBtn').classList.add('show'); return; }
+    open[closed[Math.floor(Math.random()*closed.length)]] = true;
+    box.textContent = chars.map((c,i) => c === ' ' || open[i] ? c : glyphs[Math.floor(Math.random()*glyphs.length)]).join('');
+  }, 45);
+}
+document.getElementById('howBtn').onclick = () => { show('how'); document.getElementById('see').classList.add('show'); };
+document.getElementById('see').onclick = () => { show('gallery'); buildRail(); document.getElementById('discuss').classList.add('show'); };
 
 const frames = [
-  ['frames/f01.jpg', 'Тёмный жест', 'Первый кадр задаёт плотность. Здесь ещё нет слов, только характер.'],
-  ['frames/f03.jpg', 'Фиолетовый ход', 'Цвет входит как идея: не палитра ради палитры, а настроение места.'],
-  ['frames/f05.jpg', 'Тёплый акцент', 'Свет и тепло — то, что гость запоминает раньше логотипа.'],
-  ['frames/f07.jpg', 'Белый объём', 'Воздух в кадре. Так же мы оставляем воздух в системе, без лишнего шума.'],
-  ['frames/f09.jpg', 'Холодная ясность', 'После чувства — структура. Понятный следующий шаг.'],
-  ['frames/f11.jpg', 'Красный пульс', 'Финал не кричит. Он фиксирует, что проект живой.']
+  ['frames/f01.jpg','Тёмный жест','Плотность кадра задаёт характер раньше слов.'],
+  ['frames/f03.jpg','Фиолетовый ход','Цвет входит как идея, не как украшение.'],
+  ['frames/f05.jpg','Тёплый акцент','То, что гость запоминает раньше логотипа.'],
+  ['frames/f07.jpg','Белый объём','Воздух в системе. Без лишнего шума.'],
+  ['frames/f09.jpg','Ясность','После чувства — следующий понятный шаг.'],
+  ['frames/f11.jpg','Пульс','Финал фиксирует, что проект живой.']
 ];
 function buildRail() {
   const rail = document.getElementById('rail');
   if (rail.childElementCount) return;
-  frames.forEach((f, i) => {
+  frames.forEach((f,i) => {
     const d = document.createElement('article');
-    d.className = 'card' + (i === 0 ? ' focus' : '');
+    d.className = 'card' + (i ? '' : ' focus');
     d.innerHTML = '<img src="'+f[0]+'" alt="" />';
-    d.dataset.title = f[1];
-    d.dataset.text = f[2];
+    d.dataset.title = f[1]; d.dataset.text = f[2];
     rail.appendChild(d);
   });
   const cards = [...rail.children];
-  const focus = () => {
+  rail.onscroll = () => {
     const mid = rail.scrollLeft + rail.clientWidth / 2;
     let best = 0, dist = 1e9;
-    cards.forEach((c, i) => {
+    cards.forEach((c,i) => {
       const x = c.offsetLeft + c.offsetWidth / 2;
-      const d = Math.abs(x - mid);
-      if (d < dist) { dist = d; best = i; }
+      if (Math.abs(x - mid) < dist) { dist = Math.abs(x - mid); best = i; }
     });
-    cards.forEach((c, i) => c.classList.toggle('focus', i === best));
+    cards.forEach((c,i) => c.classList.toggle('focus', i === best));
     document.getElementById('gtitle').textContent = cards[best].dataset.title;
     document.getElementById('full').textContent = cards[best].dataset.text;
   };
-  rail.onscroll = focus;
-  focus();
 }
 document.getElementById('expand').onclick = () => {
   const full = document.getElementById('full');
   const open = full.classList.toggle('open');
   document.getElementById('expand').textContent = open ? '×' : '+';
 };
-document.getElementById('discuss').onclick = () => { show(talk); boot(); };
 
-const nets = [
-  ['Telegram', 'https://t.me/'],
-  ['Instagram', 'https://instagram.com/'],
-  ['YouTube', 'https://youtube.com/'],
-  ['VK', 'https://vk.com/'],
-  ['Pinterest', 'https://pinterest.com/'],
-  ['Behance', 'https://behance.net/'],
-  ['WhatsApp', 'https://wa.me/'],
-  ['Почта', 'mailto:hello@v3.studio']
-];
-const ticker = document.getElementById('ticker');
-const row = nets.map(([n, h]) => '<a href="'+h+'" target="_blank" rel="noreferrer">'+n+'</a>').join('');
-ticker.innerHTML = row + row;
-let booted = false;
-function boot() {
-  if (booted) return;
-  booted = true;
-  say('Мы на связи. Расскажите, что за проект и на какой он стадии.', 'us');
-}
-function say(text, who) {
-  const el = document.createElement('div');
-  el.className = 'bubble ' + who;
-  el.textContent = text;
-  document.getElementById('log').appendChild(el);
-}
-document.getElementById('form').onsubmit = (e) => {
-  e.preventDefault();
-  const v = document.getElementById('msg').value.trim();
-  if (!v) return;
-  say(v, 'you');
-  document.getElementById('msg').value = '';
-  setTimeout(() => say('Слышим. Если посыла нет — так и скажем. Если есть, соберём три такта под вашу рамку.', 'us'), 400);
+const panels = {
+  studio: '<h2>О студии</h2><div class="log"><div class="bubble us">V³ собирает дизайн и концепт развития. Сначала слушаем, потом думаем, потом внедряем.</div></div>',
+  contacts: '<h2>Контакты</h2><div class="links"><a href="https://t.me/" target="_blank" rel="noreferrer">Telegram</a><a href="https://instagram.com/" target="_blank" rel="noreferrer">Instagram</a><a href="tel:+70000000000">Телефон</a><a href="mailto:hello@v3.studio">Почта</a></div><form id="form"><input id="msg" placeholder="Напишите, на какой вы стадии" /><button type="submit">ОК</button></form><div class="log" id="log"></div>',
+  cabinet: '<h2>Личный кабинет</h2><div class="log"><div class="bubble us">Статус, файлы, галерея и правки — на одной полке.</div><div class="bubble us">Сейчас: такт 02, стратегия на согласовании.</div></div>',
+  prices: '<h2>Тарифы</h2><div class="log"><div class="bubble us">Базовый старт — 15 000. Понятная, уже хоженая схема.</div><div class="bubble us">Индивидуально — под ваш бюджет, если проект нравится и есть перспектива.</div></div>'
 };
+function tab(name) {
+  document.getElementById('panel').innerHTML = panels[name];
+  document.querySelectorAll('#dock button').forEach(b => b.classList.toggle('on', b.dataset.tab === name));
+  const form = document.getElementById('form');
+  if (form) form.onsubmit = (e) => {
+    e.preventDefault();
+    const v = document.getElementById('msg').value.trim();
+    if (!v) return;
+    const log = document.getElementById('log');
+    log.innerHTML += '<div class="bubble you"></div>';
+    log.lastChild.textContent = v;
+    document.getElementById('msg').value = '';
+    setTimeout(() => { log.innerHTML += '<div class="bubble us">Слышим. Если посыла нет — так и скажем.</div>'; }, 300);
+  };
+}
+document.getElementById('discuss').onclick = () => { show('shell'); tab('contacts'); };
+document.querySelectorAll('#dock button').forEach(b => b.onclick = () => tab(b.dataset.tab));
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 </script>
 </body>
 </html>
