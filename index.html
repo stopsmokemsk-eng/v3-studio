@@ -19,10 +19,10 @@
   body.dark .logo { filter:invert(1); }
   button, a, input { font-family:inherit; color:inherit; }
   .scene { position:fixed; inset:0; display:none; }
-  .scene.on { display:flex; }
+  .scene.on { display:flex; z-index:8; }
   .cross { position:fixed; inset:0; pointer-events:none; z-index:6; opacity:1; transition:opacity .6s ease; }
   .cross.off { opacity:0; }
-  .cross i { position:absolute; background:var(--line); transition:left .9s ease, top .9s ease; }
+  .cross i { position:absolute; background:var(--line); transition:left .9s ease, top .9s ease; pointer-events:none; }
   .cross .v { top:0; bottom:0; width:1px; left:50%; }
   .cross .h { left:0; right:0; height:1px; top:50%; }
   .frame { position:fixed; inset:16px; border:1px solid var(--line); pointer-events:none; z-index:5; transition:opacity .6s; }
@@ -42,7 +42,7 @@
   @keyframes sway { 50% { transform:translateX(-16px) scale(.9); } }
   #home, #after, #how { align-items:center; justify-content:center; flex-direction:column; }
   .logo { height:min(200px, 34vh); width:auto; }
-  .btn { position:relative; overflow:hidden; margin-top:34px; border:1px solid currentColor; border-radius:30px; background:transparent; height:28px; padding:0 22px; font-size:11px; letter-spacing:.08em; cursor:pointer; opacity:0; transform:translateY(8px); }
+  .btn { position:relative; z-index:2; overflow:hidden; margin-top:34px; border:1px solid currentColor; border-radius:30px; background:transparent; height:36px; padding:0 26px; font-size:11px; letter-spacing:.08em; cursor:pointer; opacity:0; transform:translateY(8px); pointer-events:auto; -webkit-tap-highlight-color:transparent; }
   .btn.show { opacity:1; transform:none; transition:opacity 1s ease, transform 1s ease; }
   .btn .glint { position:absolute; inset:0; background:linear-gradient(100deg, transparent 30%, rgba(20,20,20,.5) 50%, transparent 70%); transform:translateX(-120%); }
   .btn.glint .glint { animation:glint 1s ease forwards; }
@@ -191,7 +191,17 @@ const cap = document.getElementById('cap');
 let capKey = '';
 let lineIndex = 0;
 const focus = [[.16,.82],[.84,.16],[.9,.1],[.5,.5]];
-start.onclick = () => { show('film'); vid.currentTime = 0; vid.muted = false; const p = vid.play(); if (p) p.catch(() => vid.play()); };
+start.addEventListener('click', openFilm);
+start.addEventListener('touchend', (e) => { e.preventDefault(); openFilm(); }, { passive:false });
+function openFilm() {
+  if (openFilm.done) return;
+  openFilm.done = true;
+  show('film');
+  vid.currentTime = 0;
+  vid.muted = false;
+  const p = vid.play();
+  if (p) p.catch(() => vid.play());
+}
 vid.ontimeupdate = () => {
   let html = '';
   let idx = 0;
