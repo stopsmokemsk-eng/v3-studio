@@ -6,191 +6,173 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="apple-mobile-web-app-title" content="V³ studio" />
 <meta name="theme-color" content="#ffffff" />
 <link rel="manifest" href="manifest.json" />
 <link rel="apple-touch-icon" href="logo.png" />
 <title>V³ studio</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <style>
-  :root { --ink:#141414; --line:rgba(20,20,20,.35); --paper:#f7f7f5; }
+  :root { --ink:#141414; --line:rgba(20,20,20,.4); --paper:#f6f6f4; }
   * { box-sizing:border-box; }
   html, body { margin:0; height:100%; background:var(--paper); color:var(--ink); font-family:"IBM Plex Mono", ui-monospace, monospace; }
-  body.dark { --ink:#f2f2f0; --line:rgba(242,242,240,.35); --paper:#0e0e0d; background:#0e0e0d; color:#f2f2f0; }
+  body.dark { --ink:#f3f3f1; --line:rgba(243,243,241,.32); --paper:#0c0c0c; background:#0c0c0c; color:#f3f3f1; }
   body.dark .logo { filter:invert(1); }
   button, a, input { font-family:inherit; color:inherit; }
   .scene { position:fixed; inset:0; display:none; }
   .scene.on { display:flex; }
-  .marks { position:fixed; inset:18px; pointer-events:none; z-index:4; border:1px solid var(--line); }
-  .marks:before, .marks:after { content:""; position:absolute; background:var(--line); }
-  .marks:before { left:50%; top:-8px; bottom:-8px; width:1px; }
-  .marks:after { top:50%; left:-8px; right:-8px; height:1px; }
-  .tick { position:fixed; z-index:4; width:14px; height:14px; pointer-events:none; }
-  .tick.a { top:14px; left:14px; border-top:1px solid var(--line); border-left:1px solid var(--line); }
-  .tick.b { top:14px; right:14px; border-top:1px solid var(--line); border-right:1px solid var(--line); }
-  .tick.c { bottom:14px; left:14px; border-bottom:1px solid var(--line); border-left:1px solid var(--line); }
-  .tick.d { bottom:14px; right:14px; border-bottom:1px solid var(--line); border-right:1px solid var(--line); }
+  .cross { position:fixed; inset:0; pointer-events:none; z-index:6; opacity:1; transition:opacity .6s ease; }
+  .cross.off { opacity:0; }
+  .cross i { position:absolute; background:var(--line); transition:left .9s ease, top .9s ease; }
+  .cross .v { top:0; bottom:0; width:1px; left:50%; }
+  .cross .h { left:0; right:0; height:1px; top:50%; }
+  .frame { position:fixed; inset:16px; border:1px solid var(--line); pointer-events:none; z-index:5; transition:opacity .6s; }
+  .frame.off { opacity:0; }
+  .cube-wrap { position:fixed; right:28px; bottom:92px; width:88px; height:88px; perspective:500px; pointer-events:none; z-index:5; opacity:0; transition:opacity .6s; }
+  .cube-wrap.on { opacity:.85; }
+  .cube { width:54px; height:54px; margin:17px auto; position:relative; transform-style:preserve-3d; animation:spin 16s linear infinite; }
+  .cube b { position:absolute; inset:0; border:1px solid rgba(243,243,241,.55); }
+  .cube b:nth-child(1){ transform:rotateY(0deg) translateZ(27px); }
+  .cube b:nth-child(2){ transform:rotateY(180deg) translateZ(27px); }
+  .cube b:nth-child(3){ transform:rotateY(90deg) translateZ(27px); }
+  .cube b:nth-child(4){ transform:rotateY(-90deg) translateZ(27px); }
+  .cube b:nth-child(5){ transform:rotateX(90deg) translateZ(27px); }
+  .cube b:nth-child(6){ transform:rotateX(-90deg) translateZ(27px); }
+  @keyframes spin { to { transform:rotateX(360deg) rotateY(360deg); } }
   #home, #after, #how { align-items:center; justify-content:center; flex-direction:column; }
-  .float { transition:transform .6s ease; will-change:transform; }
   .logo { height:min(200px, 34vh); width:auto; }
-  .btn {
-    position:relative; overflow:hidden; margin-top:36px;
-    border:1px solid currentColor; border-radius:30px; background:transparent;
-    height:28px; padding:0 22px; font-size:11px; letter-spacing:.08em; cursor:pointer;
-    opacity:0; transform:translateY(10px);
-  }
-  .btn.show { opacity:1; transform:none; transition:opacity 1.1s ease, transform 1.1s ease; }
-  .btn .glint {
-    position:absolute; inset:0; background:linear-gradient(100deg, transparent 30%, rgba(20,20,20,.55) 50%, transparent 70%);
-    transform:translateX(-120%); pointer-events:none;
-  }
-  .btn.glint .glint { animation:glint 1.1s ease forwards; }
+  .btn { position:relative; overflow:hidden; margin-top:34px; border:1px solid currentColor; border-radius:30px; background:transparent; height:28px; padding:0 22px; font-size:11px; letter-spacing:.08em; cursor:pointer; opacity:0; transform:translateY(8px); }
+  .btn.show { opacity:1; transform:none; transition:opacity 1s ease, transform 1s ease; }
+  .btn .glint { position:absolute; inset:0; background:linear-gradient(100deg, transparent 30%, rgba(20,20,20,.5) 50%, transparent 70%); transform:translateX(-120%); }
+  .btn.glint .glint { animation:glint 1s ease forwards; }
   @keyframes glint { to { transform:translateX(120%); } }
-  #film { background:#000; align-items:center; justify-content:center; }
-  #film video { width:100%; height:100%; object-fit:contain; background:#000; }
-  .cap {
-    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-    text-align:center; color:#fff; font-weight:500; letter-spacing:-.03em;
-    font-size:clamp(22px, 6vw, 40px); line-height:1.2; padding:28px; pointer-events:none;
-    opacity:0; transition:opacity .4s ease;
-  }
+  #film { background:#000; }
+  #film video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+  #film .shade { position:absolute; inset:0; background:rgba(0,0,0,.38); }
+  .cap { position:absolute; inset:0; z-index:2; display:flex; align-items:center; justify-content:center; text-align:center; color:#fff; font-size:clamp(22px, 6vw, 40px); line-height:1.2; padding:28px; opacity:0; transition:opacity .4s; }
   .cap.on { opacity:1; }
-  .cipher { max-width:18em; text-align:center; font-size:clamp(18px, 4.6vw, 28px); line-height:1.45; min-height:3em; }
-  #how .steps { display:grid; gap:22px; text-align:center; }
-  #how .steps p { margin:0; font-size:18px; letter-spacing:.12em; opacity:0; transform:translateY(28px); }
-  #how .steps p.in { animation:rise .8s ease forwards; }
-  @keyframes rise { to { opacity:1; transform:translateY(0); } }
-  #gallery { background:#0e0e0d; color:#f2f2f0; display:none; flex-direction:column; }
+  .cipher { max-width:16em; text-align:center; font-size:clamp(18px, 4.4vw, 28px); line-height:1.45; min-height:3em; }
+  #how .steps { display:grid; gap:20px; text-align:center; }
+  #how .steps p { margin:0; font-size:16px; letter-spacing:.14em; opacity:0; transform:translateY(24px); }
+  #how .steps p.in { animation:rise .7s ease forwards; }
+  @keyframes rise { to { opacity:1; transform:none; } }
+  #gallery { background:#0c0c0c; color:#f3f3f1; display:none; flex-direction:column; }
   #gallery.on { display:flex; }
-  .gtop { padding:36px 24px 0; text-align:center; letter-spacing:.18em; font-size:11px; text-transform:uppercase; }
-  .rail { display:flex; gap:18px; overflow-x:auto; scroll-snap-type:x mandatory; padding:22px 18vw 8px; scrollbar-width:none; }
+  .gtop { padding:32px 20px 0; text-align:center; letter-spacing:.18em; font-size:11px; text-transform:uppercase; }
+  .rail { display:flex; gap:16px; overflow-x:auto; scroll-snap-type:x mandatory; padding:18px 16vw 8px; scrollbar-width:none; }
   .rail::-webkit-scrollbar { display:none; }
-  .card { flex:0 0 58vw; scroll-snap-align:center; transform:scale(.9); opacity:.45; transition:transform .45s ease, opacity .45s; }
-  .card.focus { transform:scale(1); opacity:1; }
-  .card img { width:100%; height:42vh; object-fit:cover; display:block; }
-  .note { width:min(560px, calc(100% - 48px)); margin:8px auto 0; }
-  .note-top { display:flex; justify-content:space-between; align-items:baseline; }
+  .card { flex:0 0 62vw; scroll-snap-align:center; opacity:.45; transform:scale(.9); transition:.4s; }
+  .card.focus { opacity:1; transform:none; }
+  .card img { width:100%; height:40vh; object-fit:cover; display:block; }
+  .note { width:min(520px, calc(100% - 40px)); margin:6px auto 0; }
+  .note-top { display:flex; justify-content:space-between; }
   .x { border:0; background:transparent; font-size:18px; cursor:pointer; }
-  .full { max-height:0; overflow:hidden; color:#bdbdbd; font-size:12px; line-height:1.5; }
-  .full.open { max-height:140px; margin-top:8px; }
-  .discuss { margin:16px auto 28px; }
-  #shell { background:#0e0e0d; color:#f2f2f0; display:none; flex-direction:column; align-items:center; padding:18px 16px 88px; }
+  .full { max-height:0; overflow:hidden; color:#bdbdbd; font-size:12px; }
+  .full.open { max-height:120px; margin-top:8px; }
+  .discuss { margin:14px auto 24px; }
+  #shell { background:#0c0c0c; color:#f3f3f1; display:none; flex-direction:column; padding:0 0 96px; }
   #shell.on { display:flex; }
-  .ticker { width:100%; overflow:hidden; border-bottom:1px solid rgba(242,242,240,.2); }
-  .ticker-track { display:flex; gap:28px; width:max-content; animation:marquee 32s linear infinite; padding:10px 0; font-size:11px; letter-spacing:.12em; }
+  .ticker { overflow:hidden; border-bottom:1px solid rgba(243,243,241,.2); flex:0 0 auto; }
+  .ticker-track { display:flex; gap:26px; width:max-content; animation:marquee 28s linear infinite; padding:12px 0; font-size:11px; letter-spacing:.12em; }
   .ticker a { color:inherit; text-decoration:none; }
   @keyframes marquee { to { transform:translateX(-50%); } }
-  .panel {
-    width:min(440px, 100%); margin:auto; border:1px solid rgba(242,242,240,.28); border-radius:22px;
-    min-height:280px; display:flex; flex-direction:column; background:transparent;
-  }
-  .panel h2 { margin:0; padding:16px 16px 0; font-size:12px; letter-spacing:.16em; font-weight:500; text-transform:uppercase; }
-  .log { flex:1; overflow:auto; padding:12px 14px; display:flex; flex-direction:column; gap:8px; }
-  .bubble { max-width:88%; padding:8px 10px; font-size:12px; line-height:1.45; border:1px solid rgba(242,242,240,.2); }
+  .stage { flex:1; display:flex; align-items:center; justify-content:center; padding:16px; }
+  .panel { width:min(420px, 100%); height:min(460px, 62vh); border:1px solid rgba(243,243,241,.28); border-radius:22px; display:flex; flex-direction:column; background:#111; }
+  .panel h2 { margin:0; padding:16px 16px 8px; font-size:11px; letter-spacing:.16em; text-transform:uppercase; font-weight:500; }
+  .log { flex:1; overflow:auto; padding:4px 14px 8px; display:flex; flex-direction:column; gap:8px; }
+  .bubble { max-width:90%; padding:8px 10px; font-size:12px; line-height:1.45; border:1px solid rgba(243,243,241,.2); }
   .you { margin-left:auto; }
-  form { display:flex; gap:8px; padding:8px 12px 12px; }
-  input { flex:1; background:transparent; border:0; border-bottom:1px solid rgba(242,242,240,.3); color:inherit; font-size:13px; padding:8px 0; outline:none; }
-  form button { border:0; background:transparent; cursor:pointer; letter-spacing:.08em; font-size:11px; }
-  .links a { display:block; padding:10px 16px; border-top:1px solid rgba(242,242,240,.15); text-decoration:none; font-size:12px; letter-spacing:.08em; }
+  form { display:flex; gap:8px; padding:8px 12px 12px; border-top:1px solid rgba(243,243,241,.12); }
+  input { flex:1; background:transparent; border:0; color:inherit; font-size:13px; padding:8px 0; outline:none; }
+  form button { border:0; background:transparent; cursor:pointer; font-size:11px; letter-spacing:.08em; }
   .dock {
-    position:fixed; left:50%; bottom:18px; transform:translate(-50%, 18px); z-index:9;
-    display:flex; gap:18px; padding:10px 18px; border:1px solid rgba(242,242,240,.28); border-radius:30px;
-    background:rgba(14,14,13,.72); backdrop-filter:blur(8px); opacity:0; pointer-events:none;
-    transition:opacity .9s ease, transform .9s ease;
+    position:fixed; left:12px; right:12px; bottom:14px; z-index:9; height:52px;
+    display:grid; grid-template-columns:repeat(4, 1fr); align-items:center;
+    border:1px solid rgba(243,243,241,.28); border-radius:26px; background:rgba(12,12,12,.8);
+    opacity:0; transform:translateY(12px); pointer-events:none; transition:.7s ease;
   }
-  .dock.on { opacity:1; transform:translate(-50%, 0); pointer-events:auto; }
-  .dock button { border:0; background:transparent; color:#9a9a9a; font-size:10px; letter-spacing:.08em; cursor:pointer; }
-  .dock button.on { color:#f2f2f0; }
+  .dock.on { opacity:1; transform:none; pointer-events:auto; }
+  .dock i { position:absolute; top:6px; bottom:6px; width:calc(25% - 8px); left:6px; border-radius:20px; background:rgba(243,243,241,.1); box-shadow:0 0 18px rgba(243,243,241,.08); transition:transform .35s ease; }
+  .dock button { position:relative; z-index:1; border:0; background:transparent; color:#8d8d8d; font-size:10px; letter-spacing:.04em; cursor:pointer; }
+  .dock button.on { color:#f3f3f1; }
 </style>
 </head>
 <body>
-<div class="marks"></div>
-<i class="tick a"></i><i class="tick b"></i><i class="tick c"></i><i class="tick d"></i>
+<div class="frame" id="frame"></div>
+<div class="cross" id="cross"><i class="v"></i><i class="h"></i></div>
+<div class="cube-wrap" id="cube"><div class="cube"><b></b><b></b><b></b><b></b><b></b><b></b></div></div>
 
 <section class="scene on" id="home">
-  <img class="logo float" src="logo.png" alt="V³ studio" />
+  <img class="logo" id="logo" src="logo.png" alt="V³ studio" />
   <button class="btn" id="start" type="button">дизайн для бизнеса<span class="glint"></span></button>
 </section>
-
 <section class="scene" id="film">
-  <video id="vid" playsinline webkit-playsinline preload="auto" poster="frames/f01.jpg">
-    <source src="ink.mp4" type="video/mp4" />
-  </video>
+  <video id="vid" playsinline webkit-playsinline preload="auto" poster="frames/f01.jpg"><source src="ink.mp4" type="video/mp4" /></video>
+  <div class="shade"></div>
   <div class="cap" id="cap"></div>
 </section>
-
 <section class="scene" id="after">
-  <div class="cipher float" id="cipher"></div>
+  <div class="cipher" id="cipher"></div>
   <button class="btn" id="howBtn" type="button">как мы работаем<span class="glint"></span></button>
 </section>
-
 <section class="scene" id="how">
-  <div class="steps">
-    <p>1 слушаем</p>
-    <p>2 думаем</p>
-    <p>3 внедряем</p>
-  </div>
+  <div class="steps"><p>1 слушаем</p><p>2 думаем</p><p>3 внедряем</p></div>
   <button class="btn" id="see" type="button">посмотреть<span class="glint"></span></button>
 </section>
-
 <section class="scene" id="gallery">
   <div class="gtop">примеры размышлений</div>
   <div class="rail" id="rail"></div>
-  <div class="note">
-    <div class="note-top">
-      <h2 id="gtitle">жест</h2>
-      <button class="x" id="expand" type="button">+</button>
-    </div>
-    <div class="full" id="full">Кадр задаёт характер раньше слов.</div>
-  </div>
+  <div class="note"><div class="note-top"><h2 id="gtitle">жест</h2><button class="x" id="expand" type="button">+</button></div><div class="full" id="full">Кадр задаёт характер раньше слов.</div></div>
   <button class="btn discuss" id="discuss" type="button">обсудим?<span class="glint"></span></button>
 </section>
-
 <section class="scene" id="shell">
   <div class="ticker"><div class="ticker-track" id="ticker"></div></div>
-  <div class="panel float" id="panel"></div>
+  <div class="stage"><div class="panel" id="panel"></div></div>
 </section>
 <nav class="dock" id="dock">
+  <i id="pill"></i>
   <button type="button" data-tab="studio">о студии</button>
   <button type="button" data-tab="contacts">контакты</button>
   <button type="button" data-tab="cabinet">личный кабинет</button>
   <button type="button" data-tab="prices">тарифы</button>
 </nav>
-
 <script>
 const vid = document.getElementById('vid');
 vid.load();
-const scenes = ['home','film','after','how','gallery','shell'].map(id => document.getElementById(id));
-function show(id) { scenes.forEach(s => s.classList.toggle('on', s.id === id)); document.getElementById('dock').classList.toggle('on', id === 'shell'); }
+const vLine = document.querySelector('.cross .v');
+const hLine = document.querySelector('.cross .h');
+function aim(px, py) {
+  const r = document.getElementById('logo').getBoundingClientRect();
+  vLine.style.left = (r.left + r.width * px) + 'px';
+  hLine.style.top = (r.top + r.height * py) + 'px';
+}
 const start = document.getElementById('start');
 setTimeout(() => {
   start.classList.add('show');
-  setTimeout(() => start.classList.add('glint'), 1200);
-  setTimeout(() => document.body.classList.add('dark'), 2300);
-}, 700);
-
-const lines = [
-  [0.5, 'дизайн<br>который не равнодушен'],
-  [4.0, 'креативность<br>которая дышит'],
-  [7.8, 'эстетика<br>и функционал'],
-  [11.6, 'привлекает<br>внимание']
-];
+  aim(.40, .70);
+  setTimeout(() => aim(.66, .78), 900);
+  setTimeout(() => aim(.70, .16), 1800);
+  setTimeout(() => start.classList.add('glint'), 2500);
+  setTimeout(() => document.body.classList.add('dark'), 3400);
+}, 600);
+function hideDraft() { document.getElementById('cross').classList.add('off'); document.getElementById('frame').classList.add('off'); }
+function showCube(on) { document.getElementById('cube').classList.toggle('on', on); }
+const scenes = ['home','film','after','how','gallery','shell'].map(id => document.getElementById(id));
+function show(id) {
+  scenes.forEach(s => s.classList.toggle('on', s.id === id));
+  document.getElementById('dock').classList.toggle('on', id === 'shell');
+  if (id !== 'home') hideDraft();
+  showCube(id === 'after' || id === 'how' || id === 'gallery');
+}
+const lines = [[0.4,'дизайн<br>который не равнодушен'],[3.8,'креативность<br>которая дышит'],[7.4,'эстетика<br>и функционал'],[11.2,'привлекает<br>внимание']];
 const cap = document.getElementById('cap');
 let capKey = '';
-start.onclick = () => {
-  show('film');
-  vid.currentTime = 0;
-  vid.muted = false;
-  const p = vid.play();
-  if (p) p.catch(() => vid.play());
-};
+start.onclick = () => { show('film'); vid.currentTime = 0; vid.muted = false; const p = vid.play(); if (p) p.catch(() => vid.play()); };
 vid.ontimeupdate = () => {
   let html = '';
   lines.forEach(([t, line]) => { if (vid.currentTime >= t) html = line; });
-  if (html !== capKey) { capKey = html; cap.classList.remove('on'); setTimeout(() => { cap.innerHTML = html; cap.classList.add('on'); }, 120); }
+  if (html !== capKey) { capKey = html; cap.classList.remove('on'); setTimeout(() => { cap.innerHTML = html; cap.classList.add('on'); }, 100); }
 };
 vid.onended = () => { cap.classList.remove('on'); show('after'); cipher(); };
-
 function cipher() {
   const phrase = 'создание дизайна и решений для проектов';
   const box = document.getElementById('cipher');
@@ -202,84 +184,63 @@ function cipher() {
   const timer = setInterval(() => {
     const closed = open.map((v,i) => !v && chars[i] !== ' ' ? i : -1).filter(i => i >= 0);
     if (!closed.length) { clearInterval(timer); box.textContent = phrase; document.getElementById('howBtn').classList.add('show'); return; }
-    open[closed[Math.floor(Math.random()*closed.length)]] = true;
-    draw();
-  }, 40);
+    open[closed[Math.floor(Math.random()*closed.length)]] = true; draw();
+  }, 36);
 }
 document.getElementById('howBtn').onclick = () => {
   show('how');
-  document.querySelectorAll('#how .steps p').forEach((p,i) => setTimeout(() => p.classList.add('in'), 180 + i * 220));
-  setTimeout(() => document.getElementById('see').classList.add('show'), 900);
+  document.querySelectorAll('#how .steps p').forEach((p,i) => setTimeout(() => p.classList.add('in'), 160 + i * 200));
+  setTimeout(() => document.getElementById('see').classList.add('show'), 860);
 };
 document.getElementById('see').onclick = () => { show('gallery'); buildRail(); document.getElementById('discuss').classList.add('show'); };
-
-const frames = [
-  ['frames/f01.jpg','жест','Плотность кадра раньше слов.'],
-  ['frames/f03.jpg','ход','Цвет как идея, не как украшение.'],
-  ['frames/f05.jpg','тепло','То, что запоминают раньше знака.'],
-  ['frames/f07.jpg','воздух','Система без лишнего шума.'],
-  ['frames/f09.jpg','ясность','Следующий понятный шаг.'],
-  ['frames/f11.jpg','пульс','Проект живой.']
-];
+const frames = [['frames/f01.jpg','жест','Плотность кадра раньше слов.'],['frames/f03.jpg','ход','Цвет как идея.'],['frames/f05.jpg','тепло','То, что запоминают раньше знака.'],['frames/f07.jpg','воздух','Без лишнего шума.'],['frames/f09.jpg','ясность','Следующий шаг.'],['frames/f11.jpg','пульс','Проект живой.']];
 function buildRail() {
   const rail = document.getElementById('rail');
   if (rail.childElementCount) return;
-  frames.forEach((f,i) => {
-    const d = document.createElement('article');
-    d.className = 'card' + (i ? '' : ' focus');
-    d.innerHTML = '<img alt="" src="'+f[0]+'">';
-    d.dataset.title = f[1]; d.dataset.text = f[2];
-    rail.appendChild(d);
-  });
+  frames.forEach((f,i) => { const d = document.createElement('article'); d.className = 'card'+(i?'':' focus'); d.innerHTML = '<img alt="" src="'+f[0]+'">'; d.dataset.title=f[1]; d.dataset.text=f[2]; rail.appendChild(d); });
   const cards = [...rail.children];
   rail.onscroll = () => {
-    const mid = rail.scrollLeft + rail.clientWidth / 2;
-    let best = 0, dist = 1e9;
-    cards.forEach((c,i) => { const x = c.offsetLeft + c.offsetWidth / 2; const dd = Math.abs(x-mid); if (dd < dist) { dist = dd; best = i; } });
-    cards.forEach((c,i) => c.classList.toggle('focus', i === best));
+    const mid = rail.scrollLeft + rail.clientWidth/2; let best=0, dist=1e9;
+    cards.forEach((c,i) => { const dd = Math.abs(c.offsetLeft + c.offsetWidth/2 - mid); if (dd<dist){dist=dd; best=i;} });
+    cards.forEach((c,i) => c.classList.toggle('focus', i===best));
     document.getElementById('gtitle').textContent = cards[best].dataset.title;
     document.getElementById('full').textContent = cards[best].dataset.text;
   };
 }
-document.getElementById('expand').onclick = () => {
-  const full = document.getElementById('full');
-  full.classList.toggle('open');
-  document.getElementById('expand').textContent = full.classList.contains('open') ? '×' : '+';
-};
-
+document.getElementById('expand').onclick = () => { const full = document.getElementById('full'); full.classList.toggle('open'); document.getElementById('expand').textContent = full.classList.contains('open') ? '×' : '+'; };
 const nets = [['Telegram','https://t.me/'],['Instagram','https://instagram.com/'],['YouTube','https://youtube.com/'],['VK','https://vk.com/'],['Pinterest','https://pinterest.com/'],['Behance','https://behance.net/'],['WhatsApp','https://wa.me/'],['Почта','mailto:hello@v3.studio']];
 const row = nets.map(([n,h]) => '<a href="'+h+'" target="_blank" rel="noreferrer">'+n+'</a>').join('');
 document.getElementById('ticker').innerHTML = row + row;
-
+const first = 'Здравствуйте. Напишите, на какой стадии проект — мы не предлагаем, пока не услышим посыл.';
 const panels = {
-  studio: '<h2>о студии</h2><div class="log"><div class="bubble">Слушаем посыл. Собираем решение. Внедряем без лишнего шума.</div></div>',
-  contacts: '<h2>диалог</h2><div class="log" id="log"></div><form id="form"><input id="msg" placeholder="на какой вы стадии" /><button type="submit">ок</button></form>',
-  cabinet: '<h2>кабинет</h2><div class="log"><div class="bubble">Статус: такт 02, стратегия на согласовании.</div><div class="bubble">Файлы, правки и галерея — на одной полке.</div></div>',
+  studio: '<h2>о студии</h2><div class="log"><div class="bubble">Слушаем. Думаем. Внедряем. Без лишнего шума.</div></div>',
+  contacts: '<h2>диалог</h2><div class="log" id="log"></div><form id="form"><input id="msg" placeholder="сообщение" /><button type="submit">ок</button></form>',
+  cabinet: '<h2>кабинет</h2><div class="log"><div class="bubble">Такт 02. Стратегия на согласовании.</div><div class="bubble">Файлы и правки — на этой полке.</div></div>',
   prices: '<h2>тарифы</h2><div class="log"><div class="bubble">Базовый старт — 15 000.</div><div class="bubble">Индивидуально — под бюджет, если проект нравится.</div></div>'
 };
+function typeInto(el, text) {
+  el.textContent = '';
+  let i = 0;
+  const t = setInterval(() => { el.textContent += text[i++] || ''; if (i >= text.length) clearInterval(t); }, 28);
+}
 function tab(name) {
   document.getElementById('panel').innerHTML = panels[name];
-  document.querySelectorAll('#dock button').forEach(b => b.classList.toggle('on', b.dataset.tab === name));
-  const form = document.getElementById('form');
-  if (!form) return;
-  form.onsubmit = (e) => {
-    e.preventDefault();
-    const v = document.getElementById('msg').value.trim();
-    if (!v) return;
+  const buttons = [...document.querySelectorAll('#dock button')];
+  buttons.forEach((b,i) => { const on = b.dataset.tab === name; b.classList.toggle('on', on); if (on) document.getElementById('pill').style.transform = 'translateX('+(i*100)+'%)'; });
+  if (name === 'contacts') {
     const log = document.getElementById('log');
-    const you = document.createElement('div'); you.className = 'bubble you'; you.textContent = v; log.appendChild(you);
-    document.getElementById('msg').value = '';
-    setTimeout(() => { const us = document.createElement('div'); us.className = 'bubble'; us.textContent = 'Слышим. Если посыла нет — так и скажем.'; log.appendChild(us); }, 280);
-  };
+    const bubble = document.createElement('div'); bubble.className = 'bubble'; log.appendChild(bubble); typeInto(bubble, first);
+    document.getElementById('form').onsubmit = (e) => {
+      e.preventDefault();
+      const v = document.getElementById('msg').value.trim(); if (!v) return;
+      const you = document.createElement('div'); you.className = 'bubble you'; you.textContent = v; log.appendChild(you);
+      document.getElementById('msg').value = '';
+      setTimeout(() => { const us = document.createElement('div'); us.className = 'bubble'; log.appendChild(us); typeInto(us, 'Слышим. Если посыла нет — так и скажем.'); }, 240);
+    };
+  }
 }
 document.getElementById('discuss').onclick = () => { show('shell'); tab('contacts'); };
 document.querySelectorAll('#dock button').forEach(b => b.onclick = () => tab(b.dataset.tab));
-
-addEventListener('pointermove', (e) => {
-  const x = (e.clientX / innerWidth - .5) * 10;
-  const y = (e.clientY / innerHeight - .5) * 10;
-  document.querySelectorAll('.float').forEach(el => { el.style.transform = 'translate('+x+'px,'+y+'px)'; });
-});
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
 </body>
