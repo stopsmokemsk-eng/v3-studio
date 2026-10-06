@@ -20,24 +20,29 @@
   button, a, input { font-family:inherit; color:inherit; }
   .scene { position:fixed; inset:0; display:none; }
   .scene.on { display:flex; z-index:8; }
-  .cross { position:fixed; inset:0; pointer-events:none; z-index:6; opacity:1; transition:opacity .6s ease; }
+  .cross { position:absolute; inset:0; pointer-events:none; z-index:1; }
   .cross.off { opacity:0; }
-  .cross i { position:absolute; background:var(--line); transition:left .9s ease, top .9s ease; pointer-events:none; }
-  .cross .v { top:0; bottom:0; width:1px; left:50%; }
-  .cross .h { left:0; right:0; height:1px; top:50%; }
-  .frame { position:fixed; inset:16px; border:1px solid var(--line); pointer-events:none; z-index:5; transition:opacity .6s; }
+  .cross i { position:absolute; background:var(--line); transition:left .8s ease, top .8s ease; pointer-events:none; }
+  .cross .v { top:8%; bottom:8%; width:1px; left:50%; }
+  .cross .h { left:8%; right:8%; height:1px; top:50%; }
+  .mark { position:relative; width:min(230px, 62vw); height:min(250px, 38vh); display:grid; place-items:center; }
+  .frame { position:fixed; inset:max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom)); border:1px solid var(--line); pointer-events:none; z-index:4; transition:opacity .6s; }
   .frame.off { opacity:0; }
   .weed { position:fixed; top:46%; right:-90px; width:78px; height:78px; z-index:5; pointer-events:none; opacity:0; }
   .weed.on { opacity:.9; animation:roll 8s linear 1 forwards; }
   @keyframes roll { to { transform:translateX(-120vw) rotate(-680deg); } }
-  .spider { position:fixed; top:0; left:calc(50% + 92px); width:64px; height:46vh; z-index:5; pointer-events:none; opacity:0; }
+  .spider { position:absolute; top:0; width:70px; height:100%; pointer-events:none; opacity:0; z-index:3; }
   .spider.on { opacity:1; }
-  .spider .line { transform-origin:top; transform:scaleY(0); }
-  .spider.on .line { animation:thread 1.1s ease forwards; }
-  .spider .bug { transform:translateY(-20px); opacity:0; }
-  .spider.on .bug { animation:drop 1.3s ease .4s forwards; }
-  @keyframes thread { to { transform:scaleY(1); } }
-  @keyframes drop { to { transform:none; opacity:1; } }
+  .spider .silk { position:absolute; left:34px; top:0; width:1px; height:0; background:currentColor; }
+  .spider.on .silk { animation:thread 1s ease forwards; }
+  .spider .bug { position:absolute; left:6px; top:0; transform-origin:top center; opacity:0; }
+  .spider.on .bug { animation:drop 1.15s cubic-bezier(.2,.8,.2,1.35) .35s forwards, sway 2.4s ease-in-out 1.5s infinite; }
+  @keyframes thread { to { height:var(--drop, 46%); } }
+  @keyframes drop { to { transform:translateY(var(--drop, 46%)); opacity:1; } }
+  @keyframes sway { 0%,100% { margin-left:0; } 50% { margin-left:10px; } }
+  .ducks { position:absolute; left:0; bottom:18px; width:180px; height:36px; pointer-events:none; opacity:0; z-index:3; }
+  .ducks.on { opacity:.9; animation:walk 9s linear 1 forwards; }
+  @keyframes walk { from { transform:translateX(-40vw); } to { transform:translateX(110vw); } }
   .card.hint { animation:sway 1.5s ease-in-out 2; }
   @keyframes sway { 50% { transform:translateX(-16px) scale(.9); } }
   #home, #after, #how { align-items:center; justify-content:center; flex-direction:column; }
@@ -49,11 +54,29 @@
   @keyframes glint { to { transform:translateX(120%); } }
   #film { background:#000; }
   #film video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+  #film .cross { position:absolute; inset:0; z-index:3; pointer-events:none; }
   #film .shade { position:absolute; inset:0; background:rgba(0,0,0,.38); }
   .cap { position:absolute; inset:0; z-index:2; display:flex; align-items:center; justify-content:center; text-align:center; color:#fff; font-size:clamp(22px, 6vw, 40px); line-height:1.2; padding:28px; opacity:0; transition:opacity .4s; }
   .cap.on { opacity:1; }
   .cipher { max-width:16em; text-align:center; font-size:clamp(18px, 4.4vw, 28px); line-height:1.45; min-height:3em; }
-  #how .steps { display:grid; gap:20px; text-align:center; }
+  #how { position:relative; align-items:center; justify-content:center; flex-direction:column; }
+  .trio { display:flex; gap:8px; padding:8px 12px 0; }
+  .trio button, .auth button { border:1px solid currentColor; border-radius:30px; background:transparent; height:32px; padding:0 12px; font-size:11px; cursor:pointer; }
+  .fx { min-height:180px; display:grid; place-items:center; position:relative; }
+  .cube3 { width:84px; height:84px; position:relative; transform-style:preserve-3d; animation:spin 8s linear infinite; }
+  .cube3 i { position:absolute; inset:0; border:1px solid currentColor; }
+  .cube3 i:nth-child(1){ transform:rotateY(0) translateZ(42px); }
+  .cube3 i:nth-child(2){ transform:rotateY(180deg) translateZ(42px); }
+  .cube3 i:nth-child(3){ transform:rotateY(90deg) translateZ(42px); }
+  .cube3 i:nth-child(4){ transform:rotateY(-90deg) translateZ(42px); }
+  .cube3 i:nth-child(5){ transform:rotateX(90deg) translateZ(42px); }
+  .cube3 i:nth-child(6){ transform:rotateX(-90deg) translateZ(42px); }
+  @keyframes spin { to { transform:rotateX(360deg) rotateY(360deg); } }
+  .core { position:absolute; inset:0; display:grid; place-items:center; font-size:11px; letter-spacing:.04em; text-align:center; max-width:9em; }
+  .bulb.on path.glass { fill:rgba(243,220,120,.85); }
+  .cracks { position:fixed; inset:0; z-index:12; pointer-events:none; opacity:0; }
+  .cracks.on { opacity:1; }
+  .auth { display:flex; gap:10px; justify-content:center; padding:18px; }
   #how .steps p { margin:0; font-size:16px; letter-spacing:.14em; opacity:0; transform:translateY(24px); }
   #how .steps p.in { animation:rise .7s ease forwards; }
   @keyframes rise { to { opacity:1; transform:none; } }
@@ -100,7 +123,6 @@
 </head>
 <body>
 <div class="frame" id="frame"></div>
-<div class="cross" id="cross"><i class="v"></i><i class="h"></i></div>
 <div class="weed" id="weed" aria-hidden="true">
   <svg viewBox="0 0 80 80" fill="none" stroke="currentColor" stroke-width="1">
     <circle cx="40" cy="40" r="18"/>
@@ -108,23 +130,19 @@
     <path d="M40 18 C52 28 52 52 40 62 C28 52 28 28 40 18"/>
   </svg>
 </div>
-<div class="spider" id="spider" aria-hidden="true">
-  <svg viewBox="0 0 64 220" fill="none" stroke="currentColor" stroke-width="1">
-    <path class="line" d="M32 0 L32 150"/>
-    <g class="bug">
-      <ellipse cx="32" cy="168" rx="7" ry="9"/>
-      <path d="M26 162 L12 150 M38 162 L50 150 M24 170 L10 176 M40 170 L54 176 M26 178 L14 192 M38 178 L50 192"/>
-    </g>
-  </svg>
-</div>
+<div class="spider" id="spider-old" hidden></div>
 
 <section class="scene on" id="home">
-  <img class="logo" id="logo" src="logo.png" alt="V³ studio" />
+  <div class="mark" id="mark">
+    <div class="cross" id="cross"><i class="v"></i><i class="h"></i></div>
+    <img class="logo" id="logo" src="logo.png" alt="V³ studio" />
+  </div>
   <button class="btn" id="start" type="button">дизайн для бизнеса<span class="glint"></span></button>
 </section>
 <section class="scene" id="film">
   <video id="vid" playsinline webkit-playsinline preload="auto" poster="frames/f01.jpg"><source src="ink.mp4" type="video/mp4" /></video>
   <div class="shade"></div>
+  <div class="cross" id="film-cross"><i class="v"></i><i class="h"></i></div>
   <div class="cap" id="cap"><span id="phrase"></span></div>
 </section>
 <section class="scene" id="after">
@@ -132,6 +150,7 @@
   <button class="btn" id="howBtn" type="button">как мы работаем<span class="glint"></span></button>
 </section>
 <section class="scene" id="how">
+  <div class="spider" id="spider" aria-hidden="true"><i class="silk"></i><svg class="bug" viewBox="0 0 58 36" fill="none" stroke="currentColor" stroke-width="1"><ellipse cx="29" cy="18" rx="7" ry="8"/><path d="M22 14 L8 6 M36 14 L50 6 M20 18 L6 18 M38 18 L52 18 M22 24 L8 32 M36 24 L50 32 M24 10 L18 2 M34 10 L40 2"/></svg></div>
   <div class="steps"><p>1 слушаем</p><p>2 думаем</p><p>3 внедряем</p></div>
   <button class="btn" id="see" type="button">посмотреть<span class="glint"></span></button>
 </section>
@@ -140,6 +159,7 @@
   <div class="rail" id="rail"></div>
   <div class="note"><div class="note-top"><h2 id="gtitle">жест</h2><button class="x" id="expand" type="button">+</button></div><div class="full" id="full">Кадр задаёт характер раньше слов.</div></div>
   <button class="btn discuss" id="discuss" type="button">обсудим?<span class="glint"></span></button>
+  <div class="ducks" id="ducks" aria-hidden="true"><svg viewBox="0 0 180 36" fill="none" stroke="currentColor" stroke-width="1"><path d="M8 24 C14 16 22 16 26 22 L30 20 L34 16 L36 20 L30 24 Z"/><path d="M48 26 C54 20 60 20 64 25 L68 22 L71 18 L73 22 L66 26 Z"/><path d="M86 26 C91 21 96 21 100 26 L103 23 L106 20 L108 23 L101 27 Z"/><path d="M122 27 C126 22 131 22 134 27 L137 24 L140 21 L142 24 L135 28 Z"/><path d="M154 27 C158 23 162 23 165 27 L168 25 L170 22 L172 25 L166 28 Z"/></svg></div>
 </section>
 <section class="scene" id="shell">
   <div class="ticker"><div class="ticker-track" id="ticker"></div></div>
@@ -152,15 +172,17 @@
   <button type="button" data-tab="cabinet">личный кабинет</button>
   <button type="button" data-tab="prices">тарифы</button>
 </nav>
+<svg class="cracks" id="cracks" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M10 0 L22 18 L14 28 L30 40 L18 55 L34 70 L20 100 M50 0 L46 20 L60 32 L44 48 L62 66 L48 100 M90 0 L78 22 L88 40 L70 58 L84 78 L68 100" fill="none" stroke="currentColor" stroke-width=".4"/></svg>
 <script>
 const vid = document.getElementById('vid');
 vid.load();
-const vLine = document.querySelector('.cross .v');
-const hLine = document.querySelector('.cross .h');
+const vLine = document.querySelector('#mark .cross .v');
+const hLine = document.querySelector('#mark .cross .h');
+const fv = document.querySelector('#film-cross .v');
+const fh = document.querySelector('#film-cross .h');
 function aim(px, py) {
-  const r = document.getElementById('logo').getBoundingClientRect();
-  vLine.style.left = (r.left + r.width * px) + 'px';
-  hLine.style.top = (r.top + r.height * py) + 'px';
+  vLine.style.left = (px * 100) + '%';
+  hLine.style.top = (py * 100) + '%';
 }
 const start = document.getElementById('start');
 setTimeout(() => {
@@ -185,6 +207,15 @@ function show(id) {
   else { cross.classList.add('off'); frame.classList.add('off'); }
   document.getElementById('weed').classList.toggle('on', id === 'after');
   document.getElementById('spider').classList.toggle('on', id === 'how');
+  document.getElementById('ducks').classList.toggle('on', id === 'gallery');
+  if (id === 'how') hangSpider();
+}
+function hangSpider() {
+  const btn = document.getElementById('see');
+  const sp = document.getElementById('spider');
+  const drop = Math.max(80, btn.offsetTop + 8);
+  sp.style.left = (btn.offsetLeft + btn.offsetWidth + 16) + 'px';
+  sp.style.setProperty('--drop', drop + 'px');
 }
 const lines = [[0.4,'дизайн<br>который не равнодушен'],[3.8,'креативность<br>которая дышит'],[7.4,'эстетика<br>и функционал'],[11.2,'привлекает<br>внимание']];
 const phrase = document.getElementById('phrase');
@@ -217,8 +248,8 @@ function aimPhrase() {
   const r = phrase.getBoundingClientRect();
   if (!r.width) return;
   const [px, py] = focus[lineIndex] || [.5,.5];
-  vLine.style.left = (r.left + r.width * px) + 'px';
-  hLine.style.top = (r.top + r.height * py) + 'px';
+  fv.style.left = (r.left + r.width * px) + 'px';
+  fh.style.top = (r.top + r.height * py) + 'px';
 }
 vid.onended = () => { cap.classList.remove('on'); show('after'); cipher(); };
 function cipher() {
@@ -262,9 +293,9 @@ const row = nets.map(([n,h]) => '<a href="'+h+'" target="_blank" rel="noreferrer
 document.getElementById('ticker').innerHTML = row + row;
 const first = 'Здравствуйте. Напишите, на какой стадии проект — мы не предлагаем, пока не услышим посыл.';
 const panels = {
-  studio: '<h2>о студии</h2><div class="log"><div class="bubble">Слушаем. Думаем. Внедряем. Без лишнего шума.</div></div>',
+  studio: '<h2>что такое дизайн</h2><div class="trio"><button type="button" data-fx="aes">эстетика</button><button type="button" data-fx="idea">креатив</button><button type="button" data-fx="fx">эффект</button></div><div class="fx" id="fx"></div>',
   contacts: '<h2>диалог</h2><div class="log" id="log"></div><form id="form"><input id="msg" placeholder="сообщение" /><button type="submit">ок</button></form>',
-  cabinet: '<h2>кабинет</h2><div class="log"><div class="bubble">Такт 02. Стратегия на согласовании.</div><div class="bubble">Файлы и правки — на этой полке.</div></div>',
+  cabinet: '<h2>личный кабинет</h2><div class="auth"><button type="button" id="login">войти</button><button type="button" id="reg">регистрация</button></div><div class="log" id="authlog"></div>',
   prices: '<h2>тарифы</h2><div class="log"><div class="bubble">Базовый старт — 15 000.</div><div class="bubble">Индивидуально — под бюджет, если проект нравится.</div></div>'
 };
 function typeInto(el, text) {
@@ -276,6 +307,11 @@ function tab(name) {
   document.getElementById('panel').innerHTML = panels[name];
   const buttons = [...document.querySelectorAll('#dock button')];
   buttons.forEach((b,i) => { const on = b.dataset.tab === name; b.classList.toggle('on', on); if (on) document.getElementById('pill').style.transform = 'translateX('+(i*100)+'%)'; });
+  if (name === 'studio') bindFx();
+  if (name === 'cabinet') {
+    document.getElementById('login').onclick = () => note('Вход. Пока это каркас кабинета.');
+    document.getElementById('reg').onclick = () => note('Регистрация. Сюда сядет аккаунт клиента.');
+  }
   if (name === 'contacts') {
     const log = document.getElementById('log');
     const bubble = document.createElement('div'); bubble.className = 'bubble'; log.appendChild(bubble); typeInto(bubble, first);
@@ -287,6 +323,26 @@ function tab(name) {
       setTimeout(() => { const us = document.createElement('div'); us.className = 'bubble'; log.appendChild(us); typeInto(us, 'Слышим. Если посыла нет — так и скажем.'); }, 240);
     };
   }
+}
+function note(text) {
+  const log = document.getElementById('authlog');
+  log.innerHTML = '<div class="bubble"></div>';
+  log.firstChild.textContent = text;
+}
+function bindFx() {
+  document.querySelectorAll('[data-fx]').forEach(b => b.onclick = () => {
+    const box = document.getElementById('fx');
+    document.getElementById('cracks').classList.remove('on');
+    if (b.dataset.fx === 'aes') {
+      box.innerHTML = '<div class="cube3"><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="core" id="core"></div>';
+      typeInto(document.getElementById('core'), 'внимание мелочам');
+    } else if (b.dataset.fx === 'idea') {
+      box.innerHTML = '<svg class="bulb on" width="72" height="96" viewBox="0 0 72 96" fill="none" stroke="currentColor"><path class="glass" d="M36 8 a22 22 0 0 1 12 40 c-4 6-6 10-6 16 H30 c0-6-2-10-6-16 A22 22 0 0 1 36 8z"/><path d="M30 70 h12 M32 76 h8 M34 82 h4"/></svg>';
+    } else {
+      box.innerHTML = '';
+      document.getElementById('cracks').classList.add('on');
+    }
+  });
 }
 document.getElementById('discuss').onclick = () => { show('shell'); tab('contacts'); };
 document.querySelectorAll('#dock button').forEach(b => b.onclick = () => tab(b.dataset.tab));

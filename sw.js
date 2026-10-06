@@ -1,4 +1,4 @@
-const CACHE = 'v3-stable-3';
+const CACHE = 'v3-stable-4';
 const FILES = ['./', './index.html', './ink.mp4', './logo.png', './frames/f01.jpg'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));
