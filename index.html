@@ -20,26 +20,26 @@
   button, a, input { font-family:inherit; color:inherit; }
   .scene { position:fixed; inset:0; display:none; }
   .scene.on { display:flex; z-index:8; }
-  .cross { position:absolute; inset:0; pointer-events:none; z-index:1; }
+  .cross { position:fixed; inset:0; pointer-events:none; z-index:5; }
   .cross.off { opacity:0; }
   .cross i { position:absolute; background:var(--line); transition:left .8s ease, top .8s ease; pointer-events:none; }
-  .cross .v { top:8%; bottom:8%; width:1px; left:50%; }
-  .cross .h { left:8%; right:8%; height:1px; top:50%; }
+  .cross .v { top:0; bottom:0; width:1px; left:50%; }
+  .cross .h { left:0; right:0; height:1px; top:50%; }
   .mark { position:relative; width:min(230px, 62vw); height:min(250px, 38vh); display:grid; place-items:center; }
   .frame { position:fixed; inset:max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom)); border:1px solid var(--line); pointer-events:none; z-index:4; transition:opacity .6s; }
   .frame.off { opacity:0; }
   .weed { position:fixed; top:46%; right:-90px; width:78px; height:78px; z-index:5; pointer-events:none; opacity:0; }
   .weed.on { opacity:.9; animation:roll 8s linear 1 forwards; }
   @keyframes roll { to { transform:translateX(-120vw) rotate(-680deg); } }
-  .spider { position:absolute; top:0; width:70px; height:100%; pointer-events:none; opacity:0; z-index:3; }
-  .spider.on { opacity:1; }
-  .spider .silk { position:absolute; left:34px; top:0; width:1px; height:0; background:currentColor; }
-  .spider.on .silk { animation:thread 1s ease forwards; }
-  .spider .bug { position:absolute; left:6px; top:0; transform-origin:top center; opacity:0; }
-  .spider.on .bug { animation:drop 1.15s cubic-bezier(.2,.8,.2,1.35) .35s forwards, sway 2.4s ease-in-out 1.5s infinite; }
-  @keyframes thread { to { height:var(--drop, 46%); } }
-  @keyframes drop { to { transform:translateY(var(--drop, 46%)); opacity:1; } }
-  @keyframes sway { 0%,100% { margin-left:0; } 50% { margin-left:10px; } }
+  .leaves { position:fixed; inset:0; pointer-events:none; z-index:4; opacity:0; }
+  .leaves.on { opacity:1; }
+  .leaves svg { position:absolute; top:-40px; width:28px; height:28px; animation:fall 7s linear infinite; }
+  .leaves svg:nth-child(2) { left:22%; animation-delay:-2s; animation-duration:8s; }
+  .leaves svg:nth-child(3) { left:48%; animation-delay:-4s; animation-duration:6.5s; }
+  .leaves svg:nth-child(4) { left:70%; animation-delay:-1s; }
+  .leaves svg:nth-child(5) { left:86%; animation-delay:-3s; animation-duration:9s; }
+  @keyframes fall { to { transform:translateY(110vh) rotate(180deg); } }
+  #how .steps { width:100%; justify-items:center; text-align:center; }
   .ducks { position:absolute; left:0; bottom:18px; width:180px; height:36px; pointer-events:none; opacity:0; z-index:3; }
   .ducks.on { opacity:.9; animation:walk 9s linear 1 forwards; }
   @keyframes walk { from { transform:translateX(-40vw); } to { transform:translateX(110vw); } }
@@ -108,7 +108,7 @@
   .you { margin-left:auto; }
   form { display:flex; gap:8px; padding:8px 12px 12px; border-top:1px solid rgba(243,243,241,.12); }
   input { flex:1; background:transparent; border:0; color:inherit; font-size:13px; padding:8px 0; outline:none; }
-  form button { border:0; background:transparent; cursor:pointer; font-size:11px; letter-spacing:.08em; }
+  form button { border:0; background:transparent; cursor:pointer; width:32px; height:32px; padding:0; }
   .dock {
     position:fixed; left:12px; right:12px; bottom:14px; z-index:9; height:52px;
     display:grid; grid-template-columns:repeat(4, 1fr); align-items:center;
@@ -123,6 +123,7 @@
 </head>
 <body>
 <div class="frame" id="frame"></div>
+<div class="cross" id="cross"><i class="v"></i><i class="h"></i></div>
 <div class="weed" id="weed" aria-hidden="true">
   <svg viewBox="0 0 80 80" fill="none" stroke="currentColor" stroke-width="1">
     <circle cx="40" cy="40" r="18"/>
@@ -130,11 +131,16 @@
     <path d="M40 18 C52 28 52 52 40 62 C28 52 28 28 40 18"/>
   </svg>
 </div>
-<div class="spider" id="spider-old" hidden></div>
+<div class="leaves" id="leaves" aria-hidden="true">
+  <svg viewBox="0 0 40 40" fill="none" stroke="currentColor"><path d="M20 4 L24 16 L36 18 L26 26 L30 38 L20 30 L10 38 L14 26 L4 18 L16 16 Z"/></svg>
+  <svg viewBox="0 0 40 40" fill="none" stroke="currentColor"><path d="M20 4 L24 16 L36 18 L26 26 L30 38 L20 30 L10 38 L14 26 L4 18 L16 16 Z"/></svg>
+  <svg viewBox="0 0 40 40" fill="none" stroke="currentColor"><path d="M20 4 L24 16 L36 18 L26 26 L30 38 L20 30 L10 38 L14 26 L4 18 L16 16 Z"/></svg>
+  <svg viewBox="0 0 40 40" fill="none" stroke="currentColor"><path d="M20 4 L24 16 L36 18 L26 26 L30 38 L20 30 L10 38 L14 26 L4 18 L16 16 Z"/></svg>
+  <svg viewBox="0 0 40 40" fill="none" stroke="currentColor"><path d="M20 4 L24 16 L36 18 L26 26 L30 38 L20 30 L10 38 L14 26 L4 18 L16 16 Z"/></svg>
+</div>
 
 <section class="scene on" id="home">
   <div class="mark" id="mark">
-    <div class="cross" id="cross"><i class="v"></i><i class="h"></i></div>
     <img class="logo" id="logo" src="logo.png" alt="V³ studio" />
   </div>
   <button class="btn" id="start" type="button">дизайн для бизнеса<span class="glint"></span></button>
@@ -150,7 +156,6 @@
   <button class="btn" id="howBtn" type="button">как мы работаем<span class="glint"></span></button>
 </section>
 <section class="scene" id="how">
-  <div class="spider" id="spider" aria-hidden="true"><i class="silk"></i><svg class="bug" viewBox="0 0 58 36" fill="none" stroke="currentColor" stroke-width="1"><ellipse cx="29" cy="18" rx="7" ry="8"/><path d="M22 14 L8 6 M36 14 L50 6 M20 18 L6 18 M38 18 L52 18 M22 24 L8 32 M36 24 L50 32 M24 10 L18 2 M34 10 L40 2"/></svg></div>
   <div class="steps"><p>1 слушаем</p><p>2 думаем</p><p>3 внедряем</p></div>
   <button class="btn" id="see" type="button">посмотреть<span class="glint"></span></button>
 </section>
@@ -176,13 +181,14 @@
 <script>
 const vid = document.getElementById('vid');
 vid.load();
-const vLine = document.querySelector('#mark .cross .v');
-const hLine = document.querySelector('#mark .cross .h');
+const vLine = document.querySelector('#cross .v');
+const hLine = document.querySelector('#cross .h');
 const fv = document.querySelector('#film-cross .v');
 const fh = document.querySelector('#film-cross .h');
 function aim(px, py) {
-  vLine.style.left = (px * 100) + '%';
-  hLine.style.top = (py * 100) + '%';
+  const r = document.getElementById('logo').getBoundingClientRect();
+  vLine.style.left = (r.left + r.width * px) + 'px';
+  hLine.style.top = (r.top + r.height * py) + 'px';
 }
 const start = document.getElementById('start');
 setTimeout(() => {
@@ -206,16 +212,8 @@ function show(id) {
   else if (id === 'film') { cross.classList.remove('off'); frame.classList.add('off'); }
   else { cross.classList.add('off'); frame.classList.add('off'); }
   document.getElementById('weed').classList.toggle('on', id === 'after');
-  document.getElementById('spider').classList.toggle('on', id === 'how');
+  document.getElementById('leaves').classList.toggle('on', id === 'how');
   document.getElementById('ducks').classList.toggle('on', id === 'gallery');
-  if (id === 'how') hangSpider();
-}
-function hangSpider() {
-  const btn = document.getElementById('see');
-  const sp = document.getElementById('spider');
-  const drop = Math.max(80, btn.offsetTop + 8);
-  sp.style.left = (btn.offsetLeft + btn.offsetWidth + 16) + 'px';
-  sp.style.setProperty('--drop', drop + 'px');
 }
 const lines = [[0.4,'дизайн<br>который не равнодушен'],[3.8,'креативность<br>которая дышит'],[7.4,'эстетика<br>и функционал'],[11.2,'привлекает<br>внимание']];
 const phrase = document.getElementById('phrase');
@@ -294,7 +292,7 @@ document.getElementById('ticker').innerHTML = row + row;
 const first = 'Здравствуйте. Напишите, на какой стадии проект — мы не предлагаем, пока не услышим посыл.';
 const panels = {
   studio: '<h2>что такое дизайн</h2><div class="trio"><button type="button" data-fx="aes">эстетика</button><button type="button" data-fx="idea">креатив</button><button type="button" data-fx="fx">эффект</button></div><div class="fx" id="fx"></div>',
-  contacts: '<h2>диалог</h2><div class="log" id="log"></div><form id="form"><input id="msg" placeholder="сообщение" /><button type="submit">ок</button></form>',
+  contacts: '<h2>диалог</h2><div class="log" id="log"></div><form id="form"><input id="msg" placeholder="сообщение" /><button type="submit" aria-label="отправить"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M2 21 L23 12 L2 3 L2 10 L17 12 L2 14 Z"/></svg></button></form>',
   cabinet: '<h2>личный кабинет</h2><div class="auth"><button type="button" id="login">войти</button><button type="button" id="reg">регистрация</button></div><div class="log" id="authlog"></div>',
   prices: '<h2>тарифы</h2><div class="log"><div class="bubble">Базовый старт — 15 000.</div><div class="bubble">Индивидуально — под бюджет, если проект нравится.</div></div>'
 };
