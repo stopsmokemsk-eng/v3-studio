@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -14,12 +14,13 @@
 <style>
   :root { --ink:#141414; --line:rgba(20,20,20,.4); --paper:#f6f6f4; }
   * { box-sizing:border-box; }
-  html, body { margin:0; height:100%; height:100dvh; width:100%; overflow:hidden; overscroll-behavior:none; background:var(--paper); color:var(--ink); font-family:"IBM Plex Mono", ui-monospace, monospace; position:fixed; touch-action:manipulation; }
+  html, body { margin:0; width:100%; height:100dvh; overflow:hidden; overscroll-behavior:none; background:var(--paper); color:var(--ink); font-family:"IBM Plex Mono", ui-monospace, monospace; touch-action:manipulation; }
+  .scene { position:fixed; inset:0; display:none; height:100dvh; padding:env(safe-area-inset-top) 16px env(safe-area-inset-bottom); }
+  .scene.on { display:flex; z-index:8; align-items:center; justify-content:center; }
   body.dark { --ink:#f3f3f1; --line:rgba(243,243,241,.32); --paper:#0c0c0c; background:#0c0c0c; color:#f3f3f1; }
   body.dark .logo { filter:invert(1); }
   button, a, input { font-family:inherit; color:inherit; }
   .scene { position:fixed; inset:0; display:none; }
-  .scene.on { display:flex; z-index:8; }
   .cross { position:fixed; inset:0; pointer-events:none; z-index:5; }
   .cross.off { opacity:0; }
   .cross i { position:absolute; background:var(--line); transition:left .8s ease, top .8s ease; pointer-events:none; }
@@ -74,9 +75,16 @@
   @keyframes spin { to { transform:rotateX(360deg) rotateY(360deg); } }
   .core { position:absolute; inset:0; display:grid; place-items:center; font-size:11px; letter-spacing:.04em; text-align:center; max-width:9em; }
   .bulb.on path.glass { fill:rgba(243,220,120,.85); }
-  .cracks { position:fixed; inset:0; z-index:12; pointer-events:none; opacity:0; }
-  .cracks.on { opacity:1; }
-  .auth { display:flex; gap:10px; justify-content:center; padding:18px; }
+  .dream { position:fixed; inset:0; z-index:20; display:none; pointer-events:none; background:#f4b7c8; overflow:hidden; }
+  .dream.on { display:block; }
+  .dream i { position:absolute; border:1px solid rgba(255,255,255,.8); border-radius:40px; height:36px; }
+  .dream i:nth-child(1){ width:90px; top:18%; animation:drift 10s linear; }
+  .dream i:nth-child(2){ width:120px; top:40%; animation:drift 8s linear reverse; }
+  .dream i:nth-child(3){ width:70px; top:66%; animation:drift 9s linear; }
+  .uni { position:absolute; left:50%; top:46%; width:88px; margin-left:-44px; animation:hop .55s ease-in-out infinite; }
+  @keyframes drift { from { left:-30%; } to { left:110%; } }
+  @keyframes hop { 50% { transform:translateY(-22px); } }
+  .cipher { max-width:18em; padding:0 24px; text-align:center; font-size:clamp(16px, 4.2vw, 26px); line-height:1.45; }
   #how .steps p { margin:0; font-size:16px; letter-spacing:.14em; opacity:0; transform:translateY(24px); }
   #how .steps p.in { animation:rise .7s ease forwards; }
   @keyframes rise { to { opacity:1; transform:none; } }
@@ -177,7 +185,8 @@
   <button type="button" data-tab="cabinet">личный кабинет</button>
   <button type="button" data-tab="prices">тарифы</button>
 </nav>
-<svg class="cracks" id="cracks" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M10 0 L22 18 L14 28 L30 40 L18 55 L34 70 L20 100 M50 0 L46 20 L60 32 L44 48 L62 66 L48 100 M90 0 L78 22 L88 40 L70 58 L84 78 L68 100" fill="none" stroke="currentColor" stroke-width=".4"/></svg>
+<svg class="cracks" id="cracks" hidden></svg>
+<div class="dream" id="dream"><i></i><i></i><i></i><svg class="uni" viewBox="0 0 88 64" fill="none" stroke="#fff" stroke-width="1.4"><path d="M18 40 C24 28 34 26 42 32 L48 24 L52 30 L58 18 L60 32 L70 28 L66 40 C74 44 74 52 62 52 L24 52 C14 52 12 46 18 40Z"/><path d="M42 32 L40 16 L46 24 M48 24 L50 10"/></svg></div>
 <script>
 const vid = document.getElementById('vid');
 vid.load();
@@ -224,13 +233,11 @@ const focus = [[.16,.82],[.84,.16],[.9,.1],[.5,.5]];
 start.addEventListener('click', openFilm);
 start.addEventListener('touchend', (e) => { e.preventDefault(); openFilm(); }, { passive:false });
 function openFilm() {
-  if (openFilm.done) return;
-  openFilm.done = true;
   show('film');
   vid.currentTime = 0;
   vid.muted = false;
   const p = vid.play();
-  if (p) p.catch(() => vid.play());
+  if (p) p.catch(() => { vid.muted = true; vid.play(); });
 }
 vid.ontimeupdate = () => {
   let html = '';
@@ -330,7 +337,7 @@ function note(text) {
 function bindFx() {
   document.querySelectorAll('[data-fx]').forEach(b => b.onclick = () => {
     const box = document.getElementById('fx');
-    document.getElementById('cracks').classList.remove('on');
+    document.getElementById('dream').classList.remove('on');
     if (b.dataset.fx === 'aes') {
       box.innerHTML = '<div class="cube3"><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="core" id="core"></div>';
       typeInto(document.getElementById('core'), 'внимание мелочам');
@@ -338,12 +345,16 @@ function bindFx() {
       box.innerHTML = '<svg class="bulb on" width="72" height="96" viewBox="0 0 72 96" fill="none" stroke="currentColor"><path class="glass" d="M36 8 a22 22 0 0 1 12 40 c-4 6-6 10-6 16 H30 c0-6-2-10-6-16 A22 22 0 0 1 36 8z"/><path d="M30 70 h12 M32 76 h8 M34 82 h4"/></svg>';
     } else {
       box.innerHTML = '';
-      document.getElementById('cracks').classList.add('on');
+      const dream = document.getElementById('dream');
+      dream.classList.add('on');
+      setTimeout(() => dream.classList.remove('on'), 10000);
     }
   });
 }
 document.getElementById('discuss').onclick = () => { show('shell'); tab('contacts'); };
 document.querySelectorAll('#dock button').forEach(b => b.onclick = () => tab(b.dataset.tab));
+addEventListener('gesturestart', e => e.preventDefault());
+addEventListener('dblclick', e => e.preventDefault());
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
 </body>
