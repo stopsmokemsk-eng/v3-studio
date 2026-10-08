@@ -47,7 +47,7 @@
   .mark { position:relative; width:min(230px, 62vw); height:min(250px, 38vh); display:grid; place-items:center; }
   .logo { height:min(200px, 34vh); width:auto; }
 
-  .btn { position:relative; z-index:2; overflow:hidden; margin-top:30px; border:1px solid currentColor; border-radius:30px; background:transparent; padding:12px 28px; font-size:12px; letter-spacing:.18em; text-transform:uppercase; cursor:pointer; opacity:0; transform:translateY(14px); transition:opacity .6s, transform .6s, background .3s; }
+  .btn { position:relative; z-index:2; overflow:hidden; margin-top:24px; border:1px solid currentColor; border-radius:30px; background:transparent; padding:12px 28px; font-size:12px; letter-spacing:.18em; text-transform:uppercase; cursor:pointer; opacity:0; transform:translateY(14px); transition:opacity .6s, transform .6s, background .3s; }
   .btn.show { opacity:1; transform:none; }
   .btn:active { background:rgba(255,255,255,.1); }
   .btn .glint { position:absolute; top:0; left:-120%; width:80%; height:100%; background:linear-gradient(90deg, transparent, rgba(255,255,255,.4), transparent); transform:skewX(-20deg); }
@@ -71,15 +71,15 @@
   /* After / Cipher */
   .cipher { max-width:18em; padding:0 24px; text-align:center; font-size:clamp(16px, 4.2vw, 26px); line-height:1.45; letter-spacing:.08em; min-height:3em; }
 
-  /* How Scene & Background Vortex */
+  /* How Scene & Canvas Cosmic Spiral Vortex */
   #how { position:relative; overflow:hidden; }
-  #how .steps { width:100%; max-width:320px; display:flex; flex-direction:column; gap:20px; text-align:center; z-index:3; }
+  #how .steps { width:100%; max-width:320px; display:flex; flex-direction:column; gap:18px; text-align:center; z-index:3; }
   #how .steps p { margin:0; font-size:18px; letter-spacing:.2em; text-transform:uppercase; opacity:0; transform:translateY(24px); transition:opacity .6s, transform .6s; }
   #how .steps p.in { opacity:1; transform:none; }
   
-  .vortex-box { width:min(280px, 75vw); height:140px; margin-top:24px; z-index:2; opacity:0; transition:opacity .8s; border-radius:18px; overflow:hidden; pointer-events:none; display:grid; place-items:center; }
-  .vortex-box.on { opacity:.75; }
-  .vortex-gif { width:100%; height:100%; object-fit:cover; filter:contrast(1.2) brightness(0.95); mix-blend-mode:screen; }
+  .vortex-canvas-box { width:min(320px, 85vw); height:160px; margin-top:16px; z-index:2; opacity:0; transition:opacity .8s; border-radius:18px; overflow:hidden; pointer-events:none; position:relative; }
+  .vortex-canvas-box.on { opacity:.9; }
+  #vortexCanvas { width:100%; height:100%; display:block; }
 
   /* Gallery */
   #gallery { background:#0c0c0c; color:#f3f3f1; display:none; flex-direction:column; padding:env(safe-area-inset-top, 16px) 0 env(safe-area-inset-bottom, 16px); }
@@ -134,19 +134,49 @@
   
   .studio-content { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; padding:12px; overflow-y:auto; }
   
-  /* Interactive Rotatable 3D Cube */
-  .cube-stage { perspective:800px; display:flex; flex-direction:column; align-items:center; justify-content:center; touch-action:none; user-select:none; width:100%; height:100%; cursor:grab; }
+  /* Perfect 3D Cube (Transparent faces, 100px square, strictly centered) */
+  .cube-stage { perspective:900px; display:flex; flex-direction:column; align-items:center; justify-content:center; touch-action:none; user-select:none; width:100%; height:100%; cursor:grab; }
   .cube-stage:active { cursor:grabbing; }
-  .cube3 { width:80px; height:80px; position:relative; transform-style:preserve-3d; transition:transform 0.05s ease-out; }
-  .cube3 i { position:absolute; inset:0; border:1px solid var(--white); background:rgba(255,255,255,.04); box-shadow:inset 0 0 12px rgba(255,255,255,.1); }
-  .cube3 i:nth-child(1){ transform:rotateY(0) translateZ(40px); }
-  .cube3 i:nth-child(2){ transform:rotateY(180deg) translateZ(40px); }
-  .cube3 i:nth-child(3){ transform:rotateY(90deg) translateZ(40px); }
-  .cube3 i:nth-child(4){ transform:rotateY(-90deg) translateZ(40px); }
-  .cube3 i:nth-child(5){ transform:rotateX(90deg) translateZ(40px); }
-  .cube3 i:nth-child(6){ transform:rotateX(-90deg) translateZ(40px); }
-  .touch-hint { margin-top:24px; font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:#888; animation:pulse 2s ease-in-out infinite; }
-  @keyframes pulse { 50% { opacity:.4; } }
+  .cube3 { width:100px; height:100px; position:relative; transform-style:preserve-3d; transition:transform 0.04s ease-out; }
+  .cube3 i { position:absolute; width:100px; height:100px; inset:0; border:1px solid rgba(255,255,255,.8); background:transparent; pointer-events:none; }
+  .cube3 i:nth-child(1){ transform:rotateY(0deg) translateZ(50px); }
+  .cube3 i:nth-child(2){ transform:rotateY(180deg) translateZ(50px); }
+  .cube3 i:nth-child(3){ transform:rotateY(90deg) translateZ(50px); }
+  .cube3 i:nth-child(4){ transform:rotateY(-90deg) translateZ(50px); }
+  .cube3 i:nth-child(5){ transform:rotateX(90deg) translateZ(50px); }
+  .cube3 i:nth-child(6){ transform:rotateX(-90deg) translateZ(50px); }
+  .touch-hint { margin-top:28px; font-size:10px; letter-spacing:.26em; text-transform:uppercase; color:#999; animation:pulse 2s ease-in-out infinite; }
+  @keyframes pulse { 50% { opacity:.35; } }
+
+  /* Morphing Design Effect Scene */
+  .morph-wrap { width:100%; height:100%; display:flex; flex-direction:column; position:relative; overflow:hidden; border-radius:12px; transition:all .5s cubic-bezier(.2,.8,.2,1); }
+  .morph-header { display:flex; justify-content:space-between; align-items:center; padding:10px 14px; border-bottom:1px solid currentColor; font-size:11px; letter-spacing:.1em; text-transform:uppercase; }
+  .morph-hero { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:16px 12px; gap:12px; position:relative; }
+  .morph-title { font-size:clamp(16px, 4.5vw, 22px); letter-spacing:.08em; text-transform:uppercase; font-weight:700; line-height:1.25; }
+  .morph-desc { font-size:11px; max-width:240px; opacity:.85; line-height:1.4; }
+  .morph-cards { display:flex; gap:8px; width:100%; padding:0 8px 10px; }
+  .morph-card { flex:1; padding:8px; border:1px solid currentColor; border-radius:6px; font-size:9px; text-align:center; }
+  .morph-btn-trigger { position:absolute; z-index:10; top:50%; left:50%; transform:translate(-50%, -50%); border:2px solid currentColor; border-radius:30px; font-weight:700; font-size:12px; letter-spacing:.18em; text-transform:uppercase; padding:12px 24px; cursor:pointer; box-shadow:0 6px 24px rgba(0,0,0,.6); transition:.2s; }
+  .morph-btn-trigger:active { transform:translate(-50%, -50%) scale(.93); }
+  
+  /* Morphing Theme Presets */
+  .theme-auto { background:#0a0a0a; color:#ff3b30; font-family:"Impact", "Arial Black", sans-serif; }
+  .theme-auto .morph-card { background:#141414; border-color:#ff3b30; color:#fff; }
+  .theme-auto .morph-btn-trigger { background:#ff3b30; color:#000; border-color:#fff; }
+
+  .theme-dolls { background:#fff0f5; color:#d63384; font-family:"Comic Sans MS", "Chalkboard SE", cursive, sans-serif; border-radius:24px; }
+  .theme-dolls .morph-header { border-bottom:2px dashed #ff69b4; }
+  .theme-dolls .morph-card { background:#ffffff; border:2px solid #ffb6c1; border-radius:16px; color:#c71585; }
+  .theme-dolls .morph-btn-trigger { background:#ff69b4; color:#fff; border-color:#fff; border-radius:24px; }
+
+  .theme-space { background:#020617; color:#38bdf8; font-family:"Courier New", monospace; text-shadow:0 0 8px rgba(56,189,248,.6); }
+  .theme-space .morph-card { background:#0f172a; border-color:#0284c7; color:#e0f2fe; }
+  .theme-space .morph-btn-trigger { background:#0369a1; color:#fff; border-color:#38bdf8; }
+
+  .theme-yoga { background:#f4f1ea; color:#3f4e4f; font-family:Georgia, serif; }
+  .theme-yoga .morph-header { border-bottom:1px solid #a27b5c; }
+  .theme-yoga .morph-card { background:#dcd7c9; border:none; border-radius:8px; color:#2c3639; }
+  .theme-yoga .morph-btn-trigger { background:#2c3639; color:#f4f1ea; border-color:#a27b5c; border-radius:4px; font-family:Georgia, serif; }
 
   /* Team list view */
   .team-list { width:100%; display:flex; flex-direction:column; gap:12px; padding:6px; }
@@ -235,8 +265,8 @@
     <p>внедряем</p>
   </div>
   <button type="button" class="btn" id="see">посмотреть<span class="glint"></span></button>
-  <div class="vortex-box" id="vortexBox">
-    <img src="data:image/gif;base64,PLACEHOLDER_GIF_DATA" class="vortex-gif" alt="vortex" />
+  <div class="vortex-canvas-box" id="vortexBox">
+    <canvas id="vortexCanvas"></canvas>
   </div>
 </section>
 
@@ -371,7 +401,83 @@ function show(id) {
   else { cross.classList.add('off'); frame.classList.add('off'); }
   
   document.getElementById('globe').classList.toggle('on', id === 'after');
-  if (id === 'how') { vortexBox.classList.add('on'); } else { vortexBox.classList.remove('on'); }
+  if (id === 'how') {
+    vortexBox.classList.add('on');
+    startVortexCanvas();
+  } else {
+    vortexBox.classList.remove('on');
+    stopVortexCanvas();
+  }
+}
+
+// Ultra-smooth 60fps Canvas Cosmic Vortex (Black/White Particle Galaxy)
+let vortexAnimId = null;
+const canvas = document.getElementById('vortexCanvas');
+const ctx = canvas.getContext('2d');
+let particles = [];
+
+function initParticles() {
+  particles = [];
+  const count = 160;
+  for (let i = 0; i < count; i++) {
+    particles.push({
+      angle: Math.random() * Math.PI * 2,
+      radius: 12 + Math.random() * 110,
+      speed: 0.015 + Math.random() * 0.025,
+      size: 0.8 + Math.random() * 1.8,
+      opacity: 0.3 + Math.random() * 0.7
+    });
+  }
+}
+
+function startVortexCanvas() {
+  const rect = vortexBox.getBoundingClientRect();
+  canvas.width = rect.width * (window.devicePixelRatio || 1);
+  canvas.height = rect.height * (window.devicePixelRatio || 1);
+  initParticles();
+  
+  function draw() {
+    const w = canvas.width;
+    const h = canvas.height;
+    ctx.fillStyle = 'rgba(12, 12, 12, 0.22)';
+    ctx.fillRect(0, 0, w, h);
+    
+    const cx = w / 2;
+    const cy = h / 2;
+    
+    // Draw central black hole
+    ctx.beginPath();
+    ctx.arc(cx, cy, 10 * (window.devicePixelRatio || 1), 0, Math.PI * 2);
+    ctx.fillStyle = '#000';
+    ctx.fill();
+    
+    particles.forEach(p => {
+      p.angle += p.speed;
+      p.radius -= 0.18;
+      if (p.radius < 8) {
+        p.radius = 110 + Math.random() * 20;
+        p.angle = Math.random() * Math.PI * 2;
+      }
+      // 3D perspective flattened ellipse
+      const x = cx + Math.cos(p.angle) * p.radius * (window.devicePixelRatio || 1);
+      const y = cy + Math.sin(p.angle) * (p.radius * 0.42) * (window.devicePixelRatio || 1);
+      
+      ctx.beginPath();
+      ctx.arc(x, y, p.size * (window.devicePixelRatio || 1), 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(245, 245, 245, ' + p.opacity + ')';
+      ctx.fill();
+    });
+    
+    vortexAnimId = requestAnimationFrame(draw);
+  }
+  if (!vortexAnimId) draw();
+}
+
+function stopVortexCanvas() {
+  if (vortexAnimId) {
+    cancelAnimationFrame(vortexAnimId);
+    vortexAnimId = null;
+  }
 }
 
 // Video & Subtitles Logic with Target Positions:
@@ -583,6 +689,8 @@ function tab(name) {
 
 // Interactive 3D Cube & Studio Views
 let rotX = -15, rotY = 25;
+let morphStep = 0;
+
 function initStudioTab() {
   const btns = document.querySelectorAll('.studio-sidebar button');
   btns.forEach(b => b.onclick = () => {
@@ -614,11 +722,8 @@ function renderStudioView(view) {
       <div style="font-size:12px; letter-spacing:.14em; text-transform:uppercase; margin-top:16px;">смысл превыше формы</div>
     `;
   } else if (view === 'fx') {
-    content.innerHTML = `
-      <div style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; text-align:center; line-height:1.6;">
-        дизайн, меняющий восприятие
-      </div>
-    `;
+    morphStep = 0;
+    renderMorphScene();
   } else if (view === 'team') {
     team = getTeam();
     let html = '<div class="team-list">';
@@ -649,6 +754,58 @@ function renderStudioView(view) {
       };
     });
   }
+}
+
+// Morphing Website Design Themes
+const morphThemes = [
+  { cls: 'theme-auto', logo: 'GT MOTORS // V8', title: 'HYPERCAR PERFORMANCE', desc: 'Инженерия скорости и бескомпромиссная динамика.', c1: '640 HP', c2: '3.1s 0-100', c3: 'V8 TWIN' },
+  { cls: 'theme-dolls', logo: 'DollHouse ✨', title: 'СКАЗОЧНЫЙ МИР КУКОЛ', desc: 'Уютные авторские игрушки и наряды ручной работы.', c1: 'Коллекции', c2: 'Платья 🌸', c3: 'Подарки' },
+  { cls: 'theme-space', logo: 'ASTRON // LAB', title: 'DEEP SPACE EXPLORER', desc: 'Исследование глубокого космоса и телеметрия.', c1: 'ORBIT 4', c2: '1.2M LY', c3: 'QUANTUM' },
+  { cls: 'theme-yoga', logo: 'Prana & Zen', title: 'ГАРМОНИЯ ТЕЛА И ДУХА', desc: 'Осознанная практика йоги, дыхание и баланс.', c1: 'Асаны', c2: 'Медитация', c3: 'Ретриты' }
+];
+
+function renderMorphScene() {
+  const content = document.getElementById('studioContent');
+  if (morphStep >= 4) {
+    // 5th click -> returns smoothly to our studio
+    content.innerHTML = `
+      <div style="text-align:center; padding:16px;">
+        <div style="font-size:16px; letter-spacing:.14em; text-transform:uppercase; margin-bottom:8px;">ДИЗАЙН МЕНЯЕТ ВСЁ</div>
+        <div style="font-size:12px; color:#888; line-height:1.5;">Структура одна — восприятие абсолютно разное.</div>
+        <button type="button" class="btn show" id="restartMorph" style="margin-top:18px;">попробовать снова</button>
+      </div>
+    `;
+    document.getElementById('restartMorph').onclick = () => {
+      morphStep = 0;
+      renderMorphScene();
+    };
+    return;
+  }
+  
+  const cur = morphThemes[morphStep];
+  content.innerHTML = `
+    <div class="morph-wrap ${cur.cls}">
+      <button type="button" class="morph-btn-trigger" id="morphBtn">НАЖМИ (${morphStep + 1}/5)</button>
+      <div class="morph-header">
+        <span>${cur.logo}</span>
+        <span>МЕНЮ ☰</span>
+      </div>
+      <div class="morph-hero">
+        <div class="morph-title">${cur.title}</div>
+        <div class="morph-desc">${cur.desc}</div>
+      </div>
+      <div class="morph-cards">
+        <div class="morph-card">${cur.c1}</div>
+        <div class="morph-card">${cur.c2}</div>
+        <div class="morph-card">${cur.c3}</div>
+      </div>
+    </div>
+  `;
+  
+  document.getElementById('morphBtn').onclick = () => {
+    morphStep++;
+    renderMorphScene();
+  };
 }
 
 function setupCubeInteraction() {
