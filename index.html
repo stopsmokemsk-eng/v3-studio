@@ -11,7 +11,6 @@
 <link rel="manifest" href="manifest.json" />
 <link rel="apple-touch-icon" href="logo.png" />
 <link rel="preload" href="ink.mp4" as="video" type="video/mp4" />
-<link rel="preload" href="vortex.mp4" as="video" type="video/mp4" />
 <link rel="preload" href="logo.png" as="image" />
 <title>V³ studio</title>
 <style>
@@ -27,14 +26,14 @@
 
   .cross { position:fixed; inset:0; pointer-events:none; z-index:5; transition:opacity .4s; }
   .cross.off { opacity:0; }
-  .cross i { position:absolute; background:var(--line); pointer-events:none; }
-  .cross .v { top:0; bottom:0; width:1px; left:50%; transition:left .75s cubic-bezier(.2,.8,.2,1); }
-  .cross .h { left:0; right:0; height:1px; top:50%; transition:top .75s cubic-bezier(.2,.8,.2,1); }
+  .cross i { position:absolute; background:var(--line); pointer-events:none; transition:left .75s cubic-bezier(.2,.8,.2,1), top .75s cubic-bezier(.2,.8,.2,1); }
+  .cross .v { top:0; bottom:0; width:1px; left:50%; }
+  .cross .h { left:0; right:0; height:1px; top:50%; }
 
   .frame { position:fixed; inset:max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom)); border:1px solid var(--line); pointer-events:none; z-index:4; transition:opacity .6s; }
   .frame.off { opacity:0; }
 
-  /* Wireframe Globe - Compact & rolls completely out */
+  /* Wireframe Globe */
   .globe-wrap { position:fixed; top:48%; right:-110px; width:84px; height:84px; z-index:5; pointer-events:none; opacity:0; }
   .globe-wrap.on { opacity:.75; animation:rollGlobe 9s linear 1 forwards; }
   @keyframes rollGlobe {
@@ -62,28 +61,25 @@
   #film .cross { position:absolute; inset:0; z-index:3; pointer-events:none; }
   #film .cross i { background:rgba(255,255,255,.55); }
   
-  /* Semi-transparent Skip button */
   .skip-btn { position:absolute; top:max(20px, env(safe-area-inset-top)); right:20px; z-index:10; border:1px solid rgba(255,255,255,.2); border-radius:20px; background:rgba(0,0,0,.22); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); color:rgba(255,255,255,.7); font-size:10px; letter-spacing:.18em; text-transform:uppercase; padding:6px 14px; cursor:pointer; transition:.3s; }
   .skip-btn:active { background:rgba(255,255,255,.18); color:#fff; }
 
   .cap { position:absolute; inset:0; z-index:2; display:flex; align-items:center; justify-content:center; text-align:center; padding:0 24px; opacity:0; transition:opacity .4s; pointer-events:none; }
   .cap.on { opacity:1; }
-  #phrase { font-size:clamp(22px, 6vw, 36px); letter-spacing:.06em; line-height:1.35; color:#fff; text-shadow:0 2px 14px rgba(0,0,0,.9); }
-  #phrase .target-word { display:inline-block; position:relative; }
+  #phrase { font-size:clamp(22px, 6vw, 36px); letter-spacing:.06em; line-height:1.35; color:#fff; text-shadow:0 2px 14px rgba(0,0,0,.9); display:inline-block; }
 
   /* After / Cipher */
   .cipher { max-width:18em; padding:0 24px; text-align:center; font-size:clamp(16px, 4.2vw, 26px); line-height:1.45; letter-spacing:.08em; min-height:3em; }
 
-  /* How Scene & Background Vortex Video */
+  /* How Scene & Background Vortex */
   #how { position:relative; overflow:hidden; }
   #how .steps { width:100%; max-width:320px; display:flex; flex-direction:column; gap:20px; text-align:center; z-index:3; }
   #how .steps p { margin:0; font-size:18px; letter-spacing:.2em; text-transform:uppercase; opacity:0; transform:translateY(24px); transition:opacity .6s, transform .6s; }
   #how .steps p.in { opacity:1; transform:none; }
   
-  /* Vortex video container below button */
-  .vortex-box { width:min(280px, 75vw); height:140px; margin-top:24px; z-index:2; opacity:0; transition:opacity .8s; border-radius:18px; overflow:hidden; pointer-events:none; }
+  .vortex-box { width:min(280px, 75vw); height:140px; margin-top:24px; z-index:2; opacity:0; transition:opacity .8s; border-radius:18px; overflow:hidden; pointer-events:none; display:grid; place-items:center; }
   .vortex-box.on { opacity:.75; }
-  .vortex-vid { width:100%; height:100%; object-fit:cover; filter:contrast(1.2) brightness(0.9); }
+  .vortex-gif { width:100%; height:100%; object-fit:cover; filter:contrast(1.2) brightness(0.95); mix-blend-mode:screen; }
 
   /* Gallery */
   #gallery { background:#0c0c0c; color:#f3f3f1; display:none; flex-direction:column; padding:env(safe-area-inset-top, 16px) 0 env(safe-area-inset-bottom, 16px); }
@@ -119,21 +115,56 @@
   .modal-free { font-size:12px; color:#888; border-top:1px dashed rgba(255,255,255,.15); padding-top:12px; }
 
   /* Shell Scene & Dock */
-  #shell { background:#0c0c0c; color:#f3f3f1; display:none; flex-direction:column; padding:0 0 96px; }
+  #shell { background:#0c0c0c; color:#f3f3f1; display:none; flex-direction:column; padding:0 0 84px; }
   #shell.on { display:flex; }
   .ticker { overflow:hidden; border-bottom:1px solid rgba(243,243,241,.15); flex:0 0 auto; }
-  .ticker-track { display:flex; gap:26px; width:max-content; animation:marquee 28s linear infinite; padding:12px 0; font-size:11px; letter-spacing:.14em; text-transform:uppercase; }
+  .ticker-track { display:flex; gap:26px; width:max-content; animation:marquee 28s linear infinite; padding:10px 0; font-size:11px; letter-spacing:.14em; text-transform:uppercase; }
   @keyframes marquee { to { transform:translateX(-50%); } }
   .ticker a { color:inherit; text-decoration:none; }
   
-  .stage { flex:1; display:flex; align-items:center; justify-content:center; padding:16px; }
-  .panel { width:min(440px, 100%); min-height:min(440px, 60vh); border:1px solid rgba(243,243,241,.25); border-radius:22px; display:flex; flex-direction:column; justify-content:space-between; overflow:hidden; background:rgba(255,255,255,.02); }
-  .panel h2 { margin:0; padding:16px 16px 10px; font-size:11px; letter-spacing:.16em; text-transform:uppercase; font-weight:400; color:#888; border-bottom:1px solid rgba(243,243,241,.1); }
+  .stage { flex:1; display:flex; align-items:center; justify-content:center; padding:10px 14px; width:100%; }
+  .panel { width:100%; height:calc(100dvh - 170px); border:1px solid rgba(243,243,241,.28); border-radius:20px; display:flex; flex-direction:column; overflow:hidden; background:rgba(255,255,255,.02); position:relative; }
+  .panel h2 { margin:0; padding:14px 16px 8px; font-size:11px; letter-spacing:.16em; text-transform:uppercase; font-weight:400; color:#888; border-bottom:1px solid rgba(243,243,241,.1); flex:0 0 auto; }
+
+  /* Studio Tab Layout */
+  .studio-layout { display:flex; flex:1; width:100%; height:100%; overflow:hidden; }
+  .studio-sidebar { width:125px; display:flex; flex-direction:column; gap:10px; padding:14px 10px; border-right:1px solid rgba(255,255,255,.1); flex:0 0 auto; }
+  .studio-sidebar button { border:1px solid currentColor; border-radius:24px; background:transparent; height:34px; font-size:10px; letter-spacing:.12em; text-transform:uppercase; cursor:pointer; text-align:center; width:100%; transition:.3s; }
+  .studio-sidebar button.active { background:rgba(255,255,255,.15); border-color:#fff; color:#fff; }
   
-  .dock { position:fixed; left:12px; right:12px; bottom:14px; z-index:9; height:52px; border:1px solid rgba(243,243,241,.28); border-radius:26px; background:rgba(12,12,12,.85); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); opacity:0; transform:translateY(12px); pointer-events:none; transition:.5s ease; display:grid; grid-template-columns:repeat(4,1fr); }
+  .studio-content { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; padding:12px; overflow-y:auto; }
+  
+  /* Interactive Rotatable 3D Cube */
+  .cube-stage { perspective:800px; display:flex; flex-direction:column; align-items:center; justify-content:center; touch-action:none; user-select:none; width:100%; height:100%; cursor:grab; }
+  .cube-stage:active { cursor:grabbing; }
+  .cube3 { width:80px; height:80px; position:relative; transform-style:preserve-3d; transition:transform 0.05s ease-out; }
+  .cube3 i { position:absolute; inset:0; border:1px solid var(--white); background:rgba(255,255,255,.04); box-shadow:inset 0 0 12px rgba(255,255,255,.1); }
+  .cube3 i:nth-child(1){ transform:rotateY(0) translateZ(40px); }
+  .cube3 i:nth-child(2){ transform:rotateY(180deg) translateZ(40px); }
+  .cube3 i:nth-child(3){ transform:rotateY(90deg) translateZ(40px); }
+  .cube3 i:nth-child(4){ transform:rotateY(-90deg) translateZ(40px); }
+  .cube3 i:nth-child(5){ transform:rotateX(90deg) translateZ(40px); }
+  .cube3 i:nth-child(6){ transform:rotateX(-90deg) translateZ(40px); }
+  .touch-hint { margin-top:24px; font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:#888; animation:pulse 2s ease-in-out infinite; }
+  @keyframes pulse { 50% { opacity:.4; } }
+
+  /* Team list view */
+  .team-list { width:100%; display:flex; flex-direction:column; gap:12px; padding:6px; }
+  .team-card { display:flex; gap:12px; align-items:flex-start; border:1px solid rgba(255,255,255,.12); border-radius:14px; padding:10px; background:rgba(255,255,255,.02); }
+  .team-avatar { width:48px; height:48px; border-radius:50%; object-fit:cover; border:1px solid rgba(255,255,255,.25); flex:0 0 auto; }
+  .team-info { flex:1; }
+  .team-header { display:flex; justify-content:space-between; align-items:center; }
+  .team-name { font-size:13px; font-weight:500; text-transform:uppercase; letter-spacing:.08em; }
+  .team-role { font-size:11px; color:#888; margin-top:2px; }
+  .team-bio { max-height:0; overflow:hidden; color:#a0a0a0; font-size:11.5px; line-height:1.45; transition:max-height .3s ease, margin .3s; }
+  .team-bio.open { max-height:120px; margin-top:6px; }
+  .team-expand { border:0; background:transparent; font-size:18px; cursor:pointer; color:#aaa; width:24px; height:24px; display:grid; place-items:center; }
+
+  /* Fixed Dock */
+  .dock { position:fixed; left:12px; right:12px; bottom:12px; z-index:9; height:50px; border:1px solid rgba(243,243,241,.28); border-radius:25px; background:rgba(12,12,12,.88); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); opacity:0; transform:translateY(12px); pointer-events:none; transition:.4s ease; display:flex; padding:4px; }
   .dock.on { opacity:1; transform:none; pointer-events:auto; }
-  .dock i#pill { position:absolute; top:6px; bottom:6px; width:calc(25% - 8px); left:4px; border-radius:20px; background:rgba(243,243,241,.18); transition:transform .3s cubic-bezier(.2,.8,.2,1); pointer-events:none; }
-  .dock button { position:relative; z-index:1; border:0; background:transparent; color:#8d8d8d; font-size:9.5px; letter-spacing:.08em; text-transform:uppercase; cursor:pointer; }
+  .dock i#pill { position:absolute; top:4px; bottom:4px; width:calc((100% - 8px) / 4); left:4px; border-radius:20px; background:rgba(243,243,241,.18); transition:transform .3s cubic-bezier(.2,.8,.2,1); pointer-events:none; }
+  .dock button { flex:1; position:relative; z-index:1; border:0; background:transparent; color:#8d8d8d; font-size:9.5px; letter-spacing:.06em; text-transform:uppercase; cursor:pointer; }
   .dock button.on { color:#fff; }
 
   /* Admin form & panel elements */
@@ -142,7 +173,7 @@
   .bubble.you { align-self:flex-end; background:rgba(243,243,241,.12); }
   .bubble.admin-badge { border-color:#4ade80; color:#4ade80; font-size:11px; text-transform:uppercase; letter-spacing:.1em; }
   
-  .auth-box { display:flex; flex-direction:column; gap:10px; padding:14px; }
+  .auth-box { display:flex; flex-direction:column; gap:10px; padding:14px; overflow-y:auto; flex:1; }
   .admin-input { width:100%; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.2); border-radius:10px; color:#fff; font-size:12px; padding:8px 10px; outline:none; }
   .admin-input:focus { border-color:#fff; }
   .admin-btn { border:1px solid currentColor; border-radius:18px; background:transparent; height:34px; font-size:11px; letter-spacing:.12em; text-transform:uppercase; cursor:pointer; }
@@ -151,22 +182,6 @@
   form#form { display:flex; gap:8px; padding:10px 12px; border-top:1px solid rgba(243,243,241,.12); }
   form#form input { flex:1; background:transparent; border:0; color:inherit; font-size:13px; padding:6px 0; outline:none; }
   form#form button { border:0; background:transparent; cursor:pointer; width:32px; height:32px; padding:0; display:grid; place-items:center; }
-
-  .trio { display:flex; gap:8px; padding:12px; }
-  .trio button { border:1px solid currentColor; border-radius:30px; background:transparent; height:32px; padding:0 14px; font-size:11px; letter-spacing:.14em; text-transform:uppercase; cursor:pointer; }
-  .fx { min-height:160px; display:grid; place-items:center; position:relative; }
-  .cube3 { width:70px; height:70px; position:relative; transform-style:preserve-3d; animation:spin 8s linear infinite; }
-  @keyframes spin { to { transform:rotateX(360deg) rotateY(360deg); } }
-  .cube3 i { position:absolute; inset:0; border:1px solid currentColor; }
-  .cube3 i:nth-child(1){ transform:rotateY(0) translateZ(35px); }
-  .cube3 i:nth-child(2){ transform:rotateY(180deg) translateZ(35px); }
-  .cube3 i:nth-child(3){ transform:rotateY(90deg) translateZ(35px); }
-  .cube3 i:nth-child(4){ transform:rotateY(-90deg) translateZ(35px); }
-  .cube3 i:nth-child(5){ transform:rotateX(90deg) translateZ(35px); }
-  .cube3 i:nth-child(6){ transform:rotateX(-90deg) translateZ(35px); }
-  .core { position:absolute; inset:0; display:grid; place-items:center; font-size:11px; letter-spacing:.04em; text-align:center; }
-  .bulb { stroke-dasharray:140; stroke-dashoffset:140; animation:drawBulb 1.4s ease forwards; }
-  @keyframes drawBulb { to { stroke-dashoffset:0; } }
 </style>
 </head>
 <body>
@@ -221,9 +236,7 @@
   </div>
   <button type="button" class="btn" id="see">посмотреть<span class="glint"></span></button>
   <div class="vortex-box" id="vortexBox">
-    <video class="vortex-vid" id="vortexVid" loop muted playsinline webkit-playsinline preload="auto">
-      <source src="vortex.mp4" type="video/mp4" />
-    </video>
+    <img src="data:image/gif;base64,PLACEHOLDER_GIF_DATA" class="vortex-gif" alt="vortex" />
   </div>
 </section>
 
@@ -269,14 +282,14 @@
 <!-- Bottom Dock -->
 <nav class="dock" id="dock">
   <i id="pill"></i>
-  <button type="button" data-tab="studio">о студии</button>
+  <button type="button" data-tab="studio">о нас</button>
   <button type="button" data-tab="contacts">контакты</button>
   <button type="button" data-tab="cabinet">личный кабинет</button>
   <button type="button" data-tab="prices">тарифы</button>
 </nav>
 
 <script>
-// Data store for projects
+// Data store for projects & team
 const defaultProjects = [
   { id: 0, img: 'frames/f01.jpg', title: 'жест', shortText: 'Кадр задаёт характер раньше слов.', link: 'https://v3.studio/project-1', gallery: ['frames/f01.jpg', 'frames/f03.jpg'], desc: 'Разработка визуальной концепции и фирменного стиля бренда.', free: 'Арт-дирекшн: V³ Studio • 2026' },
   { id: 1, img: 'frames/f03.jpg', title: 'ход', shortText: 'Цвет как идея и смысловой акцент.', link: 'https://v3.studio/project-2', gallery: ['frames/f03.jpg', 'frames/f05.jpg'], desc: 'Упаковка и маркетинговые материалы для вывода продукта на рынок.', free: 'Медиа-стратегия и промо-графика' },
@@ -284,6 +297,11 @@ const defaultProjects = [
   { id: 3, img: 'frames/f07.jpg', title: 'воздух', shortText: 'Без лишнего шума. Чистая эстетика.', link: 'https://v3.studio/project-4', gallery: ['frames/f07.jpg', 'frames/f09.jpg'], desc: 'Айдентика и типографика для премиального сегмента.', free: 'Брендинг и гайдлайны' },
   { id: 4, img: 'frames/f09.jpg', title: 'ясность', shortText: 'Следующий шаг развития студии.', link: 'https://v3.studio/project-5', gallery: ['frames/f09.jpg', 'frames/f11.jpg'], desc: 'Автоматизация контента и масштабирование визуальных сеток.', free: 'Системный дизайн' },
   { id: 5, img: 'frames/f11.jpg', title: 'пульс', shortText: 'Проект живой и развивающийся.', link: 'https://v3.studio/project-6', gallery: ['frames/f11.jpg', 'frames/f01.jpg'], desc: 'Комплексный перезапуск бренда с интеграцией во все каналы продаж.', free: 'Полный цикл производства' }
+];
+
+const defaultTeam = [
+  { id: 0, name: 'Владислав', role: 'Арт-директор / Проектный лид', avatar: 'logo.png', bio: 'Руководство визуальными концепциями, айдентикой брендов и цифровыми интерфейсами.' },
+  { id: 1, name: 'Креативная команда', role: 'Design & Code Lab', avatar: 'frames/f01.jpg', bio: 'Комплексный продакшн, 3D графика, анимация и разработка веб-сервисов.' }
 ];
 
 function getProjects() {
@@ -298,7 +316,20 @@ function saveProjects(p) {
   try { localStorage.setItem('v3_projects', JSON.stringify(p)); } catch(e){}
 }
 
+function getTeam() {
+  try {
+    const saved = localStorage.getItem('v3_team');
+    return saved ? JSON.parse(saved) : defaultTeam;
+  } catch(e) {
+    return defaultTeam;
+  }
+}
+function saveTeam(t) {
+  try { localStorage.setItem('v3_team', JSON.stringify(t)); } catch(e){}
+}
+
 let projects = getProjects();
+let team = getTeam();
 let currentProjectIndex = 0;
 let isAdmin = false;
 
@@ -327,7 +358,6 @@ setTimeout(() => {
 }, 600);
 
 const scenes = ['home','film','after','how','gallery','shell'].map(id => document.getElementById(id));
-const vortexVid = document.getElementById('vortexVid');
 const vortexBox = document.getElementById('vortexBox');
 
 function show(id) {
@@ -341,28 +371,24 @@ function show(id) {
   else { cross.classList.add('off'); frame.classList.add('off'); }
   
   document.getElementById('globe').classList.toggle('on', id === 'after');
-  
-  if (id === 'how') {
-    vortexBox.classList.add('on');
-    vortexVid.currentTime = 0;
-    vortexVid.play().catch(()=>{});
-  } else {
-    vortexBox.classList.remove('on');
-    vortexVid.pause();
-  }
+  if (id === 'how') { vortexBox.classList.add('on'); } else { vortexBox.classList.remove('on'); }
 }
 
-// Video & Subtitles Logic with Bottom-Sweep Crosshair (Left to Right)
+// Video & Subtitles Logic with Target Positions:
+// 1. "дизайн который не равнодушен" -> правая нижняя часть (1.0, 1.0)
+// 2. "креативность которая дышит" -> верхняя левая часть (0.0, 0.0)
+// 3. "эстетика и функционал" -> правая верхняя часть (1.0, 0.0)
+// 4. "привлекает внимание" -> центр текстового блока (0.5, 0.5)
 const vid = document.getElementById('vid');
 const phrase = document.getElementById('phrase');
 const cap = document.getElementById('cap');
 const skipFilm = document.getElementById('skipFilm');
 
 const lines = [
-  { t: 0.4, html: '<span class="target-word" id="t-word">дизайн</span><br>который не равнодушен' },
-  { t: 3.8, html: '<span class="target-word" id="t-word">креативность</span><br>которая дышит' },
-  { t: 7.4, html: '<span class="target-word" id="t-word">эстетика</span><br>и функционал' },
-  { t: 11.2, html: '<span class="target-word" id="t-word">привлекает</span><br>внимание' }
+  { t: 0.4, html: 'дизайн<br>который не равнодушен', px: 1.0, py: 1.0 },
+  { t: 3.8, html: 'креативность<br>которая дышит', px: 0.0, py: 0.0 },
+  { t: 7.4, html: 'эстетика<br>и функционал', px: 1.0, py: 0.0 },
+  { t: 11.2, html: 'привлекает<br>внимание', px: 0.5, py: 0.5 }
 ];
 
 let capKey = '';
@@ -377,24 +403,11 @@ function openFilm() {
   if (p) p.catch(() => { vid.muted = true; vid.play(); });
 }
 
-// Smoothly sweep crosshair along the bottom edge of the word from left to right
-function sweepWordBottom() {
-  const target = document.getElementById('t-word');
-  if (!target) return;
-  const r = target.getBoundingClientRect();
+function aimPhraseTarget(px, py) {
+  const r = phrase.getBoundingClientRect();
   if (!r.width) return;
-  
-  // Place horizontal line right at bottom edge of target word
-  fh.style.top = (r.bottom) + 'px';
-  // Start vertical line at left edge
-  fv.style.transition = 'none';
-  fv.style.left = (r.left - 4) + 'px';
-  
-  // Sweep to right edge across 1.4s
-  requestAnimationFrame(() => {
-    fv.style.transition = 'left 1.4s cubic-bezier(.25,.1,.25,1)';
-    fv.style.left = (r.right + 4) + 'px';
-  });
+  fv.style.left = (r.left + r.width * px) + 'px';
+  fh.style.top = (r.top + r.height * py) + 'px';
 }
 
 vid.ontimeupdate = () => {
@@ -406,7 +419,7 @@ vid.ontimeupdate = () => {
     setTimeout(() => {
       phrase.innerHTML = active.html;
       cap.classList.add('on');
-      setTimeout(sweepWordBottom, 60);
+      setTimeout(() => aimPhraseTarget(active.px, active.py), 80);
     }, 100);
   }
 };
@@ -537,20 +550,20 @@ document.getElementById('ticker').innerHTML = row + row;
 
 // Panels in Shell
 const panels = {
-  studio: '<h2>что такое дизайн</h2><div class="trio"><button type="button" data-fx="aes">эстетика</button><button type="button" data-fx="idea">креатив</button><button type="button" data-fx="fx">эффект</button></div><div class="fx" id="fx"></div>',
+  studio: `<h2>о нас / концепция</h2>
+    <div class="studio-layout">
+      <div class="studio-sidebar">
+        <button type="button" data-view="aes" class="active">эстетика</button>
+        <button type="button" data-view="idea">креатив</button>
+        <button type="button" data-view="fx">эффект</button>
+        <button type="button" data-view="team">команда</button>
+      </div>
+      <div class="studio-content" id="studioContent"></div>
+    </div>`,
   contacts: '<h2>диалог со студией</h2><div class="log" id="log"></div><form id="form"><input id="msg" placeholder="опишите ваш проект..." /><button type="submit" aria-label="отправить"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M2 21 L23 12 L2 3 L2 10 L17 12 L2 14 Z"/></svg></button></form>',
   cabinet: '<h2>личный кабинет</h2><div class="auth-box" id="authBox"></div><div class="log" id="authlog"></div>',
   prices: '<h2>тарифы</h2><div class="log"><div class="bubble"><b>Базовый старт</b> — от 15 000 ₽.<br>Экспресс-айдентика и база визуального стиля.</div><div class="bubble"><b>Комплексный брендинг</b> — от 45 000 ₽.<br>Полный гайдлайн, носители, шаблоны соцсетей.</div><div class="bubble"><b>Индивидуальный продакшн</b> — под задачу и бюджет проекта.</div></div>'
 };
-
-function typeInto(el, text) {
-  el.textContent = '';
-  let i = 0;
-  const t = setInterval(() => {
-    el.textContent += text[i++] || '';
-    if (i >= text.length) clearInterval(t);
-  }, 24);
-}
 
 function tab(name) {
   document.getElementById('panel').innerHTML = panels[name];
@@ -558,12 +571,118 @@ function tab(name) {
   buttons.forEach((b,i) => {
     const on = b.dataset.tab === name;
     b.classList.toggle('on', on);
-    if (on) document.getElementById('pill').style.transform = 'translateX('+(i*100)+'%)';
+    if (on) {
+      document.getElementById('pill').style.transform = 'translateX(' + (i * 100) + '%)';
+    }
   });
   
-  if (name === 'studio') bindFx();
+  if (name === 'studio') initStudioTab();
   if (name === 'cabinet') renderCabinet();
   if (name === 'contacts') renderContacts();
+}
+
+// Interactive 3D Cube & Studio Views
+let rotX = -15, rotY = 25;
+function initStudioTab() {
+  const btns = document.querySelectorAll('.studio-sidebar button');
+  btns.forEach(b => b.onclick = () => {
+    btns.forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    renderStudioView(b.dataset.view);
+  });
+  renderStudioView('aes');
+}
+
+function renderStudioView(view) {
+  const content = document.getElementById('studioContent');
+  if (view === 'aes') {
+    content.innerHTML = `
+      <div class="cube-stage" id="cubeStage">
+        <div class="cube3" id="cube3D">
+          <i></i><i></i><i></i><i></i><i></i><i></i>
+        </div>
+        <div class="touch-hint">ПРИКОСНИСЬ</div>
+      </div>
+    `;
+    setupCubeInteraction();
+  } else if (view === 'idea') {
+    content.innerHTML = `
+      <svg width="64" height="88" viewBox="0 0 72 96" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M36 8 a22 22 0 0 1 12 40 c-4 6-6 10-6 16 H30 c0-6-2-10-6-16 A22 22 0 0 1 36 8z"/>
+        <path d="M30 70 h12 M32 76 h8 M34 82 h4"/>
+      </svg>
+      <div style="font-size:12px; letter-spacing:.14em; text-transform:uppercase; margin-top:16px;">смысл превыше формы</div>
+    `;
+  } else if (view === 'fx') {
+    content.innerHTML = `
+      <div style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; text-align:center; line-height:1.6;">
+        дизайн, меняющий восприятие
+      </div>
+    `;
+  } else if (view === 'team') {
+    team = getTeam();
+    let html = '<div class="team-list">';
+    team.forEach((m, idx) => {
+      html += `
+        <div class="team-card">
+          <img class="team-avatar" src="${m.avatar || 'logo.png'}" alt="${m.name}">
+          <div class="team-info">
+            <div class="team-header">
+              <span class="team-name">${m.name}</span>
+              <button type="button" class="team-expand" data-team-idx="${idx}">+</button>
+            </div>
+            <div class="team-role">${m.role}</div>
+            <div class="team-bio" id="teambio-${idx}">${m.bio}</div>
+          </div>
+        </div>
+      `;
+    });
+    html += '</div>';
+    content.innerHTML = html;
+    
+    document.querySelectorAll('.team-expand').forEach(btn => {
+      btn.onclick = () => {
+        const idx = btn.dataset.teamIdx;
+        const bio = document.getElementById('teambio-' + idx);
+        bio.classList.toggle('open');
+        btn.textContent = bio.classList.contains('open') ? '×' : '+';
+      };
+    });
+  }
+}
+
+function setupCubeInteraction() {
+  const stage = document.getElementById('cubeStage');
+  const cube = document.getElementById('cube3D');
+  if (!stage || !cube) return;
+  
+  let isDown = false;
+  let startX, startY;
+  
+  function updateCube() {
+    cube.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+  }
+  updateCube();
+  
+  stage.addEventListener('pointerdown', (e) => {
+    isDown = true;
+    startX = e.clientX;
+    startY = e.clientY;
+    stage.setPointerCapture(e.pointerId);
+  });
+  stage.addEventListener('pointermove', (e) => {
+    if (!isDown) return;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    rotY += dx * 0.7;
+    rotX -= dy * 0.7;
+    startX = e.clientX;
+    startY = e.clientY;
+    updateCube();
+  });
+  function endDrag() { isDown = false; }
+  stage.addEventListener('pointerup', endDrag);
+  stage.addEventListener('pointercancel', endDrag);
 }
 
 function renderContacts() {
@@ -592,6 +711,15 @@ function renderContacts() {
   };
 }
 
+function typeInto(el, text) {
+  el.textContent = '';
+  let i = 0;
+  const t = setInterval(() => {
+    el.textContent += text[i++] || '';
+    if (i >= text.length) clearInterval(t);
+  }, 24);
+}
+
 function renderCabinet() {
   const box = document.getElementById('authBox');
   const log = document.getElementById('authlog');
@@ -613,32 +741,53 @@ function renderCabinet() {
       }
     };
   } else {
-    // Admin Mode Interface
     const currentP = projects[currentProjectIndex] || projects[0];
     box.innerHTML = `
       <div class="bubble admin-badge">✓ Режим администратора активен</div>
-      <div style="font-size:11px; color:#aaa; margin-bottom:4px;">Редактирование проекта: #${currentP.id + 1} (${currentP.title})</div>
+      
+      <div style="font-size:11px; color:#aaa; font-weight:500; margin-top:4px;">1. Проект #${currentP.id + 1} (${currentP.title})</div>
       <input type="text" id="editTitle" class="admin-input" value="${currentP.title}" placeholder="Название проекта" />
+      <input type="text" id="editCover" class="admin-input" value="${currentP.img || ''}" placeholder="Фото обложки (URL/путь)" />
       <input type="text" id="editShort" class="admin-input" value="${currentP.shortText}" placeholder="Краткое описание" />
       <input type="text" id="editLink" class="admin-input" value="${currentP.link || ''}" placeholder="Ссылка на проект (https://...)" />
+      <textarea id="editGallery" class="admin-input" rows="2" placeholder="Галерея проекта (ссылки через запятую)">${(currentP.gallery || []).join(', ')}</textarea>
       <textarea id="editDesc" class="admin-input" rows="2" placeholder="Полное описание">${currentP.desc || ''}</textarea>
       <input type="text" id="editFree" class="admin-input" value="${currentP.free || ''}" placeholder="Свободное поле" />
-      <div style="display:flex; gap:8px;">
-        <button type="button" id="saveProjBtn" class="admin-btn" style="flex:1;">Сохранить</button>
+      
+      <div style="font-size:11px; color:#aaa; font-weight:500; margin-top:8px;">2. Команда студии</div>
+      <input type="text" id="editTName" class="admin-input" value="${team[0]?.name || ''}" placeholder="Имя специалиста" />
+      <input type="text" id="editTRole" class="admin-input" value="${team[0]?.role || ''}" placeholder="Должность" />
+      <input type="text" id="editTAvatar" class="admin-input" value="${team[0]?.avatar || ''}" placeholder="Аватар (URL/путь)" />
+      <textarea id="editTBio" class="admin-input" rows="2" placeholder="Описание / Биография">${team[0]?.bio || ''}</textarea>
+      
+      <div style="display:flex; gap:8px; margin-top:6px;">
+        <button type="button" id="saveAdminBtn" class="admin-btn" style="flex:1;">Сохранить всё</button>
         <button type="button" id="logoutAdminBtn" class="admin-btn" style="width:70px;">Выйти</button>
       </div>
     `;
-    log.innerHTML = '<div class="bubble">Изменения мгновенно сохраняются и обновляют галерею.</div>';
+    log.innerHTML = '<div class="bubble">Изменения мгновенно сохраняются и обновляют приложение.</div>';
     
-    document.getElementById('saveProjBtn').onclick = () => {
+    document.getElementById('saveAdminBtn').onclick = () => {
       currentP.title = document.getElementById('editTitle').value;
+      currentP.img = document.getElementById('editCover').value;
       currentP.shortText = document.getElementById('editShort').value;
       currentP.link = document.getElementById('editLink').value;
       currentP.desc = document.getElementById('editDesc').value;
       currentP.free = document.getElementById('editFree').value;
+      const gRaw = document.getElementById('editGallery').value;
+      currentP.gallery = gRaw.split(',').map(s => s.trim()).filter(Boolean);
       saveProjects(projects);
+      
+      if (team[0]) {
+        team[0].name = document.getElementById('editTName').value;
+        team[0].role = document.getElementById('editTRole').value;
+        team[0].avatar = document.getElementById('editTAvatar').value;
+        team[0].bio = document.getElementById('editTBio').value;
+        saveTeam(team);
+      }
+      
       buildRail();
-      log.innerHTML = '<div class="bubble" style="border-color:#4ade80; color:#4ade80;">Проект успешно сохранён!</div>';
+      log.innerHTML = '<div class="bubble" style="border-color:#4ade80; color:#4ade80;">Данные успешно сохранены!</div>';
     };
     
     document.getElementById('logoutAdminBtn').onclick = () => {
@@ -646,20 +795,6 @@ function renderCabinet() {
       renderCabinet();
     };
   }
-}
-
-function bindFx() {
-  document.querySelectorAll('[data-fx]').forEach(b => b.onclick = () => {
-    const box = document.getElementById('fx');
-    if (b.dataset.fx === 'aes') {
-      box.innerHTML = '<div class="cube3"><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="core" id="core"></div>';
-      typeInto(document.getElementById('core'), 'внимание деталям');
-    } else if (b.dataset.fx === 'idea') {
-      box.innerHTML = '<svg class="bulb" width="60" height="80" viewBox="0 0 72 96" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M36 8 a22 22 0 0 1 12 40 c-4 6-6 10-6 16 H30 c0-6-2-10-6-16 A22 22 0 0 1 36 8z"/><path d="M30 70 h12 M32 76 h8 M34 82 h4"/></svg>';
-    } else {
-      box.innerHTML = '<div class="core">фокус на результате</div>';
-    }
-  });
 }
 
 document.getElementById('discuss').onclick = () => { show('shell'); tab('contacts'); };
