@@ -6,178 +6,279 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="theme-color" content="#ffffff" />
+<meta name="apple-mobile-web-app-title" content="V³ Studio" />
+<meta name="theme-color" content="#0c0c0c" />
 <link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="logo.png" />
 <link rel="preload" href="ink.mp4" as="video" type="video/mp4" />
+<link rel="preload" href="logo.png" as="image" />
 <title>V³ studio</title>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <style>
-  :root { --ink:#141414; --line:rgba(20,20,20,.4); --paper:#f6f6f4; }
-  * { box-sizing:border-box; }
-  html, body { margin:0; width:100%; height:100dvh; overflow:hidden; overscroll-behavior:none; background:var(--paper); color:var(--ink); font-family:"IBM Plex Mono", ui-monospace, monospace; touch-action:manipulation; }
-  .scene { position:fixed; inset:0; display:none; height:100dvh; padding:env(safe-area-inset-top) 16px env(safe-area-inset-bottom); }
-  .scene.on { display:flex; z-index:8; align-items:center; justify-content:center; }
+  :root { --ink:#141414; --line:rgba(20,20,20,.4); --paper:#f6f6f4; --white:#f3f3f1; }
+  * { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+  html, body { width:100%; height:100dvh; overflow:hidden; overscroll-behavior:none; background:var(--paper); color:var(--ink); font-family:"IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; touch-action:manipulation; }
   body.dark { --ink:#f3f3f1; --line:rgba(243,243,241,.32); --paper:#0c0c0c; background:#0c0c0c; color:#f3f3f1; }
   body.dark .logo { filter:invert(1); }
-  button, a, input { font-family:inherit; color:inherit; }
-  .scene { position:fixed; inset:0; display:none; }
-  .cross { position:fixed; inset:0; pointer-events:none; z-index:5; }
+  button, a, input, textarea { font-family:inherit; color:inherit; }
+
+  .scene { position:fixed; inset:0; display:none; height:100dvh; padding:env(safe-area-inset-top, 16px) 16px env(safe-area-inset-bottom, 16px); }
+  .scene.on { display:flex; z-index:8; align-items:center; justify-content:center; }
+
+  .cross { position:fixed; inset:0; pointer-events:none; z-index:5; transition:opacity .4s; }
   .cross.off { opacity:0; }
-  .cross i { position:absolute; background:var(--line); transition:left .8s ease, top .8s ease; pointer-events:none; }
+  .cross i { position:absolute; background:var(--line); transition:left .7s cubic-bezier(.2,.8,.2,1), top .7s cubic-bezier(.2,.8,.2,1); pointer-events:none; }
   .cross .v { top:0; bottom:0; width:1px; left:50%; }
   .cross .h { left:0; right:0; height:1px; top:50%; }
-  .mark { position:relative; width:min(230px, 62vw); height:min(250px, 38vh); display:grid; place-items:center; }
+
   .frame { position:fixed; inset:max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom)); border:1px solid var(--line); pointer-events:none; z-index:4; transition:opacity .6s; }
   .frame.off { opacity:0; }
-  .weed { position:fixed; top:46%; right:-90px; width:78px; height:78px; z-index:5; pointer-events:none; opacity:0; }
-  .weed.on { opacity:.9; animation:roll 8s linear 1 forwards; }
-  @keyframes roll { to { transform:translateX(-120vw) rotate(-680deg); } }
-  .leaves { position:fixed; inset:0; pointer-events:none; z-index:4; opacity:0; }
-  .leaves.on { opacity:1; }
-  .leaves svg { position:absolute; top:-40px; width:28px; height:28px; animation:fall 7s linear infinite; }
-  .leaves svg:nth-child(2) { left:22%; animation-delay:-2s; animation-duration:8s; }
-  .leaves svg:nth-child(3) { left:48%; animation-delay:-4s; animation-duration:6.5s; }
-  .leaves svg:nth-child(4) { left:70%; animation-delay:-1s; }
-  .leaves svg:nth-child(5) { left:86%; animation-delay:-3s; animation-duration:9s; }
-  @keyframes fall { to { transform:translateY(110vh) rotate(180deg); } }
-  #how .steps { width:100%; justify-items:center; text-align:center; }
-  .ducks { position:absolute; left:0; bottom:18px; width:180px; height:36px; pointer-events:none; opacity:0; z-index:3; }
-  .ducks.on { opacity:.9; animation:walk 9s linear 1 forwards; }
-  @keyframes walk { from { transform:translateX(-40vw); } to { transform:translateX(110vw); } }
-  .card.hint { animation:sway 1.5s ease-in-out 2; }
-  @keyframes sway { 50% { transform:translateX(-16px) scale(.9); } }
+
+  /* Wireframe Globe */
+  .globe-wrap { position:fixed; top:40%; right:-140px; width:130px; height:130px; z-index:5; pointer-events:none; opacity:0; }
+  .globe-wrap.on { opacity:.85; animation:rollGlobe 10s linear 1 forwards; }
+  @keyframes rollGlobe {
+    0% { transform:translateX(0) rotate(0deg); }
+    100% { transform:translateX(-130vw) rotate(-720deg); }
+  }
+  .globe-svg { width:100%; height:100%; stroke:var(--ink); fill:none; stroke-width:1; }
+  body.dark .globe-svg { stroke:var(--white); }
+
+  /* Maple Leaves */
+  .maple-leaves { position:fixed; inset:0; pointer-events:none; z-index:4; opacity:0; transition:opacity .5s; }
+  .maple-leaves.on { opacity:1; }
+  .maple-leaf { position:absolute; top:-50px; width:32px; height:32px; stroke:currentColor; fill:none; stroke-width:1.1; opacity:.7; animation:fallLeaf 8s linear infinite; }
+  .maple-leaf:nth-child(1) { left:10%; animation-delay:0s; animation-duration:7.5s; }
+  .maple-leaf:nth-child(2) { left:30%; animation-delay:-2.5s; animation-duration:9s; }
+  .maple-leaf:nth-child(3) { left:55%; animation-delay:-5s; animation-duration:8s; }
+  .maple-leaf:nth-child(4) { left:78%; animation-delay:-1.2s; animation-duration:10s; }
+  .maple-leaf:nth-child(5) { left:92%; animation-delay:-4s; animation-duration:8.5s; }
+  @keyframes fallLeaf {
+    0% { transform:translate3d(0, -40px, 0) rotate(0deg); opacity:0; }
+    15% { opacity:.75; }
+    85% { opacity:.75; }
+    100% { transform:translate3d(-40px, 110vh, 0) rotate(360deg); opacity:0; }
+  }
+
   #home, #after, #how { align-items:center; justify-content:center; flex-direction:column; }
+  .mark { position:relative; width:min(230px, 62vw); height:min(250px, 38vh); display:grid; place-items:center; }
   .logo { height:min(200px, 34vh); width:auto; }
-  .btn { position:relative; z-index:2; overflow:hidden; margin-top:34px; border:1px solid currentColor; border-radius:30px; background:transparent; height:36px; padding:0 26px; font-size:11px; letter-spacing:.08em; cursor:pointer; opacity:0; transform:translateY(8px); pointer-events:auto; -webkit-tap-highlight-color:transparent; }
-  .btn.show { opacity:1; transform:none; transition:opacity 1s ease, transform 1s ease; }
-  .btn .glint { position:absolute; inset:0; background:linear-gradient(100deg, transparent 30%, rgba(20,20,20,.5) 50%, transparent 70%); transform:translateX(-120%); }
-  .btn.glint .glint { animation:glint 1s ease forwards; }
-  @keyframes glint { to { transform:translateX(120%); } }
-  #film { background:#000; }
-  #film video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+
+  .btn { position:relative; z-index:2; overflow:hidden; margin-top:34px; border:1px solid currentColor; border-radius:30px; background:transparent; padding:12px 28px; font-size:12px; letter-spacing:.18em; text-transform:uppercase; cursor:pointer; opacity:0; transform:translateY(14px); transition:opacity .6s, transform .6s, background .3s; }
+  .btn.show { opacity:1; transform:none; }
+  .btn:active { background:rgba(255,255,255,.1); }
+  .btn .glint { position:absolute; top:0; left:-120%; width:80%; height:100%; background:linear-gradient(90deg, transparent, rgba(255,255,255,.4), transparent); transform:skewX(-20deg); }
+  .btn.glint .glint { animation:shine 2.4s ease-in-out infinite; }
+  @keyframes shine { to { left:180%; } }
+
+  /* Film Scene */
+  #film { padding:0; background:#000; }
+  #vid { width:100%; height:100%; object-fit:cover; display:block; }
+  .shade { position:absolute; inset:0; background:radial-gradient(circle, transparent 40%, rgba(0,0,0,.65) 100%); pointer-events:none; }
   #film .cross { position:absolute; inset:0; z-index:3; pointer-events:none; }
-  #film .shade { position:absolute; inset:0; background:rgba(0,0,0,.38); }
-  .cap { position:absolute; inset:0; z-index:2; display:flex; align-items:center; justify-content:center; text-align:center; color:#fff; font-size:clamp(22px, 6vw, 40px); line-height:1.2; padding:28px; opacity:0; transition:opacity .4s; }
+  #film .cross i { background:rgba(255,255,255,.5); }
+  
+  .skip-btn { position:absolute; top:max(20px, env(safe-area-inset-top)); right:20px; z-index:10; border:1px solid rgba(255,255,255,.45); border-radius:20px; background:rgba(0,0,0,.45); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); color:#fff; font-size:10px; letter-spacing:.18em; text-transform:uppercase; padding:7px 14px; cursor:pointer; transition:.3s; }
+  .skip-btn:active { background:rgba(255,255,255,.2); }
+
+  .cap { position:absolute; inset:0; z-index:2; display:flex; align-items:center; justify-content:center; text-align:center; padding:0 24px; opacity:0; transition:opacity .4s; pointer-events:none; }
   .cap.on { opacity:1; }
-  .cipher { max-width:16em; text-align:center; font-size:clamp(18px, 4.4vw, 28px); line-height:1.45; min-height:3em; }
-  #how { position:relative; align-items:center; justify-content:center; flex-direction:column; }
-  .trio { display:flex; gap:8px; padding:8px 12px 0; }
-  .trio button, .auth button { border:1px solid currentColor; border-radius:30px; background:transparent; height:32px; padding:0 12px; font-size:11px; cursor:pointer; }
-  .fx { min-height:180px; display:grid; place-items:center; position:relative; }
-  .cube3 { width:84px; height:84px; position:relative; transform-style:preserve-3d; animation:spin 8s linear infinite; }
-  .cube3 i { position:absolute; inset:0; border:1px solid currentColor; }
-  .cube3 i:nth-child(1){ transform:rotateY(0) translateZ(42px); }
-  .cube3 i:nth-child(2){ transform:rotateY(180deg) translateZ(42px); }
-  .cube3 i:nth-child(3){ transform:rotateY(90deg) translateZ(42px); }
-  .cube3 i:nth-child(4){ transform:rotateY(-90deg) translateZ(42px); }
-  .cube3 i:nth-child(5){ transform:rotateX(90deg) translateZ(42px); }
-  .cube3 i:nth-child(6){ transform:rotateX(-90deg) translateZ(42px); }
-  @keyframes spin { to { transform:rotateX(360deg) rotateY(360deg); } }
-  .core { position:absolute; inset:0; display:grid; place-items:center; font-size:11px; letter-spacing:.04em; text-align:center; max-width:9em; }
-  .bulb.on path.glass { fill:rgba(243,220,120,.85); }
-  .dream { position:fixed; inset:0; z-index:20; display:none; pointer-events:none; background:#f4b7c8; overflow:hidden; }
-  .dream.on { display:block; }
-  .dream i { position:absolute; border:1px solid rgba(255,255,255,.8); border-radius:40px; height:36px; }
-  .dream i:nth-child(1){ width:90px; top:18%; animation:drift 10s linear; }
-  .dream i:nth-child(2){ width:120px; top:40%; animation:drift 8s linear reverse; }
-  .dream i:nth-child(3){ width:70px; top:66%; animation:drift 9s linear; }
-  .uni { position:absolute; left:50%; top:46%; width:88px; margin-left:-44px; animation:hop .55s ease-in-out infinite; }
-  @keyframes drift { from { left:-30%; } to { left:110%; } }
-  @keyframes hop { 50% { transform:translateY(-22px); } }
-  .cipher { max-width:18em; padding:0 24px; text-align:center; font-size:clamp(16px, 4.2vw, 26px); line-height:1.45; }
-  #how .steps p { margin:0; font-size:16px; letter-spacing:.14em; opacity:0; transform:translateY(24px); }
-  #how .steps p.in { animation:rise .7s ease forwards; }
-  @keyframes rise { to { opacity:1; transform:none; } }
-  #gallery { background:#0c0c0c; color:#f3f3f1; display:none; flex-direction:column; }
+  #phrase { font-size:clamp(22px, 6vw, 36px); letter-spacing:.06em; line-height:1.35; color:#fff; text-shadow:0 2px 14px rgba(0,0,0,.9); }
+  #phrase .target-word { display:inline-block; position:relative; }
+
+  /* After / Cipher */
+  .cipher { max-width:18em; padding:0 24px; text-align:center; font-size:clamp(16px, 4.2vw, 26px); line-height:1.45; letter-spacing:.08em; min-height:3em; }
+
+  /* How */
+  #how .steps { width:100%; max-width:320px; display:flex; flex-direction:column; gap:20px; text-align:center; }
+  #how .steps p { margin:0; font-size:18px; letter-spacing:.2em; text-transform:uppercase; opacity:0; transform:translateY(24px); transition:opacity .6s, transform .6s; }
+  #how .steps p.in { opacity:1; transform:none; }
+
+  /* Gallery */
+  #gallery { background:#0c0c0c; color:#f3f3f1; display:none; flex-direction:column; padding:env(safe-area-inset-top, 16px) 0 env(safe-area-inset-bottom, 16px); }
   #gallery.on { display:flex; }
-  .gtop { padding:32px 20px 0; text-align:center; letter-spacing:.18em; font-size:11px; text-transform:uppercase; }
-  .rail { display:flex; gap:16px; overflow-x:auto; scroll-snap-type:x mandatory; padding:18px 16vw 8px; scrollbar-width:none; }
+  .gtop { padding:16px 20px 0; text-align:center; letter-spacing:.18em; font-size:11px; text-transform:uppercase; color:#888; }
+  .rail { display:flex; gap:16px; overflow-x:auto; scroll-snap-type:x mandatory; padding:18px 16vw 8px; scrollbar-width:none; -webkit-overflow-scrolling:touch; }
   .rail::-webkit-scrollbar { display:none; }
-  .card { flex:0 0 62vw; scroll-snap-align:center; opacity:.45; transform:scale(.9); transition:.4s; }
-  .card.focus { opacity:1; transform:none; }
-  .card img { width:100%; height:40vh; object-fit:cover; display:block; }
-  .note { width:min(520px, calc(100% - 40px)); margin:6px auto 0; }
-  .note-top { display:flex; justify-content:space-between; }
-  .x { border:0; background:transparent; font-size:18px; cursor:pointer; }
-  .full { max-height:0; overflow:hidden; color:#bdbdbd; font-size:12px; }
-  .full.open { max-height:120px; margin-top:8px; }
-  .discuss { margin:14px auto 24px; }
+  .card { flex:0 0 65vw; max-width:320px; scroll-snap-align:center; opacity:.45; transform:scale(.92); transition:.4s; border-radius:12px; overflow:hidden; border:1px solid rgba(255,255,255,.15); }
+  .card.focus { opacity:1; transform:none; border-color:rgba(255,255,255,.4); }
+  .card img { width:100%; height:38vh; min-height:220px; object-fit:cover; display:block; }
+  
+  .note { width:min(520px, calc(100% - 40px)); margin:6px auto 0; padding:12px 16px; border:1px solid rgba(255,255,255,.12); border-radius:14px; background:rgba(255,255,255,.03); }
+  .note-top { display:flex; justify-content:space-between; align-items:center; }
+  .note-top h2 { font-size:16px; letter-spacing:.1em; text-transform:uppercase; font-weight:500; }
+  .note-actions { display:flex; gap:10px; align-items:center; }
+  .btn-detail { border:1px solid rgba(255,255,255,.3); border-radius:16px; background:transparent; font-size:10px; letter-spacing:.14em; text-transform:uppercase; padding:5px 12px; cursor:pointer; }
+  .btn-detail:active { background:rgba(255,255,255,.15); }
+  .x { border:0; background:transparent; font-size:22px; cursor:pointer; width:30px; height:30px; display:grid; place-items:center; color:#fff; }
+  .full { max-height:0; overflow:hidden; color:#a0a0a0; font-size:12px; line-height:1.5; transition:max-height .4s ease, margin .3s; }
+  .full.open { max-height:140px; margin-top:10px; }
+  .discuss { margin:14px auto 10px; }
+
+  /* Project Modal */
+  .modal { position:fixed; inset:0; z-index:30; background:rgba(0,0,0,.85); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); display:none; align-items:center; justify-content:center; padding:20px; }
+  .modal.on { display:flex; }
+  .modal-box { width:min(500px, 100%); max-height:85vh; background:#141414; border:1px solid rgba(255,255,255,.2); border-radius:20px; overflow-y:auto; padding:24px 20px; display:flex; flex-direction:column; gap:16px; position:relative; }
+  .modal-close { position:absolute; top:16px; right:16px; border:0; background:transparent; font-size:24px; color:#aaa; cursor:pointer; }
+  .modal-title { font-size:18px; letter-spacing:.12em; text-transform:uppercase; margin-right:30px; }
+  .modal-link { color:#6bb6ff; font-size:12px; text-decoration:none; word-break:break-all; }
+  .modal-gallery { display:flex; gap:10px; overflow-x:auto; padding-bottom:6px; }
+  .modal-gallery img { height:110px; width:150px; object-fit:cover; border-radius:8px; border:1px solid rgba(255,255,255,.15); flex:0 0 auto; }
+  .modal-desc { font-size:13px; color:#ccc; line-height:1.55; }
+  .modal-free { font-size:12px; color:#888; border-top:1px dashed rgba(255,255,255,.15); padding-top:12px; }
+
+  /* Shell Scene & Dock */
   #shell { background:#0c0c0c; color:#f3f3f1; display:none; flex-direction:column; padding:0 0 96px; }
   #shell.on { display:flex; }
-  .ticker { overflow:hidden; border-bottom:1px solid rgba(243,243,241,.2); flex:0 0 auto; }
-  .ticker-track { display:flex; gap:26px; width:max-content; animation:marquee 28s linear infinite; padding:12px 0; font-size:11px; letter-spacing:.12em; }
-  .ticker a { color:inherit; text-decoration:none; }
+  .ticker { overflow:hidden; border-bottom:1px solid rgba(243,243,241,.15); flex:0 0 auto; }
+  .ticker-track { display:flex; gap:26px; width:max-content; animation:marquee 28s linear infinite; padding:12px 0; font-size:11px; letter-spacing:.14em; text-transform:uppercase; }
   @keyframes marquee { to { transform:translateX(-50%); } }
+  .ticker a { color:inherit; text-decoration:none; }
+  
   .stage { flex:1; display:flex; align-items:center; justify-content:center; padding:16px; }
-  .panel { width:min(420px, 100%); height:min(460px, 62vh); border:1px solid rgba(243,243,241,.28); border-radius:22px; display:flex; flex-direction:column; background:#111; }
-  .panel h2 { margin:0; padding:16px 16px 8px; font-size:11px; letter-spacing:.16em; text-transform:uppercase; font-weight:500; }
-  .log { flex:1; overflow:auto; padding:4px 14px 8px; display:flex; flex-direction:column; gap:8px; }
-  .bubble { max-width:90%; padding:8px 10px; font-size:12px; line-height:1.45; border:1px solid rgba(243,243,241,.2); }
-  .you { margin-left:auto; }
-  form { display:flex; gap:8px; padding:8px 12px 12px; border-top:1px solid rgba(243,243,241,.12); }
-  input { flex:1; background:transparent; border:0; color:inherit; font-size:13px; padding:8px 0; outline:none; }
-  form button { border:0; background:transparent; cursor:pointer; width:32px; height:32px; padding:0; }
-  .dock {
-    position:fixed; left:12px; right:12px; bottom:14px; z-index:9; height:52px;
-    display:grid; grid-template-columns:repeat(4, 1fr); align-items:center;
-    border:1px solid rgba(243,243,241,.28); border-radius:26px; background:rgba(12,12,12,.8);
-    opacity:0; transform:translateY(12px); pointer-events:none; transition:.7s ease;
-  }
+  .panel { width:min(440px, 100%); min-height:min(440px, 60vh); border:1px solid rgba(243,243,241,.25); border-radius:22px; display:flex; flex-direction:column; justify-content:space-between; overflow:hidden; background:rgba(255,255,255,.02); }
+  .panel h2 { margin:0; padding:16px 16px 10px; font-size:11px; letter-spacing:.16em; text-transform:uppercase; font-weight:400; color:#888; border-bottom:1px solid rgba(243,243,241,.1); }
+  
+  .dock { position:fixed; left:12px; right:12px; bottom:14px; z-index:9; height:52px; border:1px solid rgba(243,243,241,.28); border-radius:26px; background:rgba(12,12,12,.85); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); opacity:0; transform:translateY(12px); pointer-events:none; transition:.5s ease; display:grid; grid-template-columns:repeat(4,1fr); }
   .dock.on { opacity:1; transform:none; pointer-events:auto; }
-  .dock i { position:absolute; top:6px; bottom:6px; width:calc(25% - 8px); left:6px; border-radius:20px; background:rgba(243,243,241,.1); box-shadow:0 0 18px rgba(243,243,241,.08); transition:transform .35s ease; }
-  .dock button { position:relative; z-index:1; border:0; background:transparent; color:#8d8d8d; font-size:10px; letter-spacing:.04em; cursor:pointer; }
-  .dock button.on { color:#f3f3f1; }
+  .dock i#pill { position:absolute; top:6px; bottom:6px; width:calc(25% - 8px); left:4px; border-radius:20px; background:rgba(243,243,241,.18); transition:transform .3s cubic-bezier(.2,.8,.2,1); pointer-events:none; }
+  .dock button { position:relative; z-index:1; border:0; background:transparent; color:#8d8d8d; font-size:9.5px; letter-spacing:.08em; text-transform:uppercase; cursor:pointer; }
+  .dock button.on { color:#fff; }
+
+  /* Admin form & panel elements */
+  .log { flex:1; overflow-y:auto; padding:12px 14px; display:flex; flex-direction:column; gap:10px; }
+  .bubble { max-width:92%; padding:10px 12px; font-size:12px; line-height:1.45; border:1px solid rgba(243,243,241,.18); border-radius:12px; background:rgba(255,255,255,.03); }
+  .bubble.you { align-self:flex-end; background:rgba(243,243,241,.12); }
+  .bubble.admin-badge { border-color:#4ade80; color:#4ade80; font-size:11px; text-transform:uppercase; letter-spacing:.1em; }
+  
+  .auth-box { display:flex; flex-direction:column; gap:10px; padding:14px; }
+  .admin-input { width:100%; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.2); border-radius:10px; color:#fff; font-size:12px; padding:8px 10px; outline:none; }
+  .admin-input:focus { border-color:#fff; }
+  .admin-btn { border:1px solid currentColor; border-radius:18px; background:transparent; height:34px; font-size:11px; letter-spacing:.12em; text-transform:uppercase; cursor:pointer; }
+  .admin-btn:active { background:rgba(255,255,255,.15); }
+  
+  form#form { display:flex; gap:8px; padding:10px 12px; border-top:1px solid rgba(243,243,241,.12); }
+  form#form input { flex:1; background:transparent; border:0; color:inherit; font-size:13px; padding:6px 0; outline:none; }
+  form#form button { border:0; background:transparent; cursor:pointer; width:32px; height:32px; padding:0; display:grid; place-items:center; }
+
+  .trio { display:flex; gap:8px; padding:12px; }
+  .trio button { border:1px solid currentColor; border-radius:30px; background:transparent; height:32px; padding:0 14px; font-size:11px; letter-spacing:.14em; text-transform:uppercase; cursor:pointer; }
+  .fx { min-height:160px; display:grid; place-items:center; position:relative; }
+  .cube3 { width:70px; height:70px; position:relative; transform-style:preserve-3d; animation:spin 8s linear infinite; }
+  @keyframes spin { to { transform:rotateX(360deg) rotateY(360deg); } }
+  .cube3 i { position:absolute; inset:0; border:1px solid currentColor; }
+  .cube3 i:nth-child(1){ transform:rotateY(0) translateZ(35px); }
+  .cube3 i:nth-child(2){ transform:rotateY(180deg) translateZ(35px); }
+  .cube3 i:nth-child(3){ transform:rotateY(90deg) translateZ(35px); }
+  .cube3 i:nth-child(4){ transform:rotateY(-90deg) translateZ(35px); }
+  .cube3 i:nth-child(5){ transform:rotateX(90deg) translateZ(35px); }
+  .cube3 i:nth-child(6){ transform:rotateX(-90deg) translateZ(35px); }
+  .core { position:absolute; inset:0; display:grid; place-items:center; font-size:11px; letter-spacing:.04em; text-align:center; }
+  .bulb { stroke-dasharray:140; stroke-dashoffset:140; animation:drawBulb 1.4s ease forwards; }
+  @keyframes drawBulb { to { stroke-dashoffset:0; } }
 </style>
 </head>
 <body>
+
 <div class="frame" id="frame"></div>
 <div class="cross" id="cross"><i class="v"></i><i class="h"></i></div>
-<div class="weed" id="weed" aria-hidden="true">
-  <svg viewBox="0 0 80 80" fill="none" stroke="currentColor" stroke-width="1">
-    <circle cx="40" cy="40" r="18"/>
-    <path d="M40 8 L40 72 M8 40 L72 40 M16 16 L64 64 M64 16 L16 64"/>
-    <path d="M40 18 C52 28 52 52 40 62 C28 52 28 28 40 18"/>
+
+<!-- Globe Scene Background -->
+<div class="globe-wrap" id="globe">
+  <svg class="globe-svg" viewBox="0 0 100 100">
+    <circle cx="50" cy="50" r="46" />
+    <ellipse cx="50" cy="50" rx="46" ry="18" />
+    <ellipse cx="50" cy="50" rx="46" ry="34" />
+    <ellipse cx="50" cy="50" rx="18" ry="46" />
+    <ellipse cx="50" cy="50" rx="34" ry="46" />
+    <line x1="50" y1="4" x2="50" y2="96" />
+    <line x1="4" y1="50" x2="96" y2="50" />
   </svg>
 </div>
-<div class="leaves" id="leaves" aria-hidden="true">
-  <svg viewBox="0 0 40 40" fill="none" stroke="currentColor"><path d="M20 4 L24 16 L36 18 L26 26 L30 38 L20 30 L10 38 L14 26 L4 18 L16 16 Z"/></svg>
-  <svg viewBox="0 0 40 40" fill="none" stroke="currentColor"><path d="M20 4 L24 16 L36 18 L26 26 L30 38 L20 30 L10 38 L14 26 L4 18 L16 16 Z"/></svg>
-  <svg viewBox="0 0 40 40" fill="none" stroke="currentColor"><path d="M20 4 L24 16 L36 18 L26 26 L30 38 L20 30 L10 38 L14 26 L4 18 L16 16 Z"/></svg>
-  <svg viewBox="0 0 40 40" fill="none" stroke="currentColor"><path d="M20 4 L24 16 L36 18 L26 26 L30 38 L20 30 L10 38 L14 26 L4 18 L16 16 Z"/></svg>
-  <svg viewBox="0 0 40 40" fill="none" stroke="currentColor"><path d="M20 4 L24 16 L36 18 L26 26 L30 38 L20 30 L10 38 L14 26 L4 18 L16 16 Z"/></svg>
+
+<!-- Maple Leaves -->
+<div class="maple-leaves" id="mapleLeaves">
+  <svg class="maple-leaf" viewBox="0 0 24 24"><path d="M12 2 L13.5 6 L17 4.5 L16 8.5 L20 9.5 L17.5 12.5 L21 15 L16.5 15.5 L16 19 L13 17 L12 22 L11 17 L8 19 L7.5 15.5 L3 15 L6.5 12.5 L4 9.5 L8 8.5 L7 4.5 L10.5 6 Z"/></svg>
+  <svg class="maple-leaf" viewBox="0 0 24 24"><path d="M12 2 L13.5 6 L17 4.5 L16 8.5 L20 9.5 L17.5 12.5 L21 15 L16.5 15.5 L16 19 L13 17 L12 22 L11 17 L8 19 L7.5 15.5 L3 15 L6.5 12.5 L4 9.5 L8 8.5 L7 4.5 L10.5 6 Z"/></svg>
+  <svg class="maple-leaf" viewBox="0 0 24 24"><path d="M12 2 L13.5 6 L17 4.5 L16 8.5 L20 9.5 L17.5 12.5 L21 15 L16.5 15.5 L16 19 L13 17 L12 22 L11 17 L8 19 L7.5 15.5 L3 15 L6.5 12.5 L4 9.5 L8 8.5 L7 4.5 L10.5 6 Z"/></svg>
+  <svg class="maple-leaf" viewBox="0 0 24 24"><path d="M12 2 L13.5 6 L17 4.5 L16 8.5 L20 9.5 L17.5 12.5 L21 15 L16.5 15.5 L16 19 L13 17 L12 22 L11 17 L8 19 L7.5 15.5 L3 15 L6.5 12.5 L4 9.5 L8 8.5 L7 4.5 L10.5 6 Z"/></svg>
+  <svg class="maple-leaf" viewBox="0 0 24 24"><path d="M12 2 L13.5 6 L17 4.5 L16 8.5 L20 9.5 L17.5 12.5 L21 15 L16.5 15.5 L16 19 L13 17 L12 22 L11 17 L8 19 L7.5 15.5 L3 15 L6.5 12.5 L4 9.5 L8 8.5 L7 4.5 L10.5 6 Z"/></svg>
 </div>
 
+<!-- 1. Home -->
 <section class="scene on" id="home">
   <div class="mark" id="mark">
-    <img class="logo" id="logo" src="logo.png" alt="V³ studio" />
+    <img id="logo" class="logo" src="logo.png" alt="V³ studio" />
   </div>
-  <button class="btn" id="start" type="button">дизайн для бизнеса<span class="glint"></span></button>
+  <button type="button" class="btn" id="start">дизайн для бизнеса<span class="glint"></span></button>
 </section>
+
+<!-- 2. Film -->
 <section class="scene" id="film">
-  <video id="vid" playsinline webkit-playsinline preload="auto" poster="frames/f01.jpg"><source src="ink.mp4" type="video/mp4" /></video>
+  <button type="button" class="skip-btn" id="skipFilm">пропустить</button>
+  <video id="vid" preload="auto" playsinline webkit-playsinline poster="frames/f01.jpg">
+    <source src="ink.mp4" type="video/mp4" />
+  </video>
   <div class="shade"></div>
   <div class="cross" id="film-cross"><i class="v"></i><i class="h"></i></div>
   <div class="cap" id="cap"><span id="phrase"></span></div>
 </section>
+
+<!-- 3. After -->
 <section class="scene" id="after">
   <div class="cipher" id="cipher"></div>
-  <button class="btn" id="howBtn" type="button">как мы работаем<span class="glint"></span></button>
+  <button type="button" class="btn" id="howBtn">как мы работаем<span class="glint"></span></button>
 </section>
+
+<!-- 4. How -->
 <section class="scene" id="how">
-  <div class="steps"><p>1 слушаем</p><p>2 думаем</p><p>3 внедряем</p></div>
-  <button class="btn" id="see" type="button">посмотреть<span class="glint"></span></button>
+  <div class="steps">
+    <p>слушаем</p>
+    <p>думаем</p>
+    <p>внедряем</p>
+  </div>
+  <button type="button" class="btn" id="see">посмотреть<span class="glint"></span></button>
 </section>
+
+<!-- 5. Gallery -->
 <section class="scene" id="gallery">
-  <div class="gtop">примеры размышлений</div>
+  <div class="gtop">примеры проектов</div>
   <div class="rail" id="rail"></div>
-  <div class="note"><div class="note-top"><h2 id="gtitle">жест</h2><button class="x" id="expand" type="button">+</button></div><div class="full" id="full">Кадр задаёт характер раньше слов.</div></div>
-  <button class="btn discuss" id="discuss" type="button">обсудим?<span class="glint"></span></button>
-  <div class="ducks" id="ducks" aria-hidden="true"><svg viewBox="0 0 180 36" fill="none" stroke="currentColor" stroke-width="1"><path d="M8 24 C14 16 22 16 26 22 L30 20 L34 16 L36 20 L30 24 Z"/><path d="M48 26 C54 20 60 20 64 25 L68 22 L71 18 L73 22 L66 26 Z"/><path d="M86 26 C91 21 96 21 100 26 L103 23 L106 20 L108 23 L101 27 Z"/><path d="M122 27 C126 22 131 22 134 27 L137 24 L140 21 L142 24 L135 28 Z"/><path d="M154 27 C158 23 162 23 165 27 L168 25 L170 22 L172 25 L166 28 Z"/></svg></div>
+  <div class="note">
+    <div class="note-top">
+      <h2 id="gtitle">жест</h2>
+      <div class="note-actions">
+        <button type="button" class="btn-detail" id="openDetail">детально</button>
+        <button type="button" class="x" id="expand">+</button>
+      </div>
+    </div>
+    <div class="full" id="full">Кадр задаёт характер раньше слов.</div>
+  </div>
+  <button type="button" class="btn discuss" id="discuss">обсудим?<span class="glint"></span></button>
 </section>
+
+<!-- Project Detail Modal -->
+<div class="modal" id="projectModal">
+  <div class="modal-box">
+    <button type="button" class="modal-close" id="closeModal">×</button>
+    <h3 class="modal-title" id="modalTitle">Название проекта</h3>
+    <a href="#" target="_blank" rel="noreferrer" class="modal-link" id="modalLink">Перейти к проекту →</a>
+    <div class="modal-gallery" id="modalGallery"></div>
+    <div class="modal-desc" id="modalDesc">Описание</div>
+    <div class="modal-free" id="modalFree">Свободное поле</div>
+  </div>
+</div>
+
+<!-- 6. Shell -->
 <section class="scene" id="shell">
-  <div class="ticker"><div class="ticker-track" id="ticker"></div></div>
-  <div class="stage"><div class="panel" id="panel"></div></div>
+  <div class="ticker">
+    <div class="ticker-track" id="ticker"></div>
+  </div>
+  <div class="stage">
+    <div class="panel" id="panel"></div>
+  </div>
 </section>
+
+<!-- Bottom Dock -->
 <nav class="dock" id="dock">
   <i id="pill"></i>
   <button type="button" data-tab="studio">о студии</button>
@@ -185,20 +286,46 @@
   <button type="button" data-tab="cabinet">личный кабинет</button>
   <button type="button" data-tab="prices">тарифы</button>
 </nav>
-<svg class="cracks" id="cracks" hidden></svg>
-<div class="dream" id="dream"><i></i><i></i><i></i><svg class="uni" viewBox="0 0 88 64" fill="none" stroke="#fff" stroke-width="1.4"><path d="M18 40 C24 28 34 26 42 32 L48 24 L52 30 L58 18 L60 32 L70 28 L66 40 C74 44 74 52 62 52 L24 52 C14 52 12 46 18 40Z"/><path d="M42 32 L40 16 L46 24 M48 24 L50 10"/></svg></div>
+
 <script>
-const vid = document.getElementById('vid');
-vid.load();
+// Data store for projects (supports persistence & Admin Edit)
+const defaultProjects = [
+  { id: 0, img: 'frames/f01.jpg', title: 'жест', shortText: 'Кадр задаёт характер раньше слов.', link: 'https://v3.studio/project-1', gallery: ['frames/f01.jpg', 'frames/f03.jpg'], desc: 'Разработка визуальной концепции и фирменного стиля бренда.', free: 'Арт-дирекшн: V³ Studio • 2026' },
+  { id: 1, img: 'frames/f03.jpg', title: 'ход', shortText: 'Цвет как идея и смысловой акцент.', link: 'https://v3.studio/project-2', gallery: ['frames/f03.jpg', 'frames/f05.jpg'], desc: 'Упаковка и маркетинговые материалы для вывода продукта на рынок.', free: 'Медиа-стратегия и промо-графика' },
+  { id: 2, img: 'frames/f05.jpg', title: 'тепло', shortText: 'То, что запоминают раньше знака.', link: 'https://v3.studio/project-3', gallery: ['frames/f05.jpg', 'frames/f07.jpg'], desc: 'Интерфейсы цифровых платформ и пользовательский опыт (UX/UI).', free: 'Цифровой продукт • Web / iOS' },
+  { id: 3, img: 'frames/f07.jpg', title: 'воздух', shortText: 'Без лишнего шума. Чистая эстетика.', link: 'https://v3.studio/project-4', gallery: ['frames/f07.jpg', 'frames/f09.jpg'], desc: 'Айдентика и типографика для премиального сегмента.', free: 'Брендинг и гайдлайны' },
+  { id: 4, img: 'frames/f09.jpg', title: 'ясность', shortText: 'Следующий шаг развития студии.', link: 'https://v3.studio/project-5', gallery: ['frames/f09.jpg', 'frames/f11.jpg'], desc: 'Автоматизация контента и масштабирование визуальных сеток.', free: 'Системный дизайн' },
+  { id: 5, img: 'frames/f11.jpg', title: 'пульс', shortText: 'Проект живой и развивающийся.', link: 'https://v3.studio/project-6', gallery: ['frames/f11.jpg', 'frames/f01.jpg'], desc: 'Комплексный перезапуск бренда с интеграцией во все каналы продаж.', free: 'Полный цикл производства' }
+];
+
+function getProjects() {
+  try {
+    const saved = localStorage.getItem('v3_projects');
+    return saved ? JSON.parse(saved) : defaultProjects;
+  } catch(e) {
+    return defaultProjects;
+  }
+}
+function saveProjects(p) {
+  try { localStorage.setItem('v3_projects', JSON.stringify(p)); } catch(e){}
+}
+
+let projects = getProjects();
+let currentProjectIndex = 0;
+let isAdmin = false;
+
+// Crosshairs on Home
 const vLine = document.querySelector('#cross .v');
 const hLine = document.querySelector('#cross .h');
 const fv = document.querySelector('#film-cross .v');
 const fh = document.querySelector('#film-cross .h');
+
 function aim(px, py) {
   const r = document.getElementById('logo').getBoundingClientRect();
   vLine.style.left = (r.left + r.width * px) + 'px';
   hLine.style.top = (r.top + r.height * py) + 'px';
 }
+
 const start = document.getElementById('start');
 setTimeout(() => {
   start.classList.add('show');
@@ -210,28 +337,40 @@ setTimeout(() => {
   setTimeout(() => start.classList.add('glint'), 2500);
   setTimeout(() => document.body.classList.add('dark'), 3400);
 }, 600);
-function showCube() {}
+
 const scenes = ['home','film','after','how','gallery','shell'].map(id => document.getElementById(id));
 function show(id) {
   scenes.forEach(s => s.classList.toggle('on', s.id === id));
   document.getElementById('dock').classList.toggle('on', id === 'shell');
   const cross = document.getElementById('cross');
   const frame = document.getElementById('frame');
+  
   if (id === 'home') { cross.classList.remove('off'); frame.classList.remove('off'); }
   else if (id === 'film') { cross.classList.remove('off'); frame.classList.add('off'); }
   else { cross.classList.add('off'); frame.classList.add('off'); }
-  document.getElementById('weed').classList.toggle('on', id === 'after');
-  document.getElementById('leaves').classList.toggle('on', id === 'how');
-  document.getElementById('ducks').classList.toggle('on', id === 'gallery');
+  
+  document.getElementById('globe').classList.toggle('on', id === 'after');
+  document.getElementById('mapleLeaves').classList.toggle('on', id === 'how');
 }
-const lines = [[0.4,'дизайн<br>который не равнодушен'],[3.8,'креативность<br>которая дышит'],[7.4,'эстетика<br>и функционал'],[11.2,'привлекает<br>внимание']];
+
+// Video & Subtitles Logic with Target Words
+const vid = document.getElementById('vid');
 const phrase = document.getElementById('phrase');
 const cap = document.getElementById('cap');
+const skipFilm = document.getElementById('skipFilm');
+
+// Targets: word to target in each phrase
+const lines = [
+  { t: 0.4, html: '<span class="target-word" id="t-word">дизайн</span><br>который не равнодушен' },
+  { t: 3.8, html: '<span class="target-word" id="t-word">креативность</span><br>которая дышит' },
+  { t: 7.4, html: '<span class="target-word" id="t-word">эстетика</span><br>и функционал' },
+  { t: 11.2, html: '<span class="target-word" id="t-word">привлекает</span><br>внимание' }
+];
+
 let capKey = '';
-let lineIndex = 0;
-const focus = [[.16,.82],[.84,.16],[.9,.1],[.5,.5]];
 start.addEventListener('click', openFilm);
 start.addEventListener('touchend', (e) => { e.preventDefault(); openFilm(); }, { passive:false });
+
 function openFilm() {
   show('film');
   vid.currentTime = 0;
@@ -239,122 +378,284 @@ function openFilm() {
   const p = vid.play();
   if (p) p.catch(() => { vid.muted = true; vid.play(); });
 }
+
+function aimCenterWord() {
+  const target = document.getElementById('t-word');
+  if (!target) return;
+  const r = target.getBoundingClientRect();
+  if (!r.width) return;
+  fv.style.left = (r.left + r.width / 2) + 'px';
+  fh.style.top = (r.top + r.height / 2) + 'px';
+}
+
 vid.ontimeupdate = () => {
-  let html = '';
-  let idx = 0;
-  lines.forEach(([t, line], i) => { if (vid.currentTime >= t) { html = line; idx = i; } });
-  if (html !== capKey) {
-    capKey = html; lineIndex = idx;
+  let active = null;
+  lines.forEach(item => { if (vid.currentTime >= item.t) active = item; });
+  if (active && active.html !== capKey) {
+    capKey = active.html;
     cap.classList.remove('on');
-    setTimeout(() => { phrase.innerHTML = html; cap.classList.add('on'); aimPhrase(); }, 100);
+    setTimeout(() => {
+      phrase.innerHTML = active.html;
+      cap.classList.add('on');
+      setTimeout(aimCenterWord, 80);
+    }, 100);
   }
 };
-function aimPhrase() {
-  const r = phrase.getBoundingClientRect();
-  if (!r.width) return;
-  const [px, py] = focus[lineIndex] || [.5,.5];
-  fv.style.left = (r.left + r.width * px) + 'px';
-  fh.style.top = (r.top + r.height * py) + 'px';
+
+function endFilm() {
+  vid.pause();
+  cap.classList.remove('on');
+  show('after');
+  cipher();
 }
-vid.onended = () => { cap.classList.remove('on'); show('after'); cipher(); };
+
+vid.onended = endFilm;
+skipFilm.onclick = endFilm;
+
+// After Cipher Animation
 function cipher() {
-  const phrase = 'создание дизайна и решений для проектов';
+  const phraseText = 'создание дизайна и решений для проектов';
   const box = document.getElementById('cipher');
-  const chars = phrase.split('');
+  const chars = phraseText.split('');
   const glyphs = 'АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЩЭЮЯ';
   const open = chars.map(c => c === ' ');
-  const draw = () => { box.textContent = chars.map((c,i) => c === ' ' || open[i] ? c : glyphs[Math.floor(Math.random()*glyphs.length)]).join(''); };
+  const draw = () => {
+    box.textContent = chars.map((c,i) => c === ' ' || open[i] ? c : glyphs[Math.floor(Math.random()*glyphs.length)]).join('');
+  };
   draw();
   const timer = setInterval(() => {
     const closed = open.map((v,i) => !v && chars[i] !== ' ' ? i : -1).filter(i => i >= 0);
-    if (!closed.length) { clearInterval(timer); box.textContent = phrase; document.getElementById('howBtn').classList.add('show'); return; }
-    open[closed[Math.floor(Math.random()*closed.length)]] = true; draw();
+    if (!closed.length) {
+      clearInterval(timer);
+      box.textContent = phraseText;
+      document.getElementById('howBtn').classList.add('show');
+      return;
+    }
+    open[closed[Math.floor(Math.random()*closed.length)]] = true;
+    draw();
   }, 36);
 }
+
 document.getElementById('howBtn').onclick = () => {
   show('how');
-  document.querySelectorAll('#how .steps p').forEach((p,i) => setTimeout(() => p.classList.add('in'), 160 + i * 200));
+  document.querySelectorAll('#how .steps p').forEach((p,i) => {
+    setTimeout(() => p.classList.add('in'), 160 + i * 220);
+  });
   setTimeout(() => document.getElementById('see').classList.add('show'), 860);
 };
-document.getElementById('see').onclick = () => { show('gallery'); buildRail(); document.getElementById('discuss').classList.add('show'); };
-const frames = [['frames/f01.jpg','жест','Плотность кадра раньше слов.'],['frames/f03.jpg','ход','Цвет как идея.'],['frames/f05.jpg','тепло','То, что запоминают раньше знака.'],['frames/f07.jpg','воздух','Без лишнего шума.'],['frames/f09.jpg','ясность','Следующий шаг.'],['frames/f11.jpg','пульс','Проект живой.']];
+
+document.getElementById('see').onclick = () => {
+  show('gallery');
+  buildRail();
+  document.getElementById('discuss').classList.add('show');
+};
+
+// Gallery & Project Rail
 function buildRail() {
   const rail = document.getElementById('rail');
-  if (rail.childElementCount) return;
-  frames.forEach((f,i) => { const d = document.createElement('article'); d.className = 'card' + (i ? '' : ' focus hint'); d.innerHTML = '<img alt="" src="'+f[0]+'">'; d.dataset.title=f[1]; d.dataset.text=f[2]; rail.appendChild(d); });
-  const cards = [...rail.children];
+  rail.innerHTML = '';
+  projects = getProjects();
+  projects.forEach((p, i) => {
+    const d = document.createElement('article');
+    d.className = 'card' + (i === currentProjectIndex ? ' focus' : '');
+    d.innerHTML = '<img alt="' + p.title + '" src="' + p.img + '">';
+    d.dataset.index = i;
+    rail.appendChild(d);
+  });
+  updateCardInfo(currentProjectIndex);
+  
   rail.onscroll = () => {
-    cards[0].classList.remove('hint');
-    const mid = rail.scrollLeft + rail.clientWidth/2; let best=0, dist=1e9;
-    cards.forEach((c,i) => { const dd = Math.abs(c.offsetLeft + c.offsetWidth/2 - mid); if (dd<dist){dist=dd; best=i;} });
-    cards.forEach((c,i) => c.classList.toggle('focus', i===best));
-    document.getElementById('gtitle').textContent = cards[best].dataset.title;
-    document.getElementById('full').textContent = cards[best].dataset.text;
+    const cards = [...rail.children];
+    const mid = rail.scrollLeft + rail.clientWidth / 2;
+    let best = 0, dist = 1e9;
+    cards.forEach((c, i) => {
+      const dd = Math.abs(c.offsetLeft + c.offsetWidth / 2 - mid);
+      if (dd < dist) { dist = dd; best = i; }
+    });
+    cards.forEach((c, i) => c.classList.toggle('focus', i === best));
+    currentProjectIndex = best;
+    updateCardInfo(best);
   };
 }
-document.getElementById('expand').onclick = () => { const full = document.getElementById('full'); full.classList.toggle('open'); document.getElementById('expand').textContent = full.classList.contains('open') ? '×' : '+'; };
-const nets = [['Telegram','https://t.me/'],['Instagram','https://instagram.com/'],['YouTube','https://youtube.com/'],['VK','https://vk.com/'],['Pinterest','https://pinterest.com/'],['Behance','https://behance.net/'],['WhatsApp','https://wa.me/'],['Почта','mailto:hello@v3.studio']];
+
+function updateCardInfo(idx) {
+  const p = projects[idx] || projects[0];
+  document.getElementById('gtitle').textContent = p.title;
+  document.getElementById('full').textContent = p.shortText;
+}
+
+document.getElementById('expand').onclick = () => {
+  const full = document.getElementById('full');
+  full.classList.toggle('open');
+  document.getElementById('expand').textContent = full.classList.contains('open') ? '×' : '+';
+};
+
+// Modal Detail View
+const modal = document.getElementById('projectModal');
+document.getElementById('openDetail').onclick = () => {
+  const p = projects[currentProjectIndex] || projects[0];
+  document.getElementById('modalTitle').textContent = p.title;
+  const linkEl = document.getElementById('modalLink');
+  linkEl.href = p.link || '#';
+  linkEl.textContent = p.link ? p.link : 'Ссылка не указана';
+  
+  const gBox = document.getElementById('modalGallery');
+  gBox.innerHTML = '';
+  (p.gallery || [p.img]).forEach(src => {
+    const img = document.createElement('img');
+    img.src = src;
+    gBox.appendChild(img);
+  });
+  
+  document.getElementById('modalDesc').textContent = p.desc || p.shortText;
+  document.getElementById('modalFree').textContent = p.free || 'Свободное поле проекта';
+  modal.classList.add('on');
+};
+
+document.getElementById('closeModal').onclick = () => modal.classList.remove('on');
+modal.onclick = (e) => { if (e.target === modal) modal.classList.remove('on'); };
+
+// Bottom Ticker Links
+const nets = [
+  ['Telegram','https://t.me/stopsmoke'],
+  ['Instagram','https://instagram.com/'],
+  ['Behance','https://behance.net/'],
+  ['VK','https://vk.com/'],
+  ['Почта','mailto:hello@v3.studio']
+];
 const row = nets.map(([n,h]) => '<a href="'+h+'" target="_blank" rel="noreferrer">'+n+'</a>').join('');
 document.getElementById('ticker').innerHTML = row + row;
-const first = 'Здравствуйте. Напишите, на какой стадии проект — мы не предлагаем, пока не услышим посыл.';
+
+// Panels in Shell
 const panels = {
   studio: '<h2>что такое дизайн</h2><div class="trio"><button type="button" data-fx="aes">эстетика</button><button type="button" data-fx="idea">креатив</button><button type="button" data-fx="fx">эффект</button></div><div class="fx" id="fx"></div>',
-  contacts: '<h2>диалог</h2><div class="log" id="log"></div><form id="form"><input id="msg" placeholder="сообщение" /><button type="submit" aria-label="отправить"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M2 21 L23 12 L2 3 L2 10 L17 12 L2 14 Z"/></svg></button></form>',
-  cabinet: '<h2>личный кабинет</h2><div class="auth"><button type="button" id="login">войти</button><button type="button" id="reg">регистрация</button></div><div class="log" id="authlog"></div>',
-  prices: '<h2>тарифы</h2><div class="log"><div class="bubble">Базовый старт — 15 000.</div><div class="bubble">Индивидуально — под бюджет, если проект нравится.</div></div>'
+  contacts: '<h2>диалог со студией</h2><div class="log" id="log"></div><form id="form"><input id="msg" placeholder="опишите ваш проект..." /><button type="submit" aria-label="отправить"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M2 21 L23 12 L2 3 L2 10 L17 12 L2 14 Z"/></svg></button></form>',
+  cabinet: '<h2>личный кабинет</h2><div class="auth-box" id="authBox"></div><div class="log" id="authlog"></div>',
+  prices: '<h2>тарифы</h2><div class="log"><div class="bubble"><b>Базовый старт</b> — от 15 000 ₽.<br>Экспресс-айдентика и база визуального стиля.</div><div class="bubble"><b>Комплексный брендинг</b> — от 45 000 ₽.<br>Полный гайдлайн, носители, шаблоны соцсетей.</div><div class="bubble"><b>Индивидуальный продакшн</b> — под задачу и бюджет проекта.</div></div>'
 };
+
 function typeInto(el, text) {
   el.textContent = '';
   let i = 0;
-  const t = setInterval(() => { el.textContent += text[i++] || ''; if (i >= text.length) clearInterval(t); }, 28);
+  const t = setInterval(() => {
+    el.textContent += text[i++] || '';
+    if (i >= text.length) clearInterval(t);
+  }, 24);
 }
+
 function tab(name) {
   document.getElementById('panel').innerHTML = panels[name];
   const buttons = [...document.querySelectorAll('#dock button')];
-  buttons.forEach((b,i) => { const on = b.dataset.tab === name; b.classList.toggle('on', on); if (on) document.getElementById('pill').style.transform = 'translateX('+(i*100)+'%)'; });
+  buttons.forEach((b,i) => {
+    const on = b.dataset.tab === name;
+    b.classList.toggle('on', on);
+    if (on) document.getElementById('pill').style.transform = 'translateX('+(i*100)+'%)';
+  });
+  
   if (name === 'studio') bindFx();
-  if (name === 'cabinet') {
-    document.getElementById('login').onclick = () => note('Вход. Пока это каркас кабинета.');
-    document.getElementById('reg').onclick = () => note('Регистрация. Сюда сядет аккаунт клиента.');
-  }
-  if (name === 'contacts') {
-    const log = document.getElementById('log');
-    const bubble = document.createElement('div'); bubble.className = 'bubble'; log.appendChild(bubble); typeInto(bubble, first);
-    document.getElementById('form').onsubmit = (e) => {
-      e.preventDefault();
-      const v = document.getElementById('msg').value.trim(); if (!v) return;
-      const you = document.createElement('div'); you.className = 'bubble you'; you.textContent = v; log.appendChild(you);
-      document.getElementById('msg').value = '';
-      setTimeout(() => { const us = document.createElement('div'); us.className = 'bubble'; log.appendChild(us); typeInto(us, 'Слышим. Если посыла нет — так и скажем.'); }, 240);
+  if (name === 'cabinet') renderCabinet();
+  if (name === 'contacts') renderContacts();
+}
+
+function renderContacts() {
+  const log = document.getElementById('log');
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+  log.appendChild(bubble);
+  typeInto(bubble, 'Здравствуйте. Напишите, на какой стадии проект — мы свяжемся и предложим решения.');
+  
+  document.getElementById('form').onsubmit = (e) => {
+    e.preventDefault();
+    const input = document.getElementById('msg');
+    const v = input.value.trim();
+    if (!v) return;
+    const you = document.createElement('div');
+    you.className = 'bubble you';
+    you.textContent = v;
+    log.appendChild(you);
+    input.value = '';
+    setTimeout(() => {
+      const us = document.createElement('div');
+      us.className = 'bubble';
+      log.appendChild(us);
+      typeInto(us, 'Заявка принята. Менеджер студии свяжется с вами.');
+    }, 300);
+  };
+}
+
+function renderCabinet() {
+  const box = document.getElementById('authBox');
+  const log = document.getElementById('authlog');
+  
+  if (!isAdmin) {
+    box.innerHTML = `
+      <input type="password" id="adminPass" class="admin-input" placeholder="Введите пароль доступа..." />
+      <button type="button" id="adminLoginBtn" class="admin-btn">Войти</button>
+    `;
+    log.innerHTML = '<div class="bubble">Вход для клиентов и режим администратора студии.</div>';
+    
+    document.getElementById('adminLoginBtn').onclick = () => {
+      const pass = document.getElementById('adminPass').value;
+      if (pass === '1986') {
+        isAdmin = true;
+        renderCabinet();
+      } else {
+        log.innerHTML = '<div class="bubble" style="border-color:#ef4444; color:#ef4444;">Неверный пароль. Попробуйте снова.</div>';
+      }
+    };
+  } else {
+    // Admin Mode Interface
+    const currentP = projects[currentProjectIndex] || projects[0];
+    box.innerHTML = `
+      <div class="bubble admin-badge">✓ Режим администратора активен</div>
+      <div style="font-size:11px; color:#aaa; margin-bottom:4px;">Редактирование проекта: #${currentP.id + 1} (${currentP.title})</div>
+      <input type="text" id="editTitle" class="admin-input" value="${currentP.title}" placeholder="Название проекта" />
+      <input type="text" id="editShort" class="admin-input" value="${currentP.shortText}" placeholder="Краткое описание" />
+      <input type="text" id="editLink" class="admin-input" value="${currentP.link || ''}" placeholder="Ссылка на проект (https://...)" />
+      <textarea id="editDesc" class="admin-input" rows="2" placeholder="Полное описание">${currentP.desc || ''}</textarea>
+      <input type="text" id="editFree" class="admin-input" value="${currentP.free || ''}" placeholder="Свободное поле" />
+      <div style="display:flex; gap:8px;">
+        <button type="button" id="saveProjBtn" class="admin-btn" style="flex:1;">Сохранить</button>
+        <button type="button" id="logoutAdminBtn" class="admin-btn" style="width:70px;">Выйти</button>
+      </div>
+    `;
+    log.innerHTML = '<div class="bubble">Изменения мгновенно сохраняются и обновляют галерею.</div>';
+    
+    document.getElementById('saveProjBtn').onclick = () => {
+      currentP.title = document.getElementById('editTitle').value;
+      currentP.shortText = document.getElementById('editShort').value;
+      currentP.link = document.getElementById('editLink').value;
+      currentP.desc = document.getElementById('editDesc').value;
+      currentP.free = document.getElementById('editFree').value;
+      saveProjects(projects);
+      buildRail();
+      log.innerHTML = '<div class="bubble" style="border-color:#4ade80; color:#4ade80;">Проект успешно сохранён!</div>';
+    };
+    
+    document.getElementById('logoutAdminBtn').onclick = () => {
+      isAdmin = false;
+      renderCabinet();
     };
   }
 }
-function note(text) {
-  const log = document.getElementById('authlog');
-  log.innerHTML = '<div class="bubble"></div>';
-  log.firstChild.textContent = text;
-}
+
 function bindFx() {
   document.querySelectorAll('[data-fx]').forEach(b => b.onclick = () => {
     const box = document.getElementById('fx');
-    document.getElementById('dream').classList.remove('on');
     if (b.dataset.fx === 'aes') {
       box.innerHTML = '<div class="cube3"><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="core" id="core"></div>';
-      typeInto(document.getElementById('core'), 'внимание мелочам');
+      typeInto(document.getElementById('core'), 'внимание деталям');
     } else if (b.dataset.fx === 'idea') {
-      box.innerHTML = '<svg class="bulb on" width="72" height="96" viewBox="0 0 72 96" fill="none" stroke="currentColor"><path class="glass" d="M36 8 a22 22 0 0 1 12 40 c-4 6-6 10-6 16 H30 c0-6-2-10-6-16 A22 22 0 0 1 36 8z"/><path d="M30 70 h12 M32 76 h8 M34 82 h4"/></svg>';
+      box.innerHTML = '<svg class="bulb" width="60" height="80" viewBox="0 0 72 96" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M36 8 a22 22 0 0 1 12 40 c-4 6-6 10-6 16 H30 c0-6-2-10-6-16 A22 22 0 0 1 36 8z"/><path d="M30 70 h12 M32 76 h8 M34 82 h4"/></svg>';
     } else {
-      box.innerHTML = '';
-      const dream = document.getElementById('dream');
-      dream.classList.add('on');
-      setTimeout(() => dream.classList.remove('on'), 10000);
+      box.innerHTML = '<div class="core">фокус на результате</div>';
     }
   });
 }
+
 document.getElementById('discuss').onclick = () => { show('shell'); tab('contacts'); };
 document.querySelectorAll('#dock button').forEach(b => b.onclick = () => tab(b.dataset.tab));
-addEventListener('gesturestart', e => e.preventDefault());
-addEventListener('dblclick', e => e.preventDefault());
+
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
 </body>
