@@ -13,7 +13,6 @@
 <link rel="preload" href="ink.mp4" as="video" type="video/mp4" />
 <link rel="preload" href="logo.png" as="image" />
 <title>V³ studio</title>
-<meta http-equiv="Cache-Control" content="no-cache" />
 <style>
   :root { --ink:#141414; --line:rgba(20,20,20,.4); --paper:#f6f6f4; --white:#f3f3f1; }
   * { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
@@ -78,9 +77,9 @@
   #how .steps p { margin:0; font-size:18px; letter-spacing:.2em; text-transform:uppercase; opacity:0; transform:translateY(24px); transition:opacity .6s, transform .6s; }
   #how .steps p.in { opacity:1; transform:none; }
   
-  .vortex-canvas-box { width:min(320px, 85vw); height:160px; margin-top:16px; z-index:2; opacity:0; transition:opacity .8s; background:transparent; overflow:hidden; pointer-events:none; position:relative; }
+  .vortex-canvas-box { width:min(320px, 85vw); height:160px; margin-top:16px; z-index:2; opacity:0; transition:opacity .8s; border-radius:18px; overflow:hidden; pointer-events:none; position:relative; }
   .vortex-canvas-box.on { opacity:.9; }
-  #vortexCanvas { width:100%; height:100%; display:block; background:transparent; }
+  #vortexCanvas { width:100%; height:100%; display:block; }
 
   /* Gallery */
   #gallery { background:#0c0c0c; color:#f3f3f1; display:none; flex-direction:column; padding:env(safe-area-inset-top, 16px) 0 env(safe-area-inset-bottom, 16px); }
@@ -127,60 +126,49 @@
   .panel { width:100%; height:calc(100dvh - 170px); border:1px solid rgba(243,243,241,.28); border-radius:20px; display:flex; flex-direction:column; overflow:hidden; background:rgba(255,255,255,.02); position:relative; }
   .panel h2 { margin:0; padding:14px 16px 8px; font-size:11px; letter-spacing:.16em; text-transform:uppercase; font-weight:400; color:#888; border-bottom:1px solid rgba(243,243,241,.1); flex:0 0 auto; }
 
-  /* Studio Tab Layout */
-  .studio-layout { display:flex; flex:1; width:100%; height:100%; overflow:hidden; }
-  .studio-sidebar { width:125px; display:flex; flex-direction:column; gap:10px; padding:14px 10px; border-right:1px solid rgba(255,255,255,.1); flex:0 0 auto; }
-  .studio-sidebar button { border:1px solid currentColor; border-radius:24px; background:transparent; height:34px; font-size:10px; letter-spacing:.12em; text-transform:uppercase; cursor:pointer; text-align:center; width:100%; transition:.3s; }
-  .studio-sidebar button.active { background:rgba(255,255,255,.15); border-color:#fff; color:#fff; }
+  /* Studio Tab & Features Subview */
+  .studio-main-view { display:flex; flex-direction:column; justify-content:space-between; flex:1; width:100%; height:100%; padding:14px; overflow-y:auto; }
+  .features-btn-main { width:100%; border:1px solid rgba(255,255,255,.4); border-radius:26px; background:rgba(255,255,255,.06); color:#fff; padding:12px 20px; font-size:11.5px; letter-spacing:.2em; text-transform:uppercase; cursor:pointer; margin-top:14px; transition:.3s; }
+  .features-btn-main:active { background:rgba(255,255,255,.2); }
+
+  .features-layout { display:flex; flex-direction:column; flex:1; width:100%; height:100%; overflow:hidden; }
+  .features-nav-line { display:flex; gap:8px; padding:10px 14px; border-bottom:1px solid rgba(255,255,255,.1); overflow-x:auto; flex:0 0 auto; align-items:center; }
+  .features-nav-line button { border:1px solid rgba(255,255,255,.25); border-radius:20px; background:transparent; padding:6px 14px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; cursor:pointer; white-space:nowrap; transition:.3s; }
+  .features-nav-line button.active { background:rgba(255,255,255,.2); border-color:#fff; color:#fff; }
+  .features-back-btn { margin-right:4px; border-color:transparent !important; color:#888; }
   
-  .studio-content { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; padding:12px; overflow-y:auto; }
-  
-  /* Perfect 3D Cube (Transparent faces, 100px square, strictly centered) */
-  .cube-stage { perspective:900px; display:flex; flex-direction:column; align-items:center; justify-content:center; touch-action:none; user-select:none; width:100%; height:100%; cursor:grab; }
+  .features-content-box { flex:1; display:flex; flex-direction:column; position:relative; overflow-y:auto; padding:14px; }
+  .features-header-text { font-size:12px; line-height:1.55; color:#d0d0d0; padding:12px 14px; border:1px solid rgba(255,255,255,.15); border-radius:12px; background:rgba(255,255,255,.03); margin-bottom:12px; }
+
+  /* 3D Cube Canvas in Aesthetics */
+  .cube-stage { perspective:900px; display:flex; flex-direction:column; align-items:center; justify-content:center; touch-action:none; user-select:none; flex:1; width:100%; min-height:180px; cursor:grab; }
   .cube-stage:active { cursor:grabbing; }
-  .cube3 { width:100px; height:100px; position:relative; transform-style:preserve-3d; transition:transform 0.04s ease-out; }
-  .cube3 i { position:absolute; width:100px; height:100px; inset:0; border:1px solid rgba(255,255,255,.8); background:transparent; pointer-events:none; }
-  .cube3 i:nth-child(1){ transform:rotateY(0deg) translateZ(50px); }
-  .cube3 i:nth-child(2){ transform:rotateY(180deg) translateZ(50px); }
-  .cube3 i:nth-child(3){ transform:rotateY(90deg) translateZ(50px); }
-  .cube3 i:nth-child(4){ transform:rotateY(-90deg) translateZ(50px); }
-  .cube3 i:nth-child(5){ transform:rotateX(90deg) translateZ(50px); }
-  .cube3 i:nth-child(6){ transform:rotateX(-90deg) translateZ(50px); }
-  .touch-hint { margin-top:28px; font-size:10px; letter-spacing:.26em; text-transform:uppercase; color:#999; animation:pulse 2s ease-in-out infinite; }
+  .cube3 { width:96px; height:96px; position:relative; transform-style:preserve-3d; transition:transform 0.04s ease-out; }
+  .cube3 i { position:absolute; width:96px; height:96px; inset:0; border:1px solid rgba(255,255,255,.85); background:transparent; pointer-events:none; }
+  .cube3 i:nth-child(1){ transform:rotateY(0deg) translateZ(48px); }
+  .cube3 i:nth-child(2){ transform:rotateY(180deg) translateZ(48px); }
+  .cube3 i:nth-child(3){ transform:rotateY(90deg) translateZ(48px); }
+  .cube3 i:nth-child(4){ transform:rotateY(-90deg) translateZ(48px); }
+  .cube3 i:nth-child(5){ transform:rotateX(90deg) translateZ(48px); }
+  .cube3 i:nth-child(6){ transform:rotateX(-90deg) translateZ(48px); }
+  .touch-hint { margin-top:22px; font-size:10px; letter-spacing:.26em; text-transform:uppercase; color:#999; animation:pulse 2s ease-in-out infinite; }
   @keyframes pulse { 50% { opacity:.35; } }
 
-  /* Morphing Design Effect Scene */
-  .morph-wrap { width:100%; height:100%; display:flex; flex-direction:column; position:relative; overflow:hidden; border-radius:12px; transition:all .5s cubic-bezier(.2,.8,.2,1); }
-  .morph-header { display:flex; justify-content:space-between; align-items:center; padding:10px 14px; border-bottom:1px solid currentColor; font-size:11px; letter-spacing:.1em; text-transform:uppercase; }
-  .morph-hero { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:16px 12px; gap:12px; position:relative; }
-  .morph-title { font-size:clamp(16px, 4.5vw, 22px); letter-spacing:.08em; text-transform:uppercase; font-weight:700; line-height:1.25; }
-  .morph-desc { font-size:11px; max-width:240px; opacity:.85; line-height:1.4; }
-  .morph-cards { display:flex; gap:8px; width:100%; padding:0 8px 10px; }
-  .morph-card { flex:1; padding:8px; border:1px solid currentColor; border-radius:6px; font-size:9px; text-align:center; }
-  .morph-btn-trigger { position:absolute; z-index:10; top:50%; left:50%; transform:translate(-50%, -50%); border:2px solid currentColor; border-radius:30px; font-weight:700; font-size:12px; letter-spacing:.18em; text-transform:uppercase; padding:12px 24px; cursor:pointer; box-shadow:0 6px 24px rgba(0,0,0,.6); transition:.2s; }
-  .morph-btn-trigger:active { transform:translate(-50%, -50%) scale(.93); }
-  
-  /* Morphing Theme Presets */
-  .theme-auto { background:#0a0a0a; color:#ff3b30; font-family:"Impact", "Arial Black", sans-serif; }
-  .theme-auto .morph-card { background:#141414; border-color:#ff3b30; color:#fff; }
-  .theme-auto .morph-btn-trigger { background:#ff3b30; color:#000; border-color:#fff; }
+  /* Scratch Canvas in Creativity */
+  .scratch-container { position:relative; width:min(290px, 100%); height:180px; margin:auto; border-radius:14px; overflow:hidden; border:1px solid rgba(255,255,255,.2); touch-action:none; }
+  .scratch-underlayer { position:absolute; inset:0; background:radial-gradient(circle at center, #1e293b, #000); display:flex; flex-direction:column; align-items:center; justify-content:center; color:#fff; text-align:center; padding:12px; }
+  .scratch-underlayer img { height:54px; filter:invert(1); margin-bottom:8px; }
+  .scratch-canvas { position:absolute; inset:0; width:100%; height:100%; cursor:crosshair; }
 
-  .theme-dolls { background:#fff0f5; color:#d63384; font-family:"Comic Sans MS", "Chalkboard SE", cursive, sans-serif; border-radius:24px; }
-  .theme-dolls .morph-header { border-bottom:2px dashed #ff69b4; }
-  .theme-dolls .morph-card { background:#ffffff; border:2px solid #ffb6c1; border-radius:16px; color:#c71585; }
-  .theme-dolls .morph-btn-trigger { background:#ff69b4; color:#fff; border-color:#fff; border-radius:24px; }
-
-  .theme-space { background:#020617; color:#38bdf8; font-family:"Courier New", monospace; text-shadow:0 0 8px rgba(56,189,248,.6); }
-  .theme-space .morph-card { background:#0f172a; border-color:#0284c7; color:#e0f2fe; }
-  .theme-space .morph-btn-trigger { background:#0369a1; color:#fff; border-color:#38bdf8; }
-
-  .theme-yoga { background:#f4f1ea; color:#3f4e4f; font-family:Georgia, serif; }
-  .theme-yoga .morph-header { border-bottom:1px solid #a27b5c; }
-  .theme-yoga .morph-card { background:#dcd7c9; border:none; border-radius:8px; color:#2c3639; }
-  .theme-yoga .morph-btn-trigger { background:#2c3639; color:#f4f1ea; border-color:#a27b5c; border-radius:4px; font-family:Georgia, serif; }
+  /* Showcase Slider in Effect */
+  .effect-slider { flex:1; display:flex; flex-direction:column; justify-content:center; position:relative; border-radius:14px; overflow:hidden; border:1px solid rgba(255,255,255,.18); min-height:220px; }
+  .effect-img { width:100%; height:100%; object-fit:cover; position:absolute; inset:0; filter:brightness(0.65); transition:opacity .4s; }
+  .effect-overlay-text { position:relative; z-index:2; padding:20px; text-align:center; font-size:clamp(13px, 3.8vw, 16px); letter-spacing:.08em; text-transform:uppercase; font-weight:600; line-height:1.45; color:#fff; text-shadow:0 2px 12px rgba(0,0,0,.9); }
+  .slider-arrows { position:absolute; bottom:12px; right:12px; z-index:4; display:flex; gap:8px; }
+  .slider-arrows button { width:32px; height:32px; border-radius:50%; border:1px solid rgba(255,255,255,.3); background:rgba(0,0,0,.5); color:#fff; font-size:14px; cursor:pointer; display:grid; place-items:center; }
 
   /* Team list view */
-  .team-list { width:100%; display:flex; flex-direction:column; gap:12px; padding:6px; }
+  .team-list { width:100%; display:flex; flex-direction:column; gap:12px; }
   .team-card { display:flex; gap:12px; align-items:flex-start; border:1px solid rgba(255,255,255,.12); border-radius:14px; padding:10px; background:rgba(255,255,255,.02); }
   .team-avatar { width:48px; height:48px; border-radius:50%; object-fit:cover; border:1px solid rgba(255,255,255,.25); flex:0 0 auto; }
   .team-info { flex:1; }
@@ -190,6 +178,20 @@
   .team-bio { max-height:0; overflow:hidden; color:#a0a0a0; font-size:11.5px; line-height:1.45; transition:max-height .3s ease, margin .3s; }
   .team-bio.open { max-height:120px; margin-top:6px; }
   .team-expand { border:0; background:transparent; font-size:18px; cursor:pointer; color:#aaa; width:24px; height:24px; display:grid; place-items:center; }
+
+  /* Contacts & Tariffs */
+  .contact-row { display:flex; flex-direction:column; gap:4px; padding:10px 12px; border:1px solid rgba(255,255,255,.12); border-radius:12px; background:rgba(255,255,255,.02); }
+  .contact-name { font-size:11px; color:#888; text-transform:uppercase; letter-spacing:.12em; }
+  .contact-val { font-size:14px; letter-spacing:.06em; color:#6bb6ff; text-decoration:none; font-weight:500; }
+  .contact-address { font-size:13px; color:#ddd; line-height:1.4; }
+
+  .tariff-item { display:flex; flex-direction:column; gap:6px; padding:12px; border:1px solid rgba(255,255,255,.14); border-radius:14px; background:rgba(255,255,255,.02); }
+  .tariff-header { display:flex; justify-content:space-between; align-items:center; }
+  .tariff-title { font-size:13px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; }
+  .tariff-price { font-size:13px; font-weight:700; color:#4ade80; }
+  .tariff-desc { font-size:11.5px; color:#999; line-height:1.45; }
+  .tariff-select-btn { align-self:flex-start; margin-top:4px; border:1px solid rgba(255,255,255,.25); border-radius:14px; background:transparent; color:#fff; font-size:10px; letter-spacing:.1em; text-transform:uppercase; padding:4px 10px; cursor:pointer; }
+  .tariff-select-btn:active { background:rgba(255,255,255,.15); }
 
   /* Fixed Dock */
   .dock { position:fixed; left:12px; right:12px; bottom:12px; z-index:9; height:50px; border:1px solid rgba(243,243,241,.28); border-radius:25px; background:rgba(12,12,12,.88); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); opacity:0; transform:translateY(12px); pointer-events:none; transition:.4s ease; display:flex; padding:4px; }
@@ -213,138 +215,6 @@
   form#form { display:flex; gap:8px; padding:10px 12px; border-top:1px solid rgba(243,243,241,.12); }
   form#form input { flex:1; background:transparent; border:0; color:inherit; font-size:13px; padding:6px 0; outline:none; }
   form#form button { border:0; background:transparent; cursor:pointer; width:32px; height:32px; padding:0; display:grid; place-items:center; }
-
-  /* Studio sidebar scroll */
-  .studio-sidebar { overflow-y:auto; width:118px; }
-  .studio-sidebar button { flex:0 0 auto; }
-  .studio-content.top { justify-content:flex-start; align-items:stretch; }
-
-  /* Cube light trail */
-  .cube-stage { position:relative; }
-  .trail-canvas { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:3; }
-
-  /* Projects grid in About */
-  .proj-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; width:100%; }
-  .proj-tile { position:relative; border:1px solid rgba(255,255,255,.18); border-radius:12px; overflow:hidden; cursor:pointer; background:#111; padding:0; }
-  .proj-tile img { width:100%; height:110px; object-fit:cover; display:block; }
-  .proj-tile span { display:block; padding:7px 8px; font-size:10px; letter-spacing:.12em; text-transform:uppercase; text-align:left; color:#eee; }
-
-  /* Contact card */
-  .ccard { width:100%; max-width:340px; margin:auto; border:1px solid rgba(255,255,255,.3); border-radius:20px; padding:20px 18px; background:linear-gradient(145deg, rgba(255,255,255,.09), rgba(255,255,255,.015)); position:relative; overflow:hidden; }
-  .ccard::after { content:""; position:absolute; right:-60px; top:-60px; width:160px; height:160px; border-radius:50%; border:1px solid rgba(255,255,255,.18); box-shadow:0 0 0 24px rgba(255,255,255,.03), 0 0 0 48px rgba(255,255,255,.02); }
-  .ccard-logo { height:46px; filter:invert(1); display:block; margin-bottom:14px; }
-  .ccard h3 { font-size:13px; letter-spacing:.2em; text-transform:uppercase; margin-bottom:14px; font-weight:500; }
-  .crow { display:flex; align-items:center; gap:12px; padding:10px 0; border-top:1px solid rgba(255,255,255,.12); text-decoration:none; color:#f3f3f1; font-size:12.5px; line-height:1.35; position:relative; z-index:1; }
-  .crow svg { flex:0 0 22px; width:22px; height:22px; stroke:#f3f3f1; fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; }
-  .crow small { display:block; font-size:9px; letter-spacing:.18em; color:#888; text-transform:uppercase; margin-bottom:2px; }
-
-  /* Tariffs */
-  .svc-list { flex:1; overflow-y:auto; padding:8px 12px; -webkit-overflow-scrolling:touch; }
-  .svc { border:1px solid rgba(243,243,241,.16); border-radius:14px; margin-bottom:8px; background:rgba(255,255,255,.02); }
-  .svc-top { display:flex; align-items:center; gap:8px; padding:11px 10px 11px 14px; }
-  .svc-name { flex:1; font-size:11.5px; letter-spacing:.08em; text-transform:uppercase; }
-  .svc-price { font-size:10px; color:#888; white-space:nowrap; }
-  .svc-x { flex:0 0 30px; width:30px; height:30px; border:1px solid rgba(255,255,255,.3); border-radius:50%; background:transparent; font-size:20px; line-height:1; cursor:pointer; display:grid; place-items:center; transition:transform .3s, background .3s; color:#fff; }
-  .svc.open .svc-x { transform:rotate(45deg); background:rgba(255,255,255,.14); }
-  .svc-body { max-height:0; overflow:hidden; transition:max-height .4s ease; }
-  .svc.open .svc-body { max-height:600px; }
-  .svc-inner { padding:0 14px 14px; display:flex; flex-direction:column; gap:10px; }
-  .svc-desc { font-size:12px; line-height:1.55; color:#b5b5b5; }
-  .svc-add { align-self:flex-start; border:1px solid currentColor; border-radius:18px; background:transparent; height:32px; padding:0 18px; font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; cursor:pointer; }
-  .svc-add.in { background:#f3f3f1; color:#0c0c0c; border-color:#f3f3f1; }
-  .cartwrap { flex:0 0 auto; border-top:1px solid rgba(243,243,241,.15); padding:8px 12px 10px; background:rgba(0,0,0,.35); }
-  .chips { display:flex; gap:6px; overflow-x:auto; padding-bottom:8px; scrollbar-width:none; }
-  .chips::-webkit-scrollbar { display:none; }
-  .chip { flex:0 0 auto; border:1px solid rgba(255,255,255,.25); border-radius:14px; font-size:10px; padding:4px 10px; background:transparent; cursor:pointer; white-space:nowrap; }
-  .cartbar { display:flex; align-items:center; gap:10px; }
-  .cartinfo { flex:1; display:flex; align-items:center; gap:10px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; }
-  .cartinfo svg { width:22px; height:22px; stroke:#f3f3f1; fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; }
-  .cartinfo b { font-weight:500; }
-  .calc-btn { border:1px solid #f3f3f1; background:#f3f3f1; color:#0c0c0c; border-radius:20px; height:36px; padding:0 20px; font-size:11px; letter-spacing:.14em; text-transform:uppercase; cursor:pointer; }
-  .calc-btn:disabled { opacity:.35; }
-  .svc-add-new { width:100%; margin:4px 0 12px; }
-
-  /* Auth tabs */
-  .auth-choice { display:flex; gap:10px; }
-  .auth-choice .admin-btn { flex:1; }
-  .auth-choice .admin-btn.sel { background:#f3f3f1; color:#0c0c0c; }
-
-  /* Fullscreen overlays */
-  .fxo { position:fixed; inset:0; z-index:50; display:none; overflow:hidden; opacity:0; transition:opacity .5s ease; }
-  .fxo.on { display:block; }
-  .fxo.vis { opacity:1; }
-  .fx-bg { position:absolute; inset:0; transition:background .9s ease; }
-  .fx-site { position:absolute; inset:0; display:flex; flex-direction:column; padding:env(safe-area-inset-top, 12px) 0 0; transition:opacity .28s ease, transform .28s ease; }
-  .fx-site.swap { opacity:0; transform:scale(.985); }
-  .fx-head { display:flex; justify-content:space-between; align-items:center; padding:16px 20px; transition:border-color .9s; }
-  .fx-logo { font-size:15px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; }
-  .fx-nav { display:flex; gap:14px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; opacity:.8; }
-  .fx-hero { flex:1; display:flex; flex-direction:column; justify-content:center; padding:0 22px; gap:14px; position:relative; min-height:0; }
-  .fx-eyebrow { font-size:10px; letter-spacing:.3em; text-transform:uppercase; opacity:.75; }
-  .fx-title { font-size:clamp(34px, 11vw, 64px); line-height:1.02; font-weight:900; text-transform:uppercase; position:relative; z-index:2; }
-  .fx-desc { font-size:13px; line-height:1.55; max-width:300px; opacity:.85; position:relative; z-index:2; }
-  .fx-cta { align-self:flex-start; padding:12px 24px; font-size:11px; letter-spacing:.2em; text-transform:uppercase; font-weight:700; transition:all .9s ease; position:relative; z-index:2; }
-  .fx-art { position:absolute; right:-50px; top:50%; width:min(260px, 62vw); height:min(260px, 62vw); transform:translateY(-62%); transition:all .9s cubic-bezier(.2,.8,.2,1); display:grid; place-items:center; font-weight:900; font-size:15px; letter-spacing:.14em; z-index:1; }
-  .fx-art::before { content:""; position:absolute; left:-30%; right:-30%; top:42%; height:16%; border:2px solid currentColor; border-radius:50%; transform:rotate(-18deg); opacity:0; transition:opacity .9s; }
-  .fx-cards { display:flex; gap:10px; padding:0 16px 18px; position:relative; z-index:2; }
-  .fx-card { flex:1; padding:14px 10px; text-align:left; transition:all .9s ease; }
-  .fx-card b { display:block; font-size:22px; font-weight:900; margin-bottom:4px; }
-  .fx-card span { font-size:9px; letter-spacing:.14em; text-transform:uppercase; opacity:.8; }
-  .fx-foot { padding:10px 20px calc(18px + env(safe-area-inset-bottom, 0px)); font-size:9px; letter-spacing:.24em; text-transform:uppercase; opacity:.6; display:flex; justify-content:space-between; align-items:center; }
-  .fx-dots { display:flex; gap:6px; }
-  .fx-dots i { width:20px; height:3px; background:currentColor; opacity:.25; transition:opacity .4s; }
-  .fx-dots i.on { opacity:1; }
-  .fx-btn { position:absolute; z-index:5; top:71%; left:50%; transform:translate(-50%,-50%); border:2px solid currentColor; border-radius:40px; padding:16px 34px; font-size:14px; font-weight:800; letter-spacing:.24em; text-transform:uppercase; cursor:pointer; box-shadow:0 10px 40px rgba(0,0,0,.45); transition:background .9s, color .9s, border-color .9s, border-radius .9s, transform .15s; animation:fxpulse 1.8s ease-in-out infinite; }
-  .fx-btn:active { transform:translate(-50%,-50%) scale(.93); }
-  @keyframes fxpulse { 50% { box-shadow:0 10px 40px rgba(0,0,0,.45), 0 0 0 12px rgba(255,255,255,.12); } }
-
-  /* theme 0 : hypercar */
-  .fxo.t0 { color:#fff; font-family:"Impact","Arial Black","Helvetica Neue",sans-serif; }
-  .t0 .fx-bg { background:radial-gradient(ellipse at 80% 20%, rgba(255,40,30,.35), transparent 55%), linear-gradient(160deg,#0a0a0a 30%,#1a0605 100%); }
-  .t0 .fx-head { border-bottom:1px solid rgba(255,59,48,.5); }
-  .t0 .fx-title { font-style:italic; transform:skewX(-8deg); text-shadow:3px 3px 0 #ff3b30; }
-  .t0 .fx-cta { background:#ff3b30; color:#000; border-radius:0; clip-path:polygon(0 0,100% 0,92% 100%,0 100%); }
-  .t0 .fx-art { border-radius:50%; background:conic-gradient(from 220deg, #ff3b30 0 60%, #222 60% 100%); box-shadow:0 0 70px rgba(255,59,48,.55); }
-  .t0 .fx-art span { background:#0a0a0a; width:72%; height:72%; border-radius:50%; display:grid; place-items:center; }
-  .t0 .fx-card { background:#141414; border:1px solid #ff3b30; border-radius:0; border-left-width:5px; }
-  .t0 .fx-btn { background:#ff3b30; color:#000; border-color:#fff; border-radius:0; }
-
-  /* theme 1 : dolls */
-  .fxo.t1 { color:#b03a7a; font-family:"Comic Sans MS","Chalkboard SE","Marker Felt",cursive,sans-serif; }
-  .t1 .fx-bg { background:radial-gradient(circle at 15% 85%, #ffd6ea 0, transparent 45%), radial-gradient(circle at 90% 10%, #e5d4ff 0, transparent 50%), #fff3f8; }
-  .t1 .fx-head { border-bottom:2px dashed #ff9ccb; }
-  .t1 .fx-title { font-weight:700; text-transform:none; letter-spacing:0; }
-  .t1 .fx-cta { background:#ff8cc6; color:#fff; border-radius:30px; box-shadow:0 6px 0 #e0589f; }
-  .t1 .fx-art { border-radius:46% 54% 50% 50% / 55% 45% 55% 45%; background:linear-gradient(145deg,#ffc2e0,#d7b8ff); box-shadow:0 20px 60px rgba(255,140,198,.5), inset 0 0 0 10px rgba(255,255,255,.6); color:#fff; font-size:22px; animation:wob 5s ease-in-out infinite; }
-  @keyframes wob { 50% { border-radius:54% 46% 45% 55% / 45% 55% 45% 55%; } }
-  .t1 .fx-card { background:#fff; border:2px solid #ffb6d9; border-radius:22px; box-shadow:0 5px 0 #ffd0e8; }
-  .t1 .fx-btn { background:#ff8cc6; color:#fff; border-color:#fff; box-shadow:0 8px 0 #e0589f; }
-
-  /* theme 2 : deep space */
-  .fxo.t2 { color:#7fe4ff; font-family:"Courier New",ui-monospace,monospace; text-shadow:0 0 10px rgba(56,189,248,.55); }
-  .t2 .fx-bg { background:radial-gradient(circle at 70% 30%, rgba(99,102,241,.45), transparent 55%), radial-gradient(circle at 10% 90%, rgba(14,165,233,.3), transparent 50%), #020617; }
-  .t2 .fx-bg::after { content:""; position:absolute; inset:0; opacity:0; transition:opacity .9s; background-image:radial-gradient(1px 1px at 20px 30px,#fff,transparent), radial-gradient(1px 1px at 90px 140px,#9cf,transparent), radial-gradient(1.5px 1.5px at 160px 70px,#fff,transparent), radial-gradient(1px 1px at 230px 190px,#fff,transparent); background-size:260px 230px; animation:stars 40s linear infinite; }
-  .t2 .fx-bg::after { opacity:1; }
-  @keyframes stars { to { background-position:-520px 460px; } }
-  .t2 .fx-head { border-bottom:1px solid rgba(56,189,248,.4); }
-  .t2 .fx-title { letter-spacing:.06em; font-weight:700; }
-  .t2 .fx-cta { background:transparent; color:#7fe4ff; border:1px solid #38bdf8; border-radius:2px; box-shadow:0 0 22px rgba(56,189,248,.5), inset 0 0 14px rgba(56,189,248,.25); }
-  .t2 .fx-art { border-radius:50%; background:radial-gradient(circle at 35% 30%, #a5b4fc, #4338ca 55%, #0f0a3c 100%); box-shadow:0 0 80px rgba(99,102,241,.7); color:#fff; width:min(190px,48vw); height:min(190px,48vw); right:-10px; }
-  .t2 .fx-art::before { opacity:1; box-shadow:0 0 14px #38bdf8; color:#38bdf8; }
-  .t2 .fx-card { background:rgba(15,23,42,.7); border:1px solid #0ea5e9; border-radius:4px; backdrop-filter:blur(4px); }
-  .t2 .fx-btn { background:#0369a1; color:#fff; border-color:#38bdf8; border-radius:4px; box-shadow:0 0 30px rgba(56,189,248,.7); }
-
-  /* Scratch overlay */
-  .scr { position:fixed; inset:0; z-index:60; display:none; background:#fff; opacity:0; transition:opacity .4s; }
-  .scr.on { display:block; }
-  .scr.vis { opacity:1; }
-  .scr-final { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; color:#0a0a0a; padding:0 24px; gap:14px; font-family:"Helvetica Neue",Arial,sans-serif; }
-  .scr-final b { font-size:clamp(22px,7.2vw,56px); line-height:1.1; font-weight:900; letter-spacing:0; text-transform:uppercase; }
-  .scr-final i { font-style:normal; font-size:10px; letter-spacing:.34em; text-transform:uppercase; color:#777; }
-  #scrCanvas { position:absolute; inset:0; width:100%; height:100%; touch-action:none; transition:opacity 1.4s ease; }
-  #scrCanvas.gone { opacity:0; pointer-events:none; }
-  .scr-hint { position:absolute; inset:0; display:grid; place-items:center; pointer-events:none; color:#fff; font-size:26px; letter-spacing:.5em; text-transform:uppercase; padding-left:.5em; transition:opacity .6s; animation:pulse 2s ease-in-out infinite; }
-  .scr-close { position:absolute; top:max(16px, env(safe-area-inset-top)); right:16px; z-index:5; width:40px; height:40px; border-radius:50%; border:1px solid #fff; background:transparent; color:#fff; font-size:24px; mix-blend-mode:difference; cursor:pointer; }
 </style>
 </head>
 <body>
@@ -442,37 +312,11 @@
   </div>
 </section>
 
-<!-- Effect fullscreen demo -->
-<div class="fxo t0" id="fxo">
-  <div class="fx-bg"></div>
-  <div class="fx-site" id="fxSite">
-    <div class="fx-head"><span class="fx-logo" id="fxLogo"></span><span class="fx-nav" id="fxNav"></span></div>
-    <div class="fx-hero">
-      <div class="fx-art" id="fxArt"><span id="fxArtT"></span></div>
-      <div class="fx-eyebrow" id="fxEye"></div>
-      <h1 class="fx-title" id="fxTitle"></h1>
-      <p class="fx-desc" id="fxDesc"></p>
-      <div class="fx-cta" id="fxCta"></div>
-    </div>
-    <div class="fx-cards" id="fxCards"></div>
-    <div class="fx-foot"><span id="fxFoot"></span><span class="fx-dots" id="fxDots"><i></i><i></i><i></i></span></div>
-  </div>
-  <button type="button" class="fx-btn" id="fxBtn">НАЖМИ</button>
-</div>
-
-<!-- Scratch overlay -->
-<div class="scr" id="scr">
-  <div class="scr-final"><i>V³ studio</i><b>НЕСТАНДАРТНЫЕ<br>РЕШЕНИЯ</b></div>
-  <canvas id="scrCanvas"></canvas>
-  <div class="scr-hint" id="scrHint">потри</div>
-  <button type="button" class="scr-close" id="scrClose">×</button>
-</div>
-
 <!-- Bottom Dock -->
 <nav class="dock" id="dock">
   <i id="pill"></i>
   <button type="button" data-tab="studio">о нас</button>
-  <button type="button" data-tab="contacts">диалог</button>
+  <button type="button" data-tab="contacts">контакты</button>
   <button type="button" data-tab="cabinet">личный кабинет</button>
   <button type="button" data-tab="prices">тарифы</button>
 </nav>
@@ -489,8 +333,8 @@ const defaultProjects = [
 ];
 
 const defaultTeam = [
-  { id: 0, name: 'ВЛАДИСЛАВ В', role: 'Арт-директор / Проектный лид', avatar: 'logo.png', bio: 'Руководство визуальными концепциями, айдентикой брендов и цифровыми интерфейсами.' },
-  { id: 1, name: 'АЛЕКСЕЙ П', role: 'Разработка / Автоматизация', avatar: 'logo.png', bio: 'Разработка сайтов и приложений, внедрение CRM, автоматизация процессов и ИИ-решения.' }
+  { id: 0, name: 'Владислав', role: 'Арт-директор / Лид проектов', avatar: 'logo.png', bio: 'Руководство визуальными концепциями, айдентикой брендов и цифровыми интерфейсами.' },
+  { id: 1, name: 'Алексей', role: 'Менеджмент и коммуникация', avatar: 'frames/f01.jpg', bio: 'Сопровождение проектов, клиентский сервис и координация разработки.' }
 ];
 
 function getProjects() {
@@ -507,20 +351,21 @@ function saveProjects(p) {
 
 function getTeam() {
   try {
-    const saved = localStorage.getItem('v3_team2');
+    const saved = localStorage.getItem('v3_team');
     return saved ? JSON.parse(saved) : defaultTeam;
   } catch(e) {
     return defaultTeam;
   }
 }
 function saveTeam(t) {
-  try { localStorage.setItem('v3_team2', JSON.stringify(t)); } catch(e){}
+  try { localStorage.setItem('v3_team', JSON.stringify(t)); } catch(e){}
 }
 
 let projects = getProjects();
 let team = getTeam();
 let currentProjectIndex = 0;
 let isAdmin = false;
+let selectedTariff = '';
 
 // Crosshairs on Home
 const vLine = document.querySelector('#cross .v');
@@ -569,10 +414,10 @@ function show(id) {
   }
 }
 
-// Ultra-smooth 60fps Canvas Cosmic Vortex (Black/White Particle Galaxy)
+// 60fps Canvas Cosmic Vortex
 let vortexAnimId = null;
 const canvas = document.getElementById('vortexCanvas');
-const ctx = canvas.getContext('2d', { alpha:true });
+const ctx = canvas.getContext('2d');
 let particles = [];
 
 function initParticles() {
@@ -598,20 +443,15 @@ function startVortexCanvas() {
   function draw() {
     const w = canvas.width;
     const h = canvas.height;
-    ctx.clearRect(0, 0, w, h);
+    ctx.fillStyle = 'rgba(12, 12, 12, 0.22)';
+    ctx.fillRect(0, 0, w, h);
     
     const cx = w / 2;
     const cy = h / 2;
     
-    // central glow (transparent background, no black plate)
-    const dprr = (window.devicePixelRatio || 1);
-    const gr = ctx.createRadialGradient(cx, cy, 0, cx, cy, 26 * dprr);
-    const gc = document.body.classList.contains('dark') ? '255,255,255' : '20,20,20';
-    gr.addColorStop(0, 'rgba(' + gc + ',0.3)');
-    gr.addColorStop(1, 'rgba(' + gc + ',0)');
     ctx.beginPath();
-    ctx.arc(cx, cy, 26 * dprr, 0, Math.PI * 2);
-    ctx.fillStyle = gr;
+    ctx.arc(cx, cy, 10 * (window.devicePixelRatio || 1), 0, Math.PI * 2);
+    ctx.fillStyle = '#000';
     ctx.fill();
     
     particles.forEach(p => {
@@ -621,13 +461,12 @@ function startVortexCanvas() {
         p.radius = 110 + Math.random() * 20;
         p.angle = Math.random() * Math.PI * 2;
       }
-      // 3D perspective flattened ellipse
       const x = cx + Math.cos(p.angle) * p.radius * (window.devicePixelRatio || 1);
       const y = cy + Math.sin(p.angle) * (p.radius * 0.42) * (window.devicePixelRatio || 1);
       
       ctx.beginPath();
       ctx.arc(x, y, p.size * (window.devicePixelRatio || 1), 0, Math.PI * 2);
-      ctx.fillStyle = (document.body.classList.contains('dark') ? 'rgba(245,245,245,' : 'rgba(20,20,20,') + p.opacity + ')';
+      ctx.fillStyle = 'rgba(245, 245, 245, ' + p.opacity + ')';
       ctx.fill();
     });
     
@@ -643,11 +482,7 @@ function stopVortexCanvas() {
   }
 }
 
-// Video & Subtitles Logic with Target Positions:
-// 1. "дизайн который не равнодушен" -> правая нижняя часть (1.0, 1.0)
-// 2. "креативность которая дышит" -> верхняя левая часть (0.0, 0.0)
-// 3. "эстетика и функционал" -> правая верхняя часть (1.0, 0.0)
-// 4. "привлекает внимание" -> центр текстового блока (0.5, 0.5)
+// Video & Subtitles Logic
 const vid = document.getElementById('vid');
 const phrase = document.getElementById('phrase');
 const cap = document.getElementById('cap');
@@ -783,8 +618,8 @@ document.getElementById('expand').onclick = () => {
 
 // Modal Detail View
 const modal = document.getElementById('projectModal');
-document.getElementById('openDetail').onclick = () => openProject(projects[currentProjectIndex] || projects[0]);
-function openProject(p) {
+document.getElementById('openDetail').onclick = () => {
+  const p = projects[currentProjectIndex] || projects[0];
   document.getElementById('modalTitle').textContent = p.title;
   const linkEl = document.getElementById('modalLink');
   linkEl.href = p.link || '#';
@@ -801,7 +636,7 @@ function openProject(p) {
   document.getElementById('modalDesc').textContent = p.desc || p.shortText;
   document.getElementById('modalFree').textContent = p.free || 'Свободное поле проекта';
   modal.classList.add('on');
-}
+};
 
 document.getElementById('closeModal').onclick = () => modal.classList.remove('on');
 modal.onclick = (e) => { if (e.target === modal) modal.classList.remove('on'); };
@@ -820,23 +655,75 @@ document.getElementById('ticker').innerHTML = row + row;
 // Panels in Shell
 const panels = {
   studio: `<h2>о нас / концепция</h2>
-    <div class="studio-layout">
-      <div class="studio-sidebar">
-        <button type="button" data-view="aes" class="active">эстетика</button>
-        <button type="button" data-view="idea">креатив</button>
-        <button type="button" data-view="fx">эффект</button>
-        <button type="button" data-view="team">команда</button>
-        <button type="button" data-view="projects">проекты</button>
-        <button type="button" data-view="contacts">контакты</button>
+    <div id="studioContainer" style="width:100%; height:100%; display:flex; flex-direction:column;"></div>`,
+  contacts: `<h2>контакты</h2>
+    <div class="log">
+      <div class="contact-row">
+        <span class="contact-name">Алексей</span>
+        <a href="tel:+79152071950" class="contact-val">+7 (915) 207-19-50</a>
       </div>
-      <div class="studio-content" id="studioContent"></div>
+      <div class="contact-row">
+        <span class="contact-name">Владислав</span>
+        <a href="tel:+79154726335" class="contact-val">+7 (915) 472-63-35</a>
+      </div>
+      <div class="contact-row">
+        <span class="contact-name">Локация студии</span>
+        <span class="contact-address">Москва, Юбилейный проспект</span>
+      </div>
     </div>`,
-  contacts: '<h2>диалог</h2><div class="log" id="log"></div><form id="form"><input id="msg" placeholder="опишите ваш проект..." /><button type="submit" aria-label="отправить"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M2 21 L23 12 L2 3 L2 10 L17 12 L2 14 Z"/></svg></button></form>',
   cabinet: '<h2>личный кабинет</h2><div class="auth-box" id="authBox"></div><div class="log" id="authlog"></div>',
-  prices: '<h2>тарифы</h2><div class="svc-list" id="svcList"></div><div class="cartwrap" id="cartWrap"></div>'
+  prices: `<h2>тарифы на дизайн</h2>
+    <div class="log">
+      <div class="tariff-item">
+        <div class="tariff-header">
+          <span class="tariff-title">Промо-сайт / Лендинг</span>
+          <span class="tariff-price">от 45 000 ₽</span>
+        </div>
+        <div class="tariff-desc">Уникальный визуальный стиль, плавная анимация, мобильная адаптивность и высокая конверсия.</div>
+        <button type="button" class="tariff-select-btn" onclick="selectTariff('Промо-сайт / Лендинг (от 45 000 ₽)')">Выбрать услугу →</button>
+      </div>
+      <div class="tariff-item">
+        <div class="tariff-header">
+          <span class="tariff-title">Айдентика & Бренд</span>
+          <span class="tariff-price">от 65 000 ₽</span>
+        </div>
+        <div class="tariff-desc">Логобук, шрифтовые пары, фирменная графика, гайдлайн и дизайн носителей бренда.</div>
+        <button type="button" class="tariff-select-btn" onclick="selectTariff('Айдентика & Бренд (от 65 000 ₽)')">Выбрать услугу →</button>
+      </div>
+      <div class="tariff-item">
+        <div class="tariff-header">
+          <span class="tariff-title">Сервис / Web-платформа</span>
+          <span class="tariff-price">от 120 000 ₽</span>
+        </div>
+        <div class="tariff-desc">Глубокое UX/UI проектирование, дизайн-система интерфейса и личных кабинетов.</div>
+        <button type="button" class="tariff-select-btn" onclick="selectTariff('Сервис / Web-платформа (от 120 000 ₽)')">Выбрать услугу →</button>
+      </div>
+      <div class="tariff-item">
+        <div class="tariff-header">
+          <span class="tariff-title">Индивидуальный продакшн</span>
+          <span class="tariff-price">от 200 000 ₽</span>
+        </div>
+        <div class="tariff-desc">3D-графика, интерактивный WebGL, нестандартные спецэффекты и полный запуск продукта.</div>
+        <button type="button" class="tariff-select-btn" onclick="selectTariff('Индивидуальный продакшн (от 200 000 ₽)')">Выбрать услугу →</button>
+      </div>
+    </div>`
 };
 
+function selectTariff(name) {
+  selectedTariff = name;
+  tab('contacts_chat');
+}
+
 function tab(name) {
+  if (name === 'contacts_chat') {
+    document.getElementById('panel').innerHTML = '<h2>диалог со студией</h2><div class="log" id="log"></div><form id="form"><input id="msg" placeholder="ваше сообщение..." /><button type="submit" aria-label="отправить"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M2 21 L23 12 L2 3 L2 10 L17 12 L2 14 Z"/></svg></button></form>';
+    const buttons = [...document.querySelectorAll('#dock button')];
+    buttons.forEach(b => b.classList.toggle('on', b.dataset.tab === 'contacts'));
+    document.getElementById('pill').style.transform = 'translateX(100%)';
+    renderDialogFlow();
+    return;
+  }
+  
   document.getElementById('panel').innerHTML = panels[name];
   const buttons = [...document.querySelectorAll('#dock button')];
   buttons.forEach((b,i) => {
@@ -847,32 +734,87 @@ function tab(name) {
     }
   });
   
-  if (name === 'studio') initStudioTab();
+  if (name === 'studio') renderStudioMain();
   if (name === 'cabinet') renderCabinet();
-  if (name === 'contacts') renderContacts();
-  if (name === 'prices') renderPrices();
 }
 
-// Interactive 3D Cube & Studio Views
-let rotX = -15, rotY = 25;
-let morphStep = 0;
-
-function initStudioTab() {
-  const btns = document.querySelectorAll('.studio-sidebar button');
-  btns.forEach(b => b.onclick = () => {
-    btns.forEach(x => x.classList.remove('active'));
-    b.classList.add('active');
-    renderStudioView(b.dataset.view);
+// Studio Tab Logic (Main View with "ВОЗМОЖНОСТИ" Button)
+function renderStudioMain() {
+  const container = document.getElementById('studioContainer');
+  team = getTeam();
+  
+  let teamHtml = '<div class="team-list">';
+  team.forEach((m, idx) => {
+    teamHtml += `
+      <div class="team-card">
+        <img class="team-avatar" src="${m.avatar || 'logo.png'}" alt="${m.name}">
+        <div class="team-info">
+          <div class="team-header">
+            <span class="team-name">${m.name}</span>
+            <button type="button" class="team-expand" data-team-idx="${idx}">+</button>
+          </div>
+          <div class="team-role">${m.role}</div>
+          <div class="team-bio" id="teambio-${idx}">${m.bio}</div>
+        </div>
+      </div>
+    `;
   });
-  renderStudioView('aes');
+  teamHtml += '</div>';
+
+  container.innerHTML = `
+    <div class="studio-main-view">
+      <div style="font-size:12px; color:#a0a0a0; line-height:1.55; margin-bottom:12px;">
+        V³ Studio — лаборатория концептуального дизайна и цифровых решений. Мы создаём интерфейсы и визуальные системы, которые выделяют бренды на рынке.
+      </div>
+      ${teamHtml}
+      <button type="button" class="features-btn-main" id="openFeaturesBtn">ВОЗМОЖНОСТИ →</button>
+    </div>
+  `;
+
+  document.querySelectorAll('.team-expand').forEach(btn => {
+    btn.onclick = () => {
+      const idx = btn.dataset.teamIdx;
+      const bio = document.getElementById('teambio-' + idx);
+      bio.classList.toggle('open');
+      btn.textContent = bio.classList.contains('open') ? '×' : '+';
+    };
+  });
+
+  document.getElementById('openFeaturesBtn').onclick = () => {
+    renderFeaturesView('aes');
+  };
 }
 
-function renderStudioView(view) {
-  const content = document.getElementById('studioContent');
-  content.classList.toggle('top', view === 'projects');
-  if (view === 'idea') { /* handled below, also launches scratch */ }
-  if (view === 'aes') {
+let rotX = -15, rotY = 25;
+let currentSlide = 0;
+const slideImages = ['frames/f01.jpg', 'frames/f03.jpg', 'frames/f05.jpg', 'frames/f07.jpg', 'frames/f09.jpg', 'frames/f11.jpg'];
+
+function renderFeaturesView(tabKey) {
+  const container = document.getElementById('studioContainer');
+  container.innerHTML = `
+    <div class="features-layout">
+      <div class="features-nav-line">
+        <button type="button" class="features-back-btn" id="featBack">← НАЗАД</button>
+        <button type="button" id="tabAes" class="${tabKey === 'aes' ? 'active' : ''}">ЭСТЕТИКА</button>
+        <button type="button" id="tabIdea" class="${tabKey === 'idea' ? 'active' : ''}">КРЕАТИВ</button>
+        <button type="button" id="tabFx" class="${tabKey === 'fx' ? 'active' : ''}">ЭФФЕКТ</button>
+      </div>
+      <div class="features-content-box" id="featContent"></div>
+    </div>
+  `;
+
+  document.getElementById('featBack').onclick = renderStudioMain;
+  document.getElementById('tabAes').onclick = () => renderFeaturesView('aes');
+  document.getElementById('tabIdea').onclick = () => renderFeaturesView('idea');
+  document.getElementById('tabFx').onclick = () => renderFeaturesView('fx');
+
+  const content = document.getElementById('featContent');
+
+  if (tabKey === 'aes') {
     content.innerHTML = `
+      <div class="features-header-text">
+        мы внедряем анимированные элементы и фичи чтобы создать визуальный контакт и собрать уникальную эстетику которая создает эффект WOW и новые тактильные ощущения.
+      </div>
       <div class="cube-stage" id="cubeStage">
         <div class="cube3" id="cube3D">
           <i></i><i></i><i></i><i></i><i></i><i></i>
@@ -881,424 +823,177 @@ function renderStudioView(view) {
       </div>
     `;
     setupCubeInteraction();
-  } else if (view === 'idea') {
-    setTimeout(openScratch, 60);
+  } else if (tabKey === 'idea') {
     content.innerHTML = `
-      <svg width="64" height="88" viewBox="0 0 72 96" fill="none" stroke="currentColor" stroke-width="1.5">
-        <path d="M36 8 a22 22 0 0 1 12 40 c-4 6-6 10-6 16 H30 c0-6-2-10-6-16 A22 22 0 0 1 36 8z"/>
-        <path d="M30 70 h12 M32 76 h8 M34 82 h4"/>
-      </svg>
-      <div style="font-size:12px; letter-spacing:.14em; text-transform:uppercase; margin-top:16px;">смысл превыше формы</div>
-    `;
-  } else if (view === 'fx') {
-    content.innerHTML = '<div style="text-align:center"><div style="font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#888;margin-bottom:16px">дизайн меняет восприятие</div><button type="button" class="btn show" id="fxStart">открыть эффект</button></div>';
-    document.getElementById('fxStart').onclick = openFx;
-    openFx();
-  } else if (view === 'projects') {
-    projects = getProjects();
-    content.innerHTML = '<div class="proj-grid">' + projects.map((p,i) => '<button type="button" class="proj-tile" data-pi="'+i+'"><img src="'+p.img+'" alt=""><span>'+p.title+'</span></button>').join('') + '</div>';
-    content.querySelectorAll('.proj-tile').forEach(b => b.onclick = () => openProject(projects[+b.dataset.pi]));
-  } else if (view === 'contacts') {
-    const c = getContactInfo();
-    const ic = {
-      pin:'<svg viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>',
-      tel:'<svg viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A15 15 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>',
-      tg:'<svg viewBox="0 0 24 24"><path d="M21 4 3 11l6 2 2 6 3-4 5 4z"/><path d="m9 13 8-5"/></svg>',
-      wa:'<svg viewBox="0 0 24 24"><path d="M4 20l1.3-4.2A8 8 0 1 1 8.4 18.8z"/><path d="M9 9c0 3 3 6 6 6l1-2-2-1-1 .8c-1-.4-2-1.4-2.4-2.4L11.4 9 10.5 7z"/></svg>',
-      ig:'<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="5"/><circle cx="12" cy="12" r="3.6"/><circle cx="17" cy="7" r=".6"/></svg>'
-    };
-    const digits = (c.phone||'').replace(/\D/g,'');
-    content.classList.add('top');
-    content.innerHTML = `
-      <div class="ccard">
-        <img class="ccard-logo" src="logo.png" alt="V³ studio">
-        <h3>контакты</h3>
-        <div class="crow">${ic.pin}<div><small>адрес</small>${c.address}</div></div>
-        <a class="crow" href="tel:+${digits}">${ic.tel}<div><small>телефон</small>${c.phone}</div></a>
-        <a class="crow" href="${c.telegram}" target="_blank" rel="noreferrer">${ic.tg}<div><small>группа telegram</small>${c.telegram.replace('https://','')}</div></a>
-        <a class="crow" href="${c.whatsapp}" target="_blank" rel="noreferrer">${ic.wa}<div><small>whatsapp</small>${c.whatsapp.replace('https://','')}</div></a>
-        <a class="crow" href="${c.instagram}" target="_blank" rel="noreferrer">${ic.ig}<div><small>instagram</small>${c.instagram.replace('https://','')}</div></a>
-      </div>`;
-  } else if (view === 'team') {
-    team = getTeam();
-    let html = '<div class="team-list">';
-    team.forEach((m, idx) => {
-      html += `
-        <div class="team-card">
-          <img class="team-avatar" src="${m.avatar || 'logo.png'}" alt="${m.name}">
-          <div class="team-info">
-            <div class="team-header">
-              <span class="team-name">${m.name}</span>
-              <button type="button" class="team-expand" data-team-idx="${idx}">+</button>
-            </div>
-            <div class="team-role">${m.role}</div>
-            <div class="team-bio" id="teambio-${idx}">${m.bio}</div>
-          </div>
+      <div class="features-header-text">
+        креативные решения помогают улучшить функционал сайта и находить необычные пути , реализовать лотерею на сайте или разработать социальное приложение.
+      </div>
+      <div class="scratch-container" id="scratchBox">
+        <div class="scratch-underlayer">
+          <img src="logo.png" alt="logo">
+          <div style="font-size:11px; letter-spacing:.14em; text-transform:uppercase;">V³ STUDIO • SECRET UNLOCKED</div>
         </div>
-      `;
-    });
-    html += '</div>';
-    content.innerHTML = html;
+        <canvas class="scratch-canvas" id="scratchCanvas"></canvas>
+      </div>
+      <div style="font-size:10px; color:#777; text-align:center; margin-top:8px; letter-spacing:.12em; text-transform:uppercase;">Сотрите защитный слой пальцем</div>
+    `;
+    setupScratchCanvas();
+  } else if (tabKey === 'fx') {
+    content.innerHTML = `
+      <div class="effect-slider">
+        <img class="effect-img" id="effectSlideImg" src="${slideImages[currentSlide]}" alt="slide">
+        <div class="effect-overlay-text">
+          уникальность дизайна определяет философию вашего проекта
+        </div>
+        <div class="slider-arrows">
+          <button type="button" id="prevSlide">←</button>
+          <button type="button" id="nextSlide">→</button>
+        </div>
+      </div>
+      <div style="font-size:10px; color:#777; text-align:center; margin-top:8px; letter-spacing:.12em; text-transform:uppercase;">Галерея дизайн-концепций (${currentSlide + 1}/${slideImages.length})</div>
+    `;
+
+    document.getElementById('prevSlide').onclick = () => {
+      currentSlide = (currentSlide - 1 + slideImages.length) % slideImages.length;
+      renderFeaturesView('fx');
+    };
+    document.getElementById('nextSlide').onclick = () => {
+      currentSlide = (currentSlide + 1) % slideImages.length;
+      renderFeaturesView('fx');
+    };
+  }
+}
+
+// Scratch Card Canvas
+function setupScratchCanvas() {
+  const c = document.getElementById('scratchCanvas');
+  if (!c) return;
+  const box = document.getElementById('scratchBox');
+  c.width = box.clientWidth;
+  c.height = box.clientHeight;
+  const cctx = c.getContext('2d');
+  
+  cctx.fillStyle = '#222';
+  cctx.fillRect(0, 0, c.width, c.height);
+  cctx.fillStyle = '#666';
+  cctx.font = '11px monospace';
+  cctx.textAlign = 'center';
+  cctx.fillText('СТИРАЙТЕ ЗДЕСЬ', c.width / 2, c.height / 2);
+
+  let isDrawing = false;
+  function scratch(e) {
+    if (!isDrawing) return;
+    const rect = c.getBoundingClientRect();
+    const x = (e.clientX || (e.touches && e.touches[0].clientX)) - rect.left;
+    const y = (e.clientY || (e.touches && e.touches[0].clientY)) - rect.top;
     
-    document.querySelectorAll('.team-expand').forEach(btn => {
-      btn.onclick = () => {
-        const idx = btn.dataset.teamIdx;
-        const bio = document.getElementById('teambio-' + idx);
-        bio.classList.toggle('open');
-        btn.textContent = bio.classList.contains('open') ? '×' : '+';
-      };
-    });
+    cctx.globalCompositeOperation = 'destination-out';
+    cctx.beginPath();
+    cctx.arc(x, y, 22, 0, Math.PI * 2);
+    cctx.fill();
   }
+
+  c.addEventListener('pointerdown', (e) => { isDrawing = true; scratch(e); });
+  c.addEventListener('pointermove', scratch);
+  window.addEventListener('pointerup', () => { isDrawing = false; });
 }
 
-// ===== Fullscreen "Эффект": 3 website designs, then return =====
-const fxThemes = [
-  { cls:'t0', logo:'GT MOTORS', nav:'<span>модели</span><span>салон</span><span>тест-драйв</span>', eye:'Hypercar · 2026', title:'Скорость<br>без<br>компромиссов', desc:'Инженерия на грани физики. 640 л.с. и 3,1 секунды до сотни.', cta:'ЗАБРОНИРОВАТЬ', art:'320 KM/H',
-    cards:[['640','л.с.'],['3.1s','0–100'],['V8','twin turbo']], foot:'GT PERFORMANCE · SINCE 1986' },
-  { cls:'t1', logo:'Doll House', nav:'<span>куклы</span><span>наряды</span><span>подарки</span>', eye:'Коллекция «Весна»', title:'Сказочный<br>мир кукол', desc:'Авторские игрушки и наряды ручной работы. Каждая кукла со своей историей.', cta:'В КОРЗИНУ', art:'♡ ♡ ♡',
-    cards:[['120+','кукол'],['40','нарядов'],['♡','с любовью']], foot:'сделано руками · с нежностью' },
-  { cls:'t2', logo:'ASTRON//LAB', nav:'<span>миссии</span><span>телеметрия</span><span>архив</span>', eye:'Deep Space Program', title:'Исследуем<br>глубокий<br>космос', desc:'Зонды, орбитальные станции и данные из-за границ Солнечной системы.', cta:'НАЧАТЬ МИССИЮ', art:'ORBIT 4',
-    cards:[['1.2M','световых лет'],['07','станций'],['∞','орбита']], foot:'сигнал стабилен · канал 7' }
-];
-let fxStep = 0, fxBusy = false;
-const fxo = document.getElementById('fxo');
-const fxSite = document.getElementById('fxSite');
-const fxBtn = document.getElementById('fxBtn');
-
-function fxFill(t) {
-  fxo.className = 'fxo on vis ' + t.cls;
-  document.getElementById('fxLogo').textContent = t.logo;
-  document.getElementById('fxNav').innerHTML = t.nav;
-  document.getElementById('fxEye').textContent = t.eye;
-  document.getElementById('fxTitle').innerHTML = t.title;
-  document.getElementById('fxDesc').textContent = t.desc;
-  document.getElementById('fxCta').textContent = t.cta;
-  document.getElementById('fxArtT').textContent = t.art;
-  document.getElementById('fxFoot').textContent = t.foot;
-  document.getElementById('fxCards').innerHTML = t.cards.map(c => '<div class="fx-card"><b>'+c[0]+'</b><span>'+c[1]+'</span></div>').join('');
-  document.querySelectorAll('#fxDots i').forEach((d,i) => d.classList.toggle('on', i === fxStep));
-  fxBtn.textContent = fxStep === fxThemes.length - 1 ? 'ВЕРНУТЬСЯ' : 'НАЖМИ';
-}
-function openFx() {
-  fxStep = 0;
-  fxo.classList.add('on');
-  fxFill(fxThemes[0]);
-  fxo.classList.remove('vis');
-  requestAnimationFrame(() => requestAnimationFrame(() => fxo.classList.add('vis')));
-}
-function closeFx() {
-  fxo.classList.remove('vis');
-  setTimeout(() => fxo.classList.remove('on'), 520);
-  const b = document.querySelector('.studio-sidebar button[data-view="aes"]');
-  if (b) b.click();
-}
-fxBtn.onclick = () => {
-  if (fxBusy) return;
-  if (fxStep >= fxThemes.length - 1) { closeFx(); return; }
-  fxBusy = true;
-  fxSite.classList.add('swap');
-  fxStep++;
-  const next = fxThemes[fxStep];
-  fxo.classList.remove(...fxThemes.map(t => t.cls));
-  fxo.classList.add(next.cls);
-  setTimeout(() => {
-    fxFill(next);
-    fxSite.classList.remove('swap');
-    fxBusy = false;
-  }, 300);
-};
-
-// ===== Scratch card "Креатив" =====
-const scr = document.getElementById('scr');
-const scrCanvas = document.getElementById('scrCanvas');
-const scrHint = document.getElementById('scrHint');
-let scrCtx = null, scrDown = false, scrLast = null, scrDone = false, scrTimer = null;
-function openScratch() {
-  scr.classList.add('on');
-  scr.classList.remove('vis');
-  requestAnimationFrame(() => requestAnimationFrame(() => scr.classList.add('vis')));
-  const w = window.innerWidth, h = window.innerHeight;
-  scrCanvas.width = w; scrCanvas.height = h;
-  scrCanvas.classList.remove('gone');
-  scrCtx = scrCanvas.getContext('2d', { willReadFrequently:true });
-  scrCtx.globalCompositeOperation = 'source-over';
-  scrCtx.fillStyle = '#000';
-  scrCtx.fillRect(0, 0, w, h);
-  scrHint.style.opacity = 1;
-  scrDone = false;
-  clearInterval(scrTimer);
-  scrTimer = setInterval(scrCheck, 350);
-}
-function closeScratch() {
-  clearInterval(scrTimer);
-  scr.classList.remove('vis');
-  setTimeout(() => scr.classList.remove('on'), 420);
-}
-function scrStamp(x, y) {
-  const r = 46;
-  const g = scrCtx.createRadialGradient(x, y, 0, x, y, r);
-  g.addColorStop(0, 'rgba(0,0,0,0.30)');
-  g.addColorStop(0.55, 'rgba(0,0,0,0.18)');
-  g.addColorStop(1, 'rgba(0,0,0,0)');
-  scrCtx.globalCompositeOperation = 'destination-out';
-  scrCtx.fillStyle = g;
-  scrCtx.beginPath(); scrCtx.arc(x, y, r, 0, Math.PI * 2); scrCtx.fill();
-}
-function scrMove(x, y) {
-  if (scrDone) return;
-  if (scrLast) {
-    const dx = x - scrLast.x, dy = y - scrLast.y;
-    const dist = Math.hypot(dx, dy);
-    const steps = Math.max(1, Math.ceil(dist / 7));
-    for (let i = 1; i <= steps; i++) scrStamp(scrLast.x + dx * i / steps, scrLast.y + dy * i / steps);
-  } else scrStamp(x, y);
-  scrLast = { x, y };
-  scrHint.style.opacity = 0;
-}
-function scrCheck() {
-  if (scrDone || !scrCtx) return;
-  const w = scrCanvas.width, h = scrCanvas.height;
-  const d = scrCtx.getImageData(0, 0, w, h).data;
-  let clear = 0, total = 0;
-  for (let i = 3; i < d.length; i += 4 * 40) { total++; if (d[i] < 90) clear++; }
-  if (clear / total > 0.55) {
-    scrDone = true;
-    scrCanvas.classList.add('gone');
-  }
-}
-scrCanvas.addEventListener('pointerdown', e => { scrDown = true; scrLast = null; scrCanvas.setPointerCapture(e.pointerId); scrMove(e.clientX, e.clientY); });
-scrCanvas.addEventListener('pointermove', e => { if (scrDown) scrMove(e.clientX, e.clientY); });
-const scrUp = () => { scrDown = false; scrLast = null; };
-scrCanvas.addEventListener('pointerup', scrUp);
-scrCanvas.addEventListener('pointercancel', scrUp);
-document.getElementById('scrClose').onclick = closeScratch;
-
-
+// 3D Cube Rotation
 function setupCubeInteraction() {
   const stage = document.getElementById('cubeStage');
   const cube = document.getElementById('cube3D');
   if (!stage || !cube) return;
-
-  // light trail canvas
-  const tc = document.createElement('canvas');
-  tc.className = 'trail-canvas';
-  stage.appendChild(tc);
-  const dpr = window.devicePixelRatio || 1;
-  const sr = stage.getBoundingClientRect();
-  tc.width = sr.width * dpr; tc.height = sr.height * dpr;
-  const tctx = tc.getContext('2d');
-  const pts = [];
-  const LIFE = 650;
-
-  function drawTrail() {
-    if (!document.body.contains(tc)) return;
-    const now = performance.now();
-    while (pts.length && now - pts[0].t > LIFE) pts.shift();
-    tctx.clearRect(0, 0, tc.width, tc.height);
-    tctx.lineCap = 'round'; tctx.lineJoin = 'round';
-    for (let i = 1; i < pts.length; i++) {
-      const a = pts[i - 1], b = pts[i];
-      const k = 1 - (now - b.t) / LIFE;
-      if (k <= 0) continue;
-      tctx.strokeStyle = 'rgba(190,235,255,' + (0.85 * k) + ')';
-      tctx.shadowColor = 'rgba(120,200,255,' + k + ')';
-      tctx.shadowBlur = 16 * dpr * k;
-      tctx.lineWidth = (1 + 5 * k) * dpr;
-      tctx.beginPath();
-      tctx.moveTo(a.x * dpr, a.y * dpr);
-      tctx.lineTo(b.x * dpr, b.y * dpr);
-      tctx.stroke();
-    }
-    requestAnimationFrame(drawTrail);
-  }
-  requestAnimationFrame(drawTrail);
-
+  
   let isDown = false;
   let startX, startY;
-  function updateCube() { cube.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`; }
+  
+  function updateCube() {
+    cube.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+  }
   updateCube();
-
+  
   stage.addEventListener('pointerdown', (e) => {
-    isDown = true; startX = e.clientX; startY = e.clientY;
+    isDown = true;
+    startX = e.clientX;
+    startY = e.clientY;
     stage.setPointerCapture(e.pointerId);
-    const r = stage.getBoundingClientRect();
-    pts.push({ x: e.clientX - r.left, y: e.clientY - r.top, t: performance.now() });
   });
   stage.addEventListener('pointermove', (e) => {
     if (!isDown) return;
-    const dx = e.clientX - startX, dy = e.clientY - startY;
-    rotY += dx * 0.7; rotX -= dy * 0.7;
-    startX = e.clientX; startY = e.clientY;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    rotY += dx * 0.7;
+    rotX -= dy * 0.7;
+    startX = e.clientX;
+    startY = e.clientY;
     updateCube();
-    const r = stage.getBoundingClientRect();
-    const px = e.clientX - r.left, py = e.clientY - r.top;
-    const last = pts[pts.length - 1];
-    if (last && Math.hypot(px - last.x, py - last.y) > 3) {
-      const n = Math.ceil(Math.hypot(px - last.x, py - last.y) / 4);
-      for (let i = 1; i <= n; i++) pts.push({ x: last.x + (px - last.x) * i / n, y: last.y + (py - last.y) * i / n, t: performance.now() });
-    } else if (!last) pts.push({ x: px, y: py, t: performance.now() });
   });
   function endDrag() { isDown = false; }
   stage.addEventListener('pointerup', endDrag);
   stage.addEventListener('pointercancel', endDrag);
 }
 
+// Sequential Dialog Flow
+let dialogStep = 1;
+let clientProject = '';
+let clientName = '';
 
-// ===== Contacts info (editable by admin) =====
-const defaultContacts = {
-  address: 'Москва, адрес студии (уточняется)',
-  phone: '+7 (000) 000-00-00',
-  telegram: 'https://t.me/stopsmoke',
-  whatsapp: 'https://wa.me/70000000000',
-  instagram: 'https://instagram.com/'
-};
-function getContactInfo() {
-  try { const s = localStorage.getItem('v3_contacts'); return s ? Object.assign({}, defaultContacts, JSON.parse(s)) : defaultContacts; } catch(e) { return defaultContacts; }
-}
-
-// ===== Services / tariffs =====
-const defaultServices = [
-  { id:1, title:'Разработка сайта', price:'', desc:'Лендинги, корпоративные сайты и интернет-магазины. Дизайн, адаптивная вёрстка, анимации, подключение форм, аналитики и оплаты. Запуск под ключ.' },
-  { id:2, title:'Разработка приложения', price:'', desc:'Мобильные и веб-приложения (PWA, iOS, Android). От прототипа и UX/UI до публикации и поддержки.' },
-  { id:3, title:'Мини игры', price:'', desc:'Браузерные и мобильные мини-игры для промо, лояльности и вовлечения: механики с призами, розыгрыши, квизы.' },
-  { id:4, title:'Внедрение CRM', price:'', desc:'Подбор и настройка CRM, воронки продаж, интеграция с сайтом, телефонией и мессенджерами, обучение команды.' },
-  { id:5, title:'Аналитика', price:'', desc:'Настройка сквозной аналитики, дашборды, отчёты по продажам и рекламе, поиск точек роста.' },
-  { id:6, title:'Автоматизация процессов', price:'', desc:'Разбор бизнес-процессов и автоматизация рутины: заявки, документы, уведомления, интеграции сервисов.' },
-  { id:7, title:'ИИ в бизнесе', price:'', desc:'Внедрение нейросетей в работу: генерация контента, обработка заявок, аналитика, умные сценарии.' },
-  { id:8, title:'Ассистенты', price:'', desc:'ИИ-ассистенты и чат-боты для Telegram, WhatsApp и сайта: консультации, продажи, поддержка 24/7.' },
-  { id:9, title:'Видео контент', price:'', desc:'Рекламные ролики, Reels, презентации, моушн-графика и монтаж. Сценарий, съёмка, постпродакшн.' },
-  { id:10, title:'Фото контент', price:'', desc:'Предметная, портретная и имиджевая съёмка, ретушь и подготовка материалов для сайта и соцсетей.' },
-  { id:11, title:'Дизайн', price:'', desc:'Фирменный стиль, логотипы, упаковка, интерфейсы и маркетинговые материалы.' },
-  { id:12, title:'Анимация', price:'', desc:'2D и 3D анимация, анимированные логотипы, интерактивные элементы для сайтов и приложений.' },
-  { id:13, title:'SMM продвижение', price:'', desc:'Ведение соцсетей, контент-план, таргетированная реклама, работа с блогерами.' },
-  { id:14, title:'Маркетинг', price:'', desc:'Стратегия продвижения, позиционирование, воронки, performance-реклама и рост продаж.' }
-];
-function getServices() {
-  try { const s = localStorage.getItem('v3_services'); return s ? JSON.parse(s) : JSON.parse(JSON.stringify(defaultServices)); } catch(e) { return JSON.parse(JSON.stringify(defaultServices)); }
-}
-function saveServices(a) { try { localStorage.setItem('v3_services', JSON.stringify(a)); } catch(e){} }
-let services = getServices();
-let cart = [];
-try { cart = JSON.parse(localStorage.getItem('v3_cart') || '[]'); } catch(e) {}
-const openSvc = new Set();
-let pendingOrder = null;
-const esc = t => String(t == null ? '' : t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-const fmtPrice = p => (p === '' || p == null || isNaN(+p)) ? 'цена по запросу' : Number(p).toLocaleString('ru-RU') + ' ₽';
-function saveCart() { try { localStorage.setItem('v3_cart', JSON.stringify(cart)); } catch(e){} }
-
-function renderPrices() {
-  services = getServices();
-  cart = cart.filter(id => services.some(s => s.id === id));
-  const list = document.getElementById('svcList');
-  if (!list) return;
-  list.innerHTML = services.map(sv => {
-    const open = openSvc.has(sv.id), inCart = cart.includes(sv.id);
-    let body;
-    if (isAdmin) {
-      body = `<div class="svc-inner">
-        <input class="admin-input" data-f="title" value="${esc(sv.title)}" placeholder="Название">
-        <textarea class="admin-input" data-f="desc" rows="4" placeholder="Описание">${esc(sv.desc)}</textarea>
-        <input class="admin-input" data-f="price" type="number" inputmode="numeric" value="${esc(sv.price)}" placeholder="Цена, ₽ (пусто = по запросу)">
-        <div style="display:flex;gap:8px">
-          <button type="button" class="admin-btn" style="flex:1" data-act="save" data-id="${sv.id}">Сохранить</button>
-          <button type="button" class="admin-btn" style="width:90px;color:#ef4444" data-act="del" data-id="${sv.id}">Удалить</button>
-        </div></div>`;
-    } else {
-      body = `<div class="svc-inner"><div class="svc-desc">${esc(sv.desc)}</div>
-        <button type="button" class="svc-add ${inCart ? 'in' : ''}" data-act="add" data-id="${sv.id}">${inCart ? '✓ в корзине' : 'добавить'}</button></div>`;
-    }
-    return `<div class="svc ${open ? 'open' : ''}" data-id="${sv.id}">
-      <div class="svc-top"><span class="svc-name">${esc(sv.title)}</span><span class="svc-price">${fmtPrice(sv.price)}</span>
-      <button type="button" class="svc-x" data-act="toggle" data-id="${sv.id}" aria-label="подробнее">+</button></div>
-      <div class="svc-body">${body}</div></div>`;
-  }).join('') + (isAdmin ? '<button type="button" class="admin-btn svc-add-new" data-act="new">+ новая опция</button>' : '');
-
-  list.onclick = (e) => {
-    const b = e.target.closest('[data-act]');
-    if (!b) return;
-    const act = b.dataset.act, id = +b.dataset.id;
-    if (act === 'toggle') {
-      openSvc.has(id) ? openSvc.delete(id) : openSvc.add(id);
-      b.closest('.svc').classList.toggle('open');
-    } else if (act === 'add') {
-      cart.includes(id) ? cart = cart.filter(x => x !== id) : cart.push(id);
-      saveCart(); renderPrices(); 
-    } else if (act === 'save') {
-      const card = b.closest('.svc');
-      const sv = services.find(x => x.id === id);
-      sv.title = card.querySelector('[data-f=title]').value;
-      sv.desc = card.querySelector('[data-f=desc]').value;
-      sv.price = card.querySelector('[data-f=price]').value;
-      saveServices(services); renderPrices();
-    } else if (act === 'del') {
-      services = services.filter(x => x.id !== id);
-      saveServices(services); renderPrices();
-    } else if (act === 'new') {
-      const nid = Math.max(0, ...services.map(x => x.id)) + 1;
-      services.push({ id:nid, title:'Новая опция', price:'', desc:'Описание' });
-      openSvc.add(nid); saveServices(services); renderPrices();
-      list.scrollTop = list.scrollHeight;
-    }
-  };
-  renderCartBar();
-}
-
-function renderCartBar() {
-  const w = document.getElementById('cartWrap');
-  if (!w) return;
-  const items = cart.map(id => services.find(s => s.id === id)).filter(Boolean);
-  const total = items.reduce((a, s) => a + (isNaN(+s.price) || s.price === '' ? 0 : +s.price), 0);
-  const unpriced = items.some(s => s.price === '' || isNaN(+s.price));
-  w.innerHTML = (items.length ? '<div class="chips">' + items.map(s => `<button type="button" class="chip" data-rm="${s.id}">${esc(s.title)} ×</button>`).join('') + '</div>' : '') +
-    `<div class="cartbar"><div class="cartinfo">
-      <svg viewBox="0 0 24 24"><path d="M3 4h2l2.4 11h10.2L20 7H6"/><circle cx="9" cy="19" r="1.4"/><circle cx="17" cy="19" r="1.4"/></svg>
-      <span>корзина: <b>${items.length}</b>${items.length && total ? ' · ' + total.toLocaleString('ru-RU') + ' ₽' + (unpriced ? '+' : '') : ''}</span></div>
-      <button type="button" class="calc-btn" id="calcBtn" ${items.length ? '' : 'disabled'}>посчитать</button></div>`;
-  w.querySelectorAll('[data-rm]').forEach(c => c.onclick = () => { cart = cart.filter(x => x !== +c.dataset.rm); saveCart(); renderPrices(); });
-  document.getElementById('calcBtn').onclick = () => {
-    if (!items.length) return;
-    let msg = 'Хочу рассчитать стоимость:\n' + items.map(s => '• ' + s.title + ' — ' + fmtPrice(s.price)).join('\n');
-    if (total) msg += '\nИтого: ' + total.toLocaleString('ru-RU') + ' ₽' + (unpriced ? ' + позиции по запросу' : '');
-    pendingOrder = msg;
-    tab('contacts');
-  };
-}
-
-// ===== Dialog =====
-function renderContacts() {
+function renderDialogFlow() {
   const log = document.getElementById('log');
-  const bubble = document.createElement('div');
-  bubble.className = 'bubble';
-  log.appendChild(bubble);
-  typeInto(bubble, 'Здравствуйте. Напишите, на какой стадии проект — мы свяжемся и предложим решения.');
+  log.innerHTML = '';
+  dialogStep = 1;
 
-  const post = (text, cls) => {
-    const el = document.createElement('div');
-    el.className = 'bubble' + (cls ? ' ' + cls : '');
-    el.style.whiteSpace = 'pre-line';
-    el.textContent = text;
-    log.appendChild(el);
-    log.scrollTop = log.scrollHeight;
-    return el;
-  };
-
-  if (pendingOrder) {
-    const m = pendingOrder; pendingOrder = null;
-    setTimeout(() => {
-      post(m, 'you');
-      setTimeout(() => { const us = post('', ''); typeInto(us, 'Расчёт получили. Менеджер студии уточнит детали и вернётся с предложением.'); }, 400);
-    }, 900);
-  }
+  appendBotBubble('Здравствуйте. Напишите название проекта и сферу вашей деятельности.');
 
   document.getElementById('form').onsubmit = (e) => {
     e.preventDefault();
     const input = document.getElementById('msg');
     const v = input.value.trim();
     if (!v) return;
-    post(v, 'you');
+
+    appendUserBubble(v);
     input.value = '';
-    setTimeout(() => { const us = post('', ''); typeInto(us, 'Заявка принята. Менеджер студии свяжется с вами.'); }, 300);
+
+    if (dialogStep === 1) {
+      clientProject = v;
+      dialogStep = 2;
+      setTimeout(() => appendBotBubble('Как к вам можно обращаться?'), 300);
+    } else if (dialogStep === 2) {
+      clientName = v;
+      dialogStep = 3;
+      if (!selectedTariff) {
+        setTimeout(() => {
+          appendBotBubble('Вы можете посетить раздел «Тарифы» и подобрать интересующие вас услуги, чтобы продолжить диалог.');
+        }, 300);
+      } else {
+        setTimeout(() => {
+          appendBotBubble(`Спасибо, ${clientName}! Вы выбрали услугу: ${selectedTariff}. Заявка передана арт-директору студии.`);
+        }, 300);
+      }
+    } else {
+      setTimeout(() => {
+        appendBotBubble(`Принято, ${clientName || 'партнёр'}. Мы свяжемся с вами по проекту «${clientProject}».`);
+      }, 300);
+    }
   };
+}
+
+function appendBotBubble(text) {
+  const log = document.getElementById('log');
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+  log.appendChild(bubble);
+  typeInto(bubble, text);
+  log.scrollTop = log.scrollHeight;
+}
+
+function appendUserBubble(text) {
+  const log = document.getElementById('log');
+  const you = document.createElement('div');
+  you.className = 'bubble you';
+  you.textContent = text;
+  log.appendChild(you);
+  log.scrollTop = log.scrollHeight;
 }
 
 function typeInto(el, text) {
@@ -1307,132 +1002,90 @@ function typeInto(el, text) {
   const t = setInterval(() => {
     el.textContent += text[i++] || '';
     if (i >= text.length) clearInterval(t);
-  }, 24);
+  }, 20);
 }
-
-// ===== Cabinet: login / registration / admin =====
-let authMode = 'login';
-function getUsers() { try { return JSON.parse(localStorage.getItem('v3_users') || '[]'); } catch(e) { return []; } }
-function getCurUser() { try { return JSON.parse(localStorage.getItem('v3_cur') || 'null'); } catch(e) { return null; } }
 
 function renderCabinet() {
   const box = document.getElementById('authBox');
   const log = document.getElementById('authlog');
-  const cur = getCurUser();
-  if (isAdmin) return renderAdmin(box, log);
-
-  if (cur) {
-    box.innerHTML = `<div class="bubble admin-badge" style="color:#f3f3f1;border-color:rgba(255,255,255,.3)">Вы вошли: ${esc(cur.name || cur.login)}</div>
-      <button type="button" class="admin-btn" id="userLogout">Выйти</button>`;
-    log.innerHTML = '<div class="bubble">Здесь будут ваши проекты и статусы задач.</div>';
-    document.getElementById('userLogout').onclick = () => { localStorage.removeItem('v3_cur'); renderCabinet(); };
-    return;
-  }
-
-  box.innerHTML = `
-    <div class="auth-choice">
-      <button type="button" class="admin-btn ${authMode === 'login' ? 'sel' : ''}" id="modeLogin">Вход</button>
-      <button type="button" class="admin-btn ${authMode === 'reg' ? 'sel' : ''}" id="modeReg">Регистрация</button>
-    </div>
-    ${authMode === 'login' ? `
-      <input type="text" id="aLogin" class="admin-input" placeholder="Юзернейм или телефон" autocomplete="username" />
-      <input type="password" id="aPass" class="admin-input" placeholder="Пароль" autocomplete="current-password" />
-      <button type="button" id="doLogin" class="admin-btn">Войти</button>` : `
-      <input type="text" id="rName" class="admin-input" placeholder="Имя" />
-      <input type="text" id="rLogin" class="admin-input" placeholder="Юзернейм или телефон" />
-      <input type="password" id="rPass" class="admin-input" placeholder="Придумайте пароль" />
-      <button type="button" id="doReg" class="admin-btn">Зарегистрироваться</button>`}
-  `;
-  log.innerHTML = '<div class="bubble">Вход для клиентов студии.</div>';
-  const err = (t) => { log.innerHTML = '<div class="bubble" style="border-color:#ef4444;color:#ef4444">' + t + '</div>'; };
-  document.getElementById('modeLogin').onclick = () => { authMode = 'login'; renderCabinet(); };
-  document.getElementById('modeReg').onclick = () => { authMode = 'reg'; renderCabinet(); };
-
-  if (authMode === 'login') {
-    document.getElementById('doLogin').onclick = () => {
-      const login = document.getElementById('aLogin').value.trim();
-      const pass = document.getElementById('aPass').value;
-      if (pass === '1986') { isAdmin = true; renderCabinet(); return; }
-      if (!login || !pass) return err('Введите юзернейм или телефон и пароль.');
-      const u = getUsers().find(x => x.login.toLowerCase() === login.toLowerCase() && x.pass === pass);
-      if (!u) return err('Неверные данные. Проверьте логин и пароль или зарегистрируйтесь.');
-      localStorage.setItem('v3_cur', JSON.stringify({ login:u.login, name:u.name }));
-      renderCabinet();
+  
+  if (!isAdmin) {
+    box.innerHTML = `
+      <input type="password" id="adminPass" class="admin-input" placeholder="Введите пароль доступа..." />
+      <button type="button" id="adminLoginBtn" class="admin-btn">Войти</button>
+    `;
+    log.innerHTML = '<div class="bubble">Вход для клиентов и режим администратора студии.</div>';
+    
+    document.getElementById('adminLoginBtn').onclick = () => {
+      const pass = document.getElementById('adminPass').value;
+      if (pass === '1986') {
+        isAdmin = true;
+        renderCabinet();
+      } else {
+        log.innerHTML = '<div class="bubble" style="border-color:#ef4444; color:#ef4444;">Неверный пароль. Попробуйте снова.</div>';
+      }
     };
   } else {
-    document.getElementById('doReg').onclick = () => {
-      const name = document.getElementById('rName').value.trim();
-      const login = document.getElementById('rLogin').value.trim();
-      const pass = document.getElementById('rPass').value;
-      if (!login || !pass) return err('Укажите юзернейм или телефон и пароль.');
-      if (pass === '1986') return err('Этот пароль недоступен, выберите другой.');
-      const users = getUsers();
-      if (users.some(x => x.login.toLowerCase() === login.toLowerCase())) return err('Такой пользователь уже существует.');
-      users.push({ name, login, pass });
-      localStorage.setItem('v3_users', JSON.stringify(users));
-      localStorage.setItem('v3_cur', JSON.stringify({ login, name }));
+    const currentP = projects[currentProjectIndex] || projects[0];
+    box.innerHTML = `
+      <div class="bubble admin-badge">✓ Режим администратора активен</div>
+      
+      <div style="font-size:11px; color:#aaa; font-weight:500; margin-top:4px;">1. Проект #${currentP.id + 1} (${currentP.title})</div>
+      <input type="text" id="editTitle" class="admin-input" value="${currentP.title}" placeholder="Название проекта" />
+      <input type="text" id="editCover" class="admin-input" value="${currentP.img || ''}" placeholder="Фото обложки (URL/путь)" />
+      <input type="text" id="editShort" class="admin-input" value="${currentP.shortText}" placeholder="Краткое описание" />
+      <input type="text" id="editLink" class="admin-input" value="${currentP.link || ''}" placeholder="Ссылка на проект (https://...)" />
+      <textarea id="editGallery" class="admin-input" rows="2" placeholder="Галерея проекта (ссылки через запятую)">${(currentP.gallery || []).join(', ')}</textarea>
+      <textarea id="editDesc" class="admin-input" rows="2" placeholder="Полное описание">${currentP.desc || ''}</textarea>
+      <input type="text" id="editFree" class="admin-input" value="${currentP.free || ''}" placeholder="Свободное поле" />
+      
+      <div style="font-size:11px; color:#aaa; font-weight:500; margin-top:8px;">2. Команда студии</div>
+      <input type="text" id="editTName" class="admin-input" value="${team[0]?.name || ''}" placeholder="Имя специалиста" />
+      <input type="text" id="editTRole" class="admin-input" value="${team[0]?.role || ''}" placeholder="Должность" />
+      <input type="text" id="editTAvatar" class="admin-input" value="${team[0]?.avatar || ''}" placeholder="Аватар (URL/путь)" />
+      <textarea id="editTBio" class="admin-input" rows="2" placeholder="Описание / Биография">${team[0]?.bio || ''}</textarea>
+      
+      <div style="display:flex; gap:8px; margin-top:6px;">
+        <button type="button" id="saveAdminBtn" class="admin-btn" style="flex:1;">Сохранить всё</button>
+        <button type="button" id="logoutAdminBtn" class="admin-btn" style="width:70px;">Выйти</button>
+      </div>
+    `;
+    log.innerHTML = '<div class="bubble">Изменения мгновенно сохраняются и обновляют приложение.</div>';
+    
+    document.getElementById('saveAdminBtn').onclick = () => {
+      currentP.title = document.getElementById('editTitle').value;
+      currentP.img = document.getElementById('editCover').value;
+      currentP.shortText = document.getElementById('editShort').value;
+      currentP.link = document.getElementById('editLink').value;
+      currentP.desc = document.getElementById('editDesc').value;
+      currentP.free = document.getElementById('editFree').value;
+      const gRaw = document.getElementById('editGallery').value;
+      currentP.gallery = gRaw.split(',').map(s => s.trim()).filter(Boolean);
+      saveProjects(projects);
+      
+      if (team[0]) {
+        team[0].name = document.getElementById('editTName').value;
+        team[0].role = document.getElementById('editTRole').value;
+        team[0].avatar = document.getElementById('editTAvatar').value;
+        team[0].bio = document.getElementById('editTBio').value;
+        saveTeam(team);
+      }
+      
+      buildRail();
+      log.innerHTML = '<div class="bubble" style="border-color:#4ade80; color:#4ade80;">Данные успешно сохранены!</div>';
+    };
+    
+    document.getElementById('logoutAdminBtn').onclick = () => {
+      isAdmin = false;
       renderCabinet();
     };
   }
 }
 
-function renderAdmin(box, log) {
-  const currentP = projects[currentProjectIndex] || projects[0];
-  const c = getContactInfo();
-  team = getTeam();
-  box.innerHTML = `
-    <div class="bubble admin-badge">✓ Режим администратора активен</div>
-    <div style="font-size:11px;color:#aaa;margin-top:4px">Тарифы: откройте вкладку «тарифы» — там можно менять тексты, ставить цены, добавлять и удалять опции.</div>
-
-    <div style="font-size:11px;color:#aaa;font-weight:500;margin-top:8px">1. Проект #${currentP.id + 1} (${esc(currentP.title)})</div>
-    <input type="text" id="editTitle" class="admin-input" value="${esc(currentP.title)}" placeholder="Название проекта" />
-    <input type="text" id="editCover" class="admin-input" value="${esc(currentP.img || '')}" placeholder="Фото обложки (URL/путь)" />
-    <input type="text" id="editShort" class="admin-input" value="${esc(currentP.shortText)}" placeholder="Краткое описание" />
-    <input type="text" id="editLink" class="admin-input" value="${esc(currentP.link || '')}" placeholder="Ссылка на проект (https://...)" />
-    <textarea id="editGallery" class="admin-input" rows="2" placeholder="Галерея проекта (ссылки через запятую)">${esc((currentP.gallery || []).join(', '))}</textarea>
-    <textarea id="editDesc" class="admin-input" rows="2" placeholder="Полное описание">${esc(currentP.desc || '')}</textarea>
-    <input type="text" id="editFree" class="admin-input" value="${esc(currentP.free || '')}" placeholder="Свободное поле" />
-
-    <div style="font-size:11px;color:#aaa;font-weight:500;margin-top:8px">2. Команда</div>
-    ${team.map((m, i) => `
-      <input type="text" id="tn${i}" class="admin-input" value="${esc(m.name)}" placeholder="Имя" />
-      <input type="text" id="tr${i}" class="admin-input" value="${esc(m.role)}" placeholder="Должность" />
-      <input type="text" id="ta${i}" class="admin-input" value="${esc(m.avatar || '')}" placeholder="Аватар (URL/путь)" />
-      <textarea id="tb${i}" class="admin-input" rows="2" placeholder="Описание">${esc(m.bio || '')}</textarea>`).join('<div style="height:1px;background:rgba(255,255,255,.12)"></div>')}
-
-    <div style="font-size:11px;color:#aaa;font-weight:500;margin-top:8px">3. Контакты</div>
-    <input type="text" id="cAddr" class="admin-input" value="${esc(c.address)}" placeholder="Адрес" />
-    <input type="text" id="cPhone" class="admin-input" value="${esc(c.phone)}" placeholder="Телефон" />
-    <input type="text" id="cTg" class="admin-input" value="${esc(c.telegram)}" placeholder="Telegram (https://t.me/...)" />
-    <input type="text" id="cWa" class="admin-input" value="${esc(c.whatsapp)}" placeholder="WhatsApp (https://wa.me/7...)" />
-    <input type="text" id="cIg" class="admin-input" value="${esc(c.instagram)}" placeholder="Instagram (https://instagram.com/...)" />
-
-    <div style="display:flex;gap:8px;margin-top:6px">
-      <button type="button" id="saveAdminBtn" class="admin-btn" style="flex:1">Сохранить всё</button>
-      <button type="button" id="logoutAdminBtn" class="admin-btn" style="width:70px">Выйти</button>
-    </div>`;
-  log.innerHTML = '<div class="bubble">Изменения сохраняются на этом устройстве.</div>';
-  const v = id => document.getElementById(id).value;
-  document.getElementById('saveAdminBtn').onclick = () => {
-    currentP.title = v('editTitle'); currentP.img = v('editCover'); currentP.shortText = v('editShort');
-    currentP.link = v('editLink'); currentP.desc = v('editDesc'); currentP.free = v('editFree');
-    currentP.gallery = v('editGallery').split(',').map(s => s.trim()).filter(Boolean);
-    saveProjects(projects);
-    team.forEach((m, i) => { m.name = v('tn'+i); m.role = v('tr'+i); m.avatar = v('ta'+i); m.bio = v('tb'+i); });
-    saveTeam(team);
-    try { localStorage.setItem('v3_contacts', JSON.stringify({ address:v('cAddr'), phone:v('cPhone'), telegram:v('cTg'), whatsapp:v('cWa'), instagram:v('cIg') })); } catch(e){}
-    buildRail();
-    log.innerHTML = '<div class="bubble" style="border-color:#4ade80;color:#4ade80">Данные успешно сохранены!</div>';
-  };
-  document.getElementById('logoutAdminBtn').onclick = () => { isAdmin = false; renderCabinet(); };
-}
-
-
-document.getElementById('discuss').onclick = () => { show('shell'); tab('contacts'); };
+document.getElementById('discuss').onclick = () => { show('shell'); tab('contacts_chat'); };
 document.querySelectorAll('#dock button').forEach(b => b.onclick = () => tab(b.dataset.tab));
 
-if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.unregister())).catch(()=>{});
-if (window.caches) caches.keys().then(ks => ks.forEach(k => caches.delete(k))).catch(()=>{});
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
 </body>
 </html>
