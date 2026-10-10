@@ -1,7 +1,7 @@
 /* Optional original local soundtrack, independent of all existing app state. */
 (() => {
   'use strict';
-  const source = new URL('audio/v3-orbital-mechanics.mp3',document.currentScript.src).href;
+  const source = new URL('audio/v3-soft-circuit.mp3',document.currentScript.src).href;
   const KEY = 'v3_sound_choice';
   let saved = null;
   try { saved = localStorage.getItem(KEY); } catch(e) {}
@@ -91,7 +91,8 @@
   }
   function maybePrompt() {
     const install = document.getElementById('installWelcome');
-    if (promptDone || !dialog.hidden || install?.classList.contains('on')) return;
+    const menu = document.getElementById('shell');
+    if (promptDone || !dialog.hidden || install?.classList.contains('on') || !menu?.classList.contains('on')) return;
     focusBeforePrompt = document.activeElement;
     dialog.hidden = false;
     dialog.querySelector('[data-sound="yes"]').focus();
@@ -115,7 +116,7 @@
     dialog.setAttribute('aria-modal','true');
     dialog.setAttribute('aria-labelledby','studioSoundTitle');
     dialog.setAttribute('aria-describedby','studioSoundDescription');
-    dialog.innerHTML = '<div class="studio-sound-card"><span class="studio-sound-kicker">V³ / ЗВУК ПРОСТРАНСТВА</span><h2 id="studioSoundTitle">Включить<br>фоновую музыку?</h2><p id="studioSoundDescription">Космические звуки, мягкий гул и лёгкие механические текстуры. Ненавязчивый фон для знакомства со студией.</p><small>Звук можно включить или выключить в любой момент кнопкой в верхнем правом углу.</small><div class="studio-sound-actions"><button type="button" data-sound="yes">ДА</button><button type="button" data-sound="no">НЕТ</button></div></div>';
+    dialog.innerHTML = '<div class="studio-sound-card"><span class="studio-sound-kicker">V³ / ЗВУК ПРОСТРАНСТВА</span><h2 id="studioSoundTitle">Включить<br>фоновую музыку?</h2><p id="studioSoundDescription">Светлый космический эмбиент, мягкие цифровые переливы и точные движения механизмов. Ненавязчивый звук творческой студии.</p><small>Звук можно включить или выключить в любой момент кнопкой в верхнем правом углу.</small><div class="studio-sound-actions"><button type="button" data-sound="yes">ДА</button><button type="button" data-sound="no">НЕТ</button></div></div>';
     note = document.createElement('div');
     note.className = 'studio-sound-note';
     note.setAttribute('role','status');
@@ -162,7 +163,7 @@
     window.addEventListener('pagehide',stop);
     window.addEventListener('pageshow',reconcile);
     const observer = new MutationObserver(records => {
-      const relevant = records.some(r => r.target.id === 'installWelcome' || r.target === document.body ||
+      const relevant = records.some(r => r.target.id === 'installWelcome' || r.target.id === 'shell' || r.target === document.body ||
         [...r.removedNodes].some(n=>n.nodeType===1 && (n.tagName==='VIDEO' || n.querySelector?.('video'))));
       if (!relevant || observerFrame) return;
       observerFrame = requestAnimationFrame(() => { observerFrame = 0; maybePrompt(); reconcile(); });

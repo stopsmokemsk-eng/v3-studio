@@ -1,0 +1,27 @@
+/* A separate optional screen, only entered from the cube's More button. */
+.aes-more { margin-top:26px; min-height:42px; padding:10px 28px; position:relative; z-index:4; }
+.studio-dust-screen {
+  position:fixed; inset:0; z-index:68; background:#000; color:#f3f3f1;
+  overflow:hidden; font-family:"IBM Plex Mono",monospace;
+}
+.studio-dust-canvas { position:absolute; inset:0; width:100%; height:100%; display:block; touch-action:none; cursor:none; }
+.studio-dust-header {
+  position:absolute; top:0; left:0; right:0; z-index:2; display:flex; align-items:center; gap:18px;
+  padding:calc(14px + env(safe-area-inset-top,0px)) 64px 14px 18px; pointer-events:none;
+}
+.studio-dust-header button {
+  pointer-events:auto; min-height:40px; padding:9px 18px; border:1px solid rgba(255,255,255,.4);
+  border-radius:24px; background:rgba(0,0,0,.75); color:inherit; font:10px "IBM Plex Mono",monospace; cursor:pointer;
+}
+.studio-dust-header button:focus-visible { outline:2px solid #fff; outline-offset:3px; }
+.studio-dust-header span { font-size:8px; letter-spacing:.16em; color:#777; }
+.studio-dust-footer {
+  position:absolute; bottom:calc(24px + env(safe-area-inset-bottom,0px)); left:22px; right:22px;
+  z-index:2; pointer-events:none; display:flex; justify-content:space-between; gap:20px;
+  font-size:8px; line-height:1.7; letter-spacing:.1em; color:#777;
+}
+@media (max-width:600px) {
+  .studio-dust-header { padding-left:12px; gap:12px; }
+  .studio-dust-header span { font-size:7px; letter-spacing:.08em; }
+  .studio-dust-footer { flex-direction:column; text-align:center; gap:8px; font-size:7px; }
+}

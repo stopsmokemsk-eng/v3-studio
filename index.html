@@ -528,6 +528,7 @@
 </style>
 <link rel="stylesheet" href="studio-refinements.css" />
 <link rel="stylesheet" href="studio-sound.css" />
+<link rel="stylesheet" href="studio-dust.css" />
 </head>
 <body>
 
@@ -683,6 +684,7 @@
 <script src="studio-content.js"></script>
 <script src="studio-extras.js"></script>
 <script src="studio-sound.js"></script>
+<script src="studio-dust.js"></script>
 <script>
 // Data store for projects & team
 const defaultProjects = [
@@ -1226,9 +1228,13 @@ function renderStudioView(view) {
           <i></i><i></i><i></i><i></i><i></i><i></i>
         </div>
         <div class="touch-hint">ПРИКОСНИСЬ</div>
+        <button type="button" class="btn-detail aes-more" id="aesMore">ЕЩЕ <span aria-hidden="true">↗</span></button>
       </div>
     `;
     setupCubeInteraction();
+    const more = document.getElementById('aesMore');
+    more.addEventListener('pointerdown',event=>event.stopPropagation());
+    more.onclick = () => window.openStudioDust();
     };
   } else if (view === 'idea') {
     setTimeout(openScratch, 60);
