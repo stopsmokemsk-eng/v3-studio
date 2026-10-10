@@ -114,17 +114,60 @@
   .modal-desc { font-size:13px; color:#ccc; line-height:1.55; }
   .modal-free { font-size:12px; color:#888; border-top:1px dashed rgba(255,255,255,.15); padding-top:12px; }
 
-  /* Fullscreen Design Showcase Modal for Effect */
-  .showcase-overlay { position:fixed; inset:0; z-index:40; background:#000; display:none; flex-direction:column; justify-content:center; align-items:center; }
-  .showcase-overlay.on { display:flex; }
-  .showcase-bg-img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:.75; filter:contrast(1.1); }
-  .showcase-hud { position:absolute; inset:0; z-index:2; display:flex; flex-direction:column; justify-content:space-between; padding:max(24px, env(safe-area-inset-top)) 20px max(24px, env(safe-area-inset-bottom)); }
-  .showcase-top { display:flex; justify-content:space-between; align-items:center; color:#fff; font-size:11px; letter-spacing:.14em; text-transform:uppercase; }
-  .showcase-center-btn { align-self:center; margin:auto 0; border:2px solid #fff; border-radius:30px; background:rgba(0,0,0,.65); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); color:#fff; font-size:13px; font-weight:700; letter-spacing:.2em; text-transform:uppercase; padding:14px 34px; cursor:pointer; box-shadow:0 0 30px rgba(255,255,255,.3); transition:.2s; }
-  .showcase-center-btn:active { transform:scale(.94); }
-  .showcase-caption { text-align:center; color:#fff; font-size:12px; letter-spacing:.1em; text-transform:uppercase; text-shadow:0 2px 10px rgba(0,0,0,.9); }
+  /* Shell Scene & Dock */
+  #shell { background:#0c0c0c; color:#f3f3f1; display:none; flex-direction:column; padding:0 0 84px; }
+  #shell.on { display:flex; }
+  .ticker { overflow:hidden; border-bottom:1px solid rgba(243,243,241,.15); flex:0 0 auto; }
+  .ticker-track { display:flex; gap:26px; width:max-content; animation:marquee 28s linear infinite; padding:10px 0; font-size:11px; letter-spacing:.14em; text-transform:uppercase; }
+  @keyframes marquee { to { transform:translateX(-50%); } }
+  .ticker a { color:inherit; text-decoration:none; }
+  
+  .stage { flex:1; display:flex; align-items:center; justify-content:center; padding:10px 14px; width:100%; }
+  .panel { width:100%; height:calc(100dvh - 170px); border:1px solid rgba(243,243,241,.28); border-radius:20px; display:flex; flex-direction:column; overflow:hidden; background:rgba(255,255,255,.02); position:relative; }
+  .panel h2 { margin:0; padding:14px 16px 8px; font-size:11px; letter-spacing:.16em; text-transform:uppercase; font-weight:400; color:#888; border-bottom:1px solid rgba(243,243,241,.1); flex:0 0 auto; }
 
-  /* Team view */
+  /* Studio Tab & Features Subview */
+  .studio-main-view { display:flex; flex-direction:column; justify-content:space-between; flex:1; width:100%; height:100%; padding:14px; overflow-y:auto; }
+  .features-btn-main { width:100%; border:1px solid rgba(255,255,255,.4); border-radius:26px; background:rgba(255,255,255,.06); color:#fff; padding:12px 20px; font-size:11.5px; letter-spacing:.2em; text-transform:uppercase; cursor:pointer; margin-top:14px; transition:.3s; }
+  .features-btn-main:active { background:rgba(255,255,255,.2); }
+
+  .features-layout { display:flex; flex-direction:column; flex:1; width:100%; height:100%; overflow:hidden; }
+  .features-nav-line { display:flex; gap:8px; padding:10px 14px; border-bottom:1px solid rgba(255,255,255,.1); overflow-x:auto; flex:0 0 auto; align-items:center; }
+  .features-nav-line button { border:1px solid rgba(255,255,255,.25); border-radius:20px; background:transparent; padding:6px 14px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; cursor:pointer; white-space:nowrap; transition:.3s; }
+  .features-nav-line button.active { background:rgba(255,255,255,.2); border-color:#fff; color:#fff; }
+  .features-back-btn { margin-right:4px; border-color:transparent !important; color:#888; }
+  
+  .features-content-box { flex:1; display:flex; flex-direction:column; position:relative; overflow-y:auto; padding:14px; }
+  .features-header-text { font-size:12px; line-height:1.55; color:#d0d0d0; padding:12px 14px; border:1px solid rgba(255,255,255,.15); border-radius:12px; background:rgba(255,255,255,.03); margin-bottom:12px; }
+
+  /* 3D Cube Canvas in Aesthetics */
+  .cube-stage { perspective:900px; display:flex; flex-direction:column; align-items:center; justify-content:center; touch-action:none; user-select:none; flex:1; width:100%; min-height:180px; cursor:grab; }
+  .cube-stage:active { cursor:grabbing; }
+  .cube3 { width:96px; height:96px; position:relative; transform-style:preserve-3d; transition:transform 0.04s ease-out; }
+  .cube3 i { position:absolute; width:96px; height:96px; inset:0; border:1px solid rgba(255,255,255,.85); background:transparent; pointer-events:none; }
+  .cube3 i:nth-child(1){ transform:rotateY(0deg) translateZ(48px); }
+  .cube3 i:nth-child(2){ transform:rotateY(180deg) translateZ(48px); }
+  .cube3 i:nth-child(3){ transform:rotateY(90deg) translateZ(48px); }
+  .cube3 i:nth-child(4){ transform:rotateY(-90deg) translateZ(48px); }
+  .cube3 i:nth-child(5){ transform:rotateX(90deg) translateZ(48px); }
+  .cube3 i:nth-child(6){ transform:rotateX(-90deg) translateZ(48px); }
+  .touch-hint { margin-top:22px; font-size:10px; letter-spacing:.26em; text-transform:uppercase; color:#999; animation:pulse 2s ease-in-out infinite; }
+  @keyframes pulse { 50% { opacity:.35; } }
+
+  /* Scratch Canvas in Creativity */
+  .scratch-container { position:relative; width:min(290px, 100%); height:180px; margin:auto; border-radius:14px; overflow:hidden; border:1px solid rgba(255,255,255,.2); touch-action:none; }
+  .scratch-underlayer { position:absolute; inset:0; background:radial-gradient(circle at center, #1e293b, #000); display:flex; flex-direction:column; align-items:center; justify-content:center; color:#fff; text-align:center; padding:12px; }
+  .scratch-underlayer img { height:54px; filter:invert(1); margin-bottom:8px; }
+  .scratch-canvas { position:absolute; inset:0; width:100%; height:100%; cursor:crosshair; }
+
+  /* Showcase Slider in Effect */
+  .effect-slider { flex:1; display:flex; flex-direction:column; justify-content:center; position:relative; border-radius:14px; overflow:hidden; border:1px solid rgba(255,255,255,.18); min-height:220px; }
+  .effect-img { width:100%; height:100%; object-fit:cover; position:absolute; inset:0; filter:brightness(0.65); transition:opacity .4s; }
+  .effect-overlay-text { position:relative; z-index:2; padding:20px; text-align:center; font-size:clamp(13px, 3.8vw, 16px); letter-spacing:.08em; text-transform:uppercase; font-weight:600; line-height:1.45; color:#fff; text-shadow:0 2px 12px rgba(0,0,0,.9); }
+  .slider-arrows { position:absolute; bottom:12px; right:12px; z-index:4; display:flex; gap:8px; }
+  .slider-arrows button { width:32px; height:32px; border-radius:50%; border:1px solid rgba(255,255,255,.3); background:rgba(0,0,0,.5); color:#fff; font-size:14px; cursor:pointer; display:grid; place-items:center; }
+
+  /* Team list view */
   .team-list { width:100%; display:flex; flex-direction:column; gap:12px; }
   .team-card { display:flex; gap:12px; align-items:flex-start; border:1px solid rgba(255,255,255,.12); border-radius:14px; padding:10px; background:rgba(255,255,255,.02); }
   .team-avatar { width:48px; height:48px; border-radius:50%; object-fit:cover; border:1px solid rgba(255,255,255,.25); flex:0 0 auto; }
@@ -136,22 +179,18 @@
   .team-bio.open { max-height:120px; margin-top:6px; }
   .team-expand { border:0; background:transparent; font-size:18px; cursor:pointer; color:#aaa; width:24px; height:24px; display:grid; place-items:center; }
 
-  /* Contacts view */
-  .contact-block { display:flex; flex-direction:column; gap:10px; width:100%; }
-  .contact-row { display:flex; flex-direction:column; gap:4px; padding:12px; border:1px solid rgba(255,255,255,.12); border-radius:12px; background:rgba(255,255,255,.02); }
+  /* Contacts & Tariffs */
+  .contact-row { display:flex; flex-direction:column; gap:4px; padding:10px 12px; border:1px solid rgba(255,255,255,.12); border-radius:12px; background:rgba(255,255,255,.02); }
   .contact-name { font-size:11px; color:#888; text-transform:uppercase; letter-spacing:.12em; }
   .contact-val { font-size:14px; letter-spacing:.06em; color:#6bb6ff; text-decoration:none; font-weight:500; }
   .contact-address { font-size:13px; color:#ddd; line-height:1.4; }
 
-  /* Tariffs view with Expandable details */
-  .tariff-item { display:flex; flex-direction:column; gap:6px; padding:12px 14px; border:1px solid rgba(255,255,255,.14); border-radius:14px; background:rgba(255,255,255,.02); }
+  .tariff-item { display:flex; flex-direction:column; gap:6px; padding:12px; border:1px solid rgba(255,255,255,.14); border-radius:14px; background:rgba(255,255,255,.02); }
   .tariff-header { display:flex; justify-content:space-between; align-items:center; }
   .tariff-title { font-size:13px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; }
   .tariff-price { font-size:13px; font-weight:700; color:#4ade80; }
-  .tariff-expand-btn { border:0; background:transparent; font-size:18px; cursor:pointer; color:#aaa; width:24px; height:24px; display:grid; place-items:center; }
-  .tariff-full-desc { max-height:0; overflow:hidden; color:#a0a0a0; font-size:11.5px; line-height:1.5; transition:max-height .3s ease, margin .3s; }
-  .tariff-full-desc.open { max-height:160px; margin-top:8px; border-top:1px dashed rgba(255,255,255,.12); padding-top:8px; }
-  .tariff-select-btn { align-self:flex-start; margin-top:8px; border:1px solid rgba(255,255,255,.25); border-radius:14px; background:transparent; color:#fff; font-size:10px; letter-spacing:.1em; text-transform:uppercase; padding:4px 10px; cursor:pointer; }
+  .tariff-desc { font-size:11.5px; color:#999; line-height:1.45; }
+  .tariff-select-btn { align-self:flex-start; margin-top:4px; border:1px solid rgba(255,255,255,.25); border-radius:14px; background:transparent; color:#fff; font-size:10px; letter-spacing:.1em; text-transform:uppercase; padding:4px 10px; cursor:pointer; }
   .tariff-select-btn:active { background:rgba(255,255,255,.15); }
 
   /* Fixed Dock */
@@ -160,11 +199,6 @@
   .dock i#pill { position:absolute; top:4px; bottom:4px; width:calc((100% - 8px) / 4); left:4px; border-radius:20px; background:rgba(243,243,241,.18); transition:transform .3s cubic-bezier(.2,.8,.2,1); pointer-events:none; }
   .dock button { flex:1; position:relative; z-index:1; border:0; background:transparent; color:#8d8d8d; font-size:9.5px; letter-spacing:.06em; text-transform:uppercase; cursor:pointer; }
   .dock button.on { color:#fff; }
-
-  /* Auth / Cabinet view */
-  .auth { display:flex; gap:10px; padding:10px 14px 0; }
-  .auth button { border:1px solid currentColor; border-radius:30px; background:transparent; height:34px; padding:0 18px; font-size:11px; letter-spacing:.14em; text-transform:uppercase; cursor:pointer; }
-  .auth button.active { background:rgba(255,255,255,.18); color:#fff; }
 
   /* Admin form & panel elements */
   .log { flex:1; overflow-y:auto; padding:12px 14px; display:flex; flex-direction:column; gap:10px; }
@@ -181,6 +215,19 @@
   form#form { display:flex; gap:8px; padding:10px 12px; border-top:1px solid rgba(243,243,241,.12); }
   form#form input { flex:1; background:transparent; border:0; color:inherit; font-size:13px; padding:6px 0; outline:none; }
   form#form button { border:0; background:transparent; cursor:pointer; width:32px; height:32px; padding:0; display:grid; place-items:center; }
+
+  /* layout fix: flex-based, safe-area aware */
+  html, body { height:100%; }
+  #shell { position:fixed; inset:0; height:auto; box-sizing:border-box; padding:env(safe-area-inset-top,0px) 0 calc(74px + env(safe-area-inset-bottom,0px)) 0; flex-direction:column; overflow:hidden; }
+  #shell .stage { flex:1 1 auto; min-height:0; padding:10px 14px; align-items:stretch; box-sizing:border-box; }
+  #shell .panel { height:100%; max-height:100%; min-height:0; }
+  .panel > * { min-height:0; }
+  .panel .log, .panel #studioContainer { min-height:0; }
+  #studioContainer { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+  .studio-main-view, .features-content-box { overflow-y:auto; -webkit-overflow-scrolling:touch; }
+  .dock { bottom:calc(12px + env(safe-area-inset-bottom,0px)); }
+  .features-nav-line { gap:5px; padding:10px 10px; overflow-x:hidden; }
+  .features-nav-line button { flex:0 1 auto; min-width:0; padding:7px 9px !important; font-size:9px !important; letter-spacing:.06em !important; white-space:nowrap; }
 </style>
 </head>
 <body>
@@ -268,19 +315,6 @@
   </div>
 </div>
 
-<!-- Fullscreen Website Showcase Overlay -->
-<div class="showcase-overlay" id="showcaseModal">
-  <img class="showcase-bg-img" id="showcaseImg" src="frames/f01.jpg" alt="mockup">
-  <div class="showcase-hud">
-    <div class="showcase-top">
-      <span id="showcaseCounter">КОНЦЕПЦИЯ 1 / 6</span>
-      <button type="button" id="closeShowcase" style="border:0; background:transparent; color:#fff; font-size:24px; cursor:pointer;">×</button>
-    </div>
-    <button type="button" class="showcase-center-btn" id="nextShowcaseBtn">ДАЛЕЕ →</button>
-    <div class="showcase-caption">уникальность дизайна определяет философию вашего проекта</div>
-  </div>
-</div>
-
 <!-- 6. Shell -->
 <section class="scene" id="shell">
   <div class="ticker">
@@ -295,7 +329,7 @@
 <nav class="dock" id="dock">
   <i id="pill"></i>
   <button type="button" data-tab="studio">о нас</button>
-  <button type="button" data-tab="dialog">диалог</button>
+  <button type="button" data-tab="contacts">контакты</button>
   <button type="button" data-tab="cabinet">личный кабинет</button>
   <button type="button" data-tab="prices">тарифы</button>
 </nav>
@@ -635,94 +669,74 @@ document.getElementById('ticker').innerHTML = row + row;
 const panels = {
   studio: `<h2>о нас / концепция</h2>
     <div id="studioContainer" style="width:100%; height:100%; display:flex; flex-direction:column;"></div>`,
-  dialog: `<h2>диалог со студией</h2>
-    <div class="log" id="log"></div>
-    <form id="form">
-      <input id="msg" placeholder="ваше сообщение..." />
-      <button type="submit" aria-label="отправить">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M2 21 L23 12 L2 3 L2 10 L17 12 L2 14 Z"/></svg>
-      </button>
-    </form>`,
-  cabinet: `<h2>личный кабинет</h2>
-    <div class="auth" id="authNav">
-      <button type="button" id="authLoginTab" class="active">войти</button>
-      <button type="button" id="authRegTab">регистрация</button>
-    </div>
-    <div class="auth-box" id="authBox"></div>
-    <div class="log" id="authlog"></div>`,
-  prices: `<h2>тарифы на услуги</h2>
+  contacts: `<h2>контакты</h2>
+    <div class="log">
+      <div class="contact-row">
+        <span class="contact-name">Алексей</span>
+        <a href="tel:+79152071950" class="contact-val">+7 (915) 207-19-50</a>
+      </div>
+      <div class="contact-row">
+        <span class="contact-name">Владислав</span>
+        <a href="tel:+79154726335" class="contact-val">+7 (915) 472-63-35</a>
+      </div>
+      <div class="contact-row">
+        <span class="contact-name">Локация студии</span>
+        <span class="contact-address">Москва, Юбилейный проспект</span>
+      </div>
+    </div>`,
+  cabinet: '<h2>личный кабинет</h2><div class="auth-box" id="authBox"></div><div class="log" id="authlog"></div>',
+  prices: `<h2>тарифы на дизайн</h2>
     <div class="log">
       <div class="tariff-item">
         <div class="tariff-header">
           <span class="tariff-title">Промо-сайт / Лендинг</span>
           <span class="tariff-price">от 45 000 ₽</span>
-          <button type="button" class="tariff-expand-btn" data-t="0">+</button>
         </div>
-        <div class="tariff-full-desc" id="tdesc-0">
-          Срок: 5–10 рабочих дней.<br>
-          • Индивидуальный дизайн и сетка<br>
-          • Плавные анимации и эффекты перехода<br>
-          • Полная мобильная адаптация (iOS/Android)<br>
-          • Интеграция форм сбора заявок в Telegram / CRM
-        </div>
+        <div class="tariff-desc">Уникальный визуальный стиль, плавная анимация, мобильная адаптивность и высокая конверсия.</div>
         <button type="button" class="tariff-select-btn" onclick="selectTariff('Промо-сайт / Лендинг (от 45 000 ₽)')">Выбрать услугу →</button>
       </div>
-
       <div class="tariff-item">
         <div class="tariff-header">
-          <span class="tariff-title">Айдентика & Бренд-стиль</span>
+          <span class="tariff-title">Айдентика & Бренд</span>
           <span class="tariff-price">от 65 000 ₽</span>
-          <button type="button" class="tariff-expand-btn" data-t="1">+</button>
         </div>
-        <div class="tariff-full-desc" id="tdesc-1">
-          Срок: 10–15 рабочих дней.<br>
-          • Разработка логотипа и знака бренда<br>
-          • Фирменная цветовая палитра и шрифтовые пары<br>
-          • Гайдлайн и правила использования стиля<br>
-          • Дизайн носителей (мерч, визитки, шаблоны постов)
-        </div>
+        <div class="tariff-desc">Логобук, шрифтовые пары, фирменная графика, гайдлайн и дизайн носителей бренда.</div>
         <button type="button" class="tariff-select-btn" onclick="selectTariff('Айдентика & Бренд (от 65 000 ₽)')">Выбрать услугу →</button>
       </div>
-
       <div class="tariff-item">
         <div class="tariff-header">
-          <span class="tariff-title">Web-сервис / Платформа</span>
+          <span class="tariff-title">Сервис / Web-платформа</span>
           <span class="tariff-price">от 120 000 ₽</span>
-          <button type="button" class="tariff-expand-btn" data-t="2">+</button>
         </div>
-        <div class="tariff-full-desc" id="tdesc-2">
-          Срок: от 20 рабочих дней.<br>
-          • Проектирование пользовательских сценариев (CJM)<br>
-          • UX/UI дизайн всех экранов и личного кабинета<br>
-          • Масштабируемая UI-система компонентов в Figma<br>
-          • Адаптивная вёрстка и подготовка к интеграции API
-        </div>
-        <button type="button" class="tariff-select-btn" onclick="selectTariff('Web-сервис / Платформа (от 120 000 ₽)')">Выбрать услугу →</button>
+        <div class="tariff-desc">Глубокое UX/UI проектирование, дизайн-система интерфейса и личных кабинетов.</div>
+        <button type="button" class="tariff-select-btn" onclick="selectTariff('Сервис / Web-платформа (от 120 000 ₽)')">Выбрать услугу →</button>
       </div>
-
       <div class="tariff-item">
         <div class="tariff-header">
-          <span class="tariff-title">Индивидуальный арт-продакшн</span>
+          <span class="tariff-title">Индивидуальный продакшн</span>
           <span class="tariff-price">от 200 000 ₽</span>
-          <button type="button" class="tariff-expand-btn" data-t="3">+</button>
         </div>
-        <div class="tariff-full-desc" id="tdesc-3">
-          Срок: индивидуально.<br>
-          • Эксклюзивный 3D-продакшн и WebGL-интерактив<br>
-          • Визуальный брендинг с полным запуском под ключ<br>
-          • Личный арт-директор на весь цикл проекта
-        </div>
-        <button type="button" class="tariff-select-btn" onclick="selectTariff('Индивидуальный арт-продакшн (от 200 000 ₽)')">Выбрать услугу →</button>
+        <div class="tariff-desc">3D-графика, интерактивный WebGL, нестандартные спецэффекты и полный запуск продукта.</div>
+        <button type="button" class="tariff-select-btn" onclick="selectTariff('Индивидуальный продакшн (от 200 000 ₽)')">Выбрать услугу →</button>
       </div>
     </div>`
 };
 
 function selectTariff(name) {
   selectedTariff = name;
-  tab('dialog');
+  tab('contacts_chat');
 }
 
 function tab(name) {
+  if (name === 'contacts_chat') {
+    document.getElementById('panel').innerHTML = '<h2>диалог со студией</h2><div class="log" id="log"></div><form id="form"><input id="msg" placeholder="ваше сообщение..." /><button type="submit" aria-label="отправить"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M2 21 L23 12 L2 3 L2 10 L17 12 L2 14 Z"/></svg></button></form>';
+    const buttons = [...document.querySelectorAll('#dock button')];
+    buttons.forEach(b => b.classList.toggle('on', b.dataset.tab === 'contacts'));
+    document.getElementById('pill').style.transform = 'translateX(100%)';
+    renderDialogFlow();
+    return;
+  }
+  
   document.getElementById('panel').innerHTML = panels[name];
   const buttons = [...document.querySelectorAll('#dock button')];
   buttons.forEach((b,i) => {
@@ -734,84 +748,14 @@ function tab(name) {
   });
   
   if (name === 'studio') renderStudioMain();
-  if (name === 'dialog') renderDialogFlow();
-  if (name === 'cabinet') renderCabinet('login');
-  if (name === 'prices') initTariffsExpand();
+  if (name === 'cabinet') renderCabinet();
 }
 
-function initTariffsExpand() {
-  document.querySelectorAll('.tariff-expand-btn').forEach(btn => {
-    btn.onclick = () => {
-      const idx = btn.dataset.t;
-      const desc = document.getElementById('tdesc-' + idx);
-      desc.classList.toggle('open');
-      btn.textContent = desc.classList.contains('open') ? '×' : '+';
-    };
-  });
-}
-
-// Studio Tab Logic (Restored full navigation + Opportunities section)
+// Studio Tab Logic (Main View with "ВОЗМОЖНОСТИ" Button)
 function renderStudioMain() {
   const container = document.getElementById('studioContainer');
-  container.innerHTML = `
-    <div class="studio-main-view">
-      <div style="font-size:12px; color:#a0a0a0; line-height:1.55;">
-        V³ Studio — лаборатория концептуального дизайна и цифровых решений. Мы создаём интерфейсы и визуальные системы, которые выделяют бренды на рынке.
-      </div>
-      <div class="studio-nav-buttons">
-        <button type="button" class="studio-btn-row accent" id="openFeatures">
-          <span>ВОЗМОЖНОСТИ</span>
-          <span>→</span>
-        </button>
-        <button type="button" class="studio-btn-row" id="openTeam">
-          <span>КОМАНДА</span>
-          <span>→</span>
-        </button>
-        <button type="button" class="studio-btn-row" id="openContacts">
-          <span>КОНТАКТЫ СТУДИИ</span>
-          <span>→</span>
-        </button>
-      </div>
-    </div>
-  `;
-
-  document.getElementById('openFeatures').onclick = () => renderFeaturesView('aes');
-  document.getElementById('openTeam').onclick = renderTeamView;
-  document.getElementById('openContacts').onclick = renderContactsView;
-}
-
-function renderContactsView() {
-  const container = document.getElementById('studioContainer');
-  container.innerHTML = `
-    <div class="features-layout">
-      <div class="features-nav-line">
-        <button type="button" class="features-back-btn" id="contactBack">← НАЗАД</button>
-        <span style="font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#fff;">КОНТАКТЫ</span>
-      </div>
-      <div class="features-content-box">
-        <div class="contact-block">
-          <div class="contact-row">
-            <span class="contact-name">Алексей</span>
-            <a href="tel:+79152071950" class="contact-val">+7 (915) 207-19-50</a>
-          </div>
-          <div class="contact-row">
-            <span class="contact-name">Владислав</span>
-            <a href="tel:+79154726335" class="contact-val">+7 (915) 472-63-35</a>
-          </div>
-          <div class="contact-row">
-            <span class="contact-name">Локация студии</span>
-            <span class="contact-address">Москва, Юбилейный проспект</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
-  document.getElementById('contactBack').onclick = renderStudioMain;
-}
-
-function renderTeamView() {
-  const container = document.getElementById('studioContainer');
   team = getTeam();
+  
   let teamHtml = '<div class="team-list">';
   team.forEach((m, idx) => {
     teamHtml += `
@@ -831,18 +775,15 @@ function renderTeamView() {
   teamHtml += '</div>';
 
   container.innerHTML = `
-    <div class="features-layout">
-      <div class="features-nav-line">
-        <button type="button" class="features-back-btn" id="teamBack">← НАЗАД</button>
-        <span style="font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#fff;">КОМАНДА</span>
+    <div class="studio-main-view">
+      <div style="font-size:12px; color:#a0a0a0; line-height:1.55; margin-bottom:12px;">
+        V³ Studio — лаборатория концептуального дизайна и цифровых решений. Мы создаём интерфейсы и визуальные системы, которые выделяют бренды на рынке.
       </div>
-      <div class="features-content-box">
-        ${teamHtml}
-      </div>
+      ${teamHtml}
+      <button type="button" class="features-btn-main" id="openFeaturesBtn">ВОЗМОЖНОСТИ →</button>
     </div>
   `;
 
-  document.getElementById('teamBack').onclick = renderStudioMain;
   document.querySelectorAll('.team-expand').forEach(btn => {
     btn.onclick = () => {
       const idx = btn.dataset.teamIdx;
@@ -851,11 +792,15 @@ function renderTeamView() {
       btn.textContent = bio.classList.contains('open') ? '×' : '+';
     };
   });
+
+  document.getElementById('openFeaturesBtn').onclick = () => {
+    renderFeaturesView('aes');
+  };
 }
 
 let rotX = -15, rotY = 25;
-let showcaseSlide = 0;
-const showcaseImages = ['frames/f01.jpg', 'frames/f03.jpg', 'frames/f05.jpg', 'frames/f07.jpg', 'frames/f09.jpg', 'frames/f11.jpg'];
+let currentSlide = 0;
+const slideImages = ['frames/f01.jpg', 'frames/f03.jpg', 'frames/f05.jpg', 'frames/f07.jpg', 'frames/f09.jpg', 'frames/f11.jpg'];
 
 function renderFeaturesView(tabKey) {
   const container = document.getElementById('studioContainer');
@@ -896,73 +841,60 @@ function renderFeaturesView(tabKey) {
       <div class="features-header-text">
         креативные решения помогают улучшить функционал сайта и находить необычные пути , реализовать лотерею на сайте или разработать социальное приложение.
       </div>
-      <div class="erase-container" id="eraseBox">
-        <div class="erase-underlayer">
+      <div class="scratch-container" id="scratchBox">
+        <div class="scratch-underlayer">
           <img src="logo.png" alt="logo">
-          <h3>V³ STUDIO</h3>
-          <p>ДИЗАЙН ДЛЯ БИЗНЕСА И СМЫСЛОВ</p>
+          <div style="font-size:11px; letter-spacing:.14em; text-transform:uppercase;">V³ STUDIO • SECRET UNLOCKED</div>
         </div>
-        <canvas class="erase-canvas" id="eraseCanvas"></canvas>
+        <canvas class="scratch-canvas" id="scratchCanvas"></canvas>
       </div>
-      <div style="font-size:10px; color:#777; text-align:center; margin-top:8px; letter-spacing:.12em; text-transform:uppercase;">Сотрите тёмный фон пальцем</div>
+      <div style="font-size:10px; color:#777; text-align:center; margin-top:8px; letter-spacing:.12em; text-transform:uppercase;">Сотрите защитный слой пальцем</div>
     `;
-    setupEraseCanvas();
+    setupScratchCanvas();
   } else if (tabKey === 'fx') {
     content.innerHTML = `
-      <div class="features-header-text">
-        нажмите кнопку ниже, чтобы открыть полноэкранный просмотр интерфейсов студии с интерактивным перелистыванием.
+      <div class="effect-slider">
+        <img class="effect-img" id="effectSlideImg" src="${slideImages[currentSlide]}" alt="slide">
+        <div class="effect-overlay-text">
+          уникальность дизайна определяет философию вашего проекта
+        </div>
+        <div class="slider-arrows">
+          <button type="button" id="prevSlide">←</button>
+          <button type="button" id="nextSlide">→</button>
+        </div>
       </div>
-      <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;">
-        <button type="button" class="btn show" id="launchShowcaseBtn" style="margin-top:0;">СМОТРЕТЬ ИНТЕРФЕЙСЫ →</button>
-      </div>
+      <div style="font-size:10px; color:#777; text-align:center; margin-top:8px; letter-spacing:.12em; text-transform:uppercase;">Галерея дизайн-концепций (${currentSlide + 1}/${slideImages.length})</div>
     `;
 
-    document.getElementById('launchShowcaseBtn').onclick = openShowcase;
+    document.getElementById('prevSlide').onclick = () => {
+      currentSlide = (currentSlide - 1 + slideImages.length) % slideImages.length;
+      renderFeaturesView('fx');
+    };
+    document.getElementById('nextSlide').onclick = () => {
+      currentSlide = (currentSlide + 1) % slideImages.length;
+      renderFeaturesView('fx');
+    };
   }
 }
 
-// Fullscreen Showcase Logic
-function openShowcase() {
-  const modal = document.getElementById('showcaseModal');
-  showcaseSlide = 0;
-  updateShowcaseDisplay();
-  modal.classList.add('on');
-
-  document.getElementById('closeShowcase').onclick = () => modal.classList.remove('on');
-  document.getElementById('nextShowcaseBtn').onclick = () => {
-    showcaseSlide++;
-    if (showcaseSlide >= showcaseImages.length) {
-      modal.classList.remove('on');
-    } else {
-      updateShowcaseDisplay();
-    }
-  };
-}
-
-function updateShowcaseDisplay() {
-  document.getElementById('showcaseImg').src = showcaseImages[showcaseSlide];
-  document.getElementById('showcaseCounter').textContent = `КОНЦЕПЦИЯ ${showcaseSlide + 1} / ${showcaseImages.length}`;
-  document.getElementById('nextShowcaseBtn').textContent = (showcaseSlide === showcaseImages.length - 1) ? 'ЗАВЕРШИТЬ ✕' : 'ДАЛЕЕ →';
-}
-
-// Smooth Black Background Erasure Canvas (Smooth fading to white background beneath)
-function setupEraseCanvas() {
-  const c = document.getElementById('eraseCanvas');
+// Scratch Card Canvas
+function setupScratchCanvas() {
+  const c = document.getElementById('scratchCanvas');
   if (!c) return;
-  const box = document.getElementById('eraseBox');
+  const box = document.getElementById('scratchBox');
   c.width = box.clientWidth;
   c.height = box.clientHeight;
   const cctx = c.getContext('2d');
   
-  cctx.fillStyle = '#0c0c0c';
+  cctx.fillStyle = '#222';
   cctx.fillRect(0, 0, c.width, c.height);
   cctx.fillStyle = '#666';
   cctx.font = '11px monospace';
   cctx.textAlign = 'center';
-  cctx.fillText('ПРОВЕДИТЕ ПАЛЬЦЕМ', c.width / 2, c.height / 2);
+  cctx.fillText('СТИРАЙТЕ ЗДЕСЬ', c.width / 2, c.height / 2);
 
   let isDrawing = false;
-  function erase(e) {
+  function scratch(e) {
     if (!isDrawing) return;
     const rect = c.getBoundingClientRect();
     const x = (e.clientX || (e.touches && e.touches[0].clientX)) - rect.left;
@@ -970,20 +902,16 @@ function setupEraseCanvas() {
     
     cctx.globalCompositeOperation = 'destination-out';
     cctx.beginPath();
-    const rad = cctx.createRadialGradient(x, y, 6, x, y, 32);
-    rad.addColorStop(0, 'rgba(0,0,0,1)');
-    rad.addColorStop(1, 'rgba(0,0,0,0)');
-    cctx.fillStyle = rad;
-    cctx.arc(x, y, 32, 0, Math.PI * 2);
+    cctx.arc(x, y, 22, 0, Math.PI * 2);
     cctx.fill();
   }
 
-  c.addEventListener('pointerdown', (e) => { isDrawing = true; erase(e); });
-  c.addEventListener('pointermove', erase);
+  c.addEventListener('pointerdown', (e) => { isDrawing = true; scratch(e); });
+  c.addEventListener('pointermove', scratch);
   window.addEventListener('pointerup', () => { isDrawing = false; });
 }
 
-// 3D Cube Rotation + Particle trail
+// 3D Cube Rotation
 function setupCubeInteraction() {
   const stage = document.getElementById('cubeStage');
   const cube = document.getElementById('cube3D');
@@ -997,15 +925,6 @@ function setupCubeInteraction() {
   }
   updateCube();
   
-  function spawnTrail(x, y) {
-    const dot = document.createElement('div');
-    dot.className = 'trail-dot';
-    dot.style.left = x + 'px';
-    dot.style.top = y + 'px';
-    stage.appendChild(dot);
-    setTimeout(() => dot.remove(), 550);
-  }
-
   stage.addEventListener('pointerdown', (e) => {
     isDown = true;
     startX = e.clientX;
@@ -1021,16 +940,13 @@ function setupCubeInteraction() {
     startX = e.clientX;
     startY = e.clientY;
     updateCube();
-
-    const rect = stage.getBoundingClientRect();
-    spawnTrail(e.clientX - rect.left, e.clientY - rect.top);
   });
   function endDrag() { isDown = false; }
   stage.addEventListener('pointerup', endDrag);
   stage.addEventListener('pointercancel', endDrag);
 }
 
-// Dialog Flow
+// Sequential Dialog Flow
 let dialogStep = 1;
 let clientProject = '';
 let clientName = '';
@@ -1040,7 +956,7 @@ function renderDialogFlow() {
   log.innerHTML = '';
   dialogStep = 1;
 
-  appendBotBubble('Здравствуйте. Напишите название проекта и сфера вашей деятельности.');
+  appendBotBubble('Здравствуйте. Напишите название проекта и сферу вашей деятельности.');
 
   document.getElementById('form').onsubmit = (e) => {
     e.preventDefault();
@@ -1102,115 +1018,84 @@ function typeInto(el, text) {
   }, 20);
 }
 
-// Cabinet View (Login / Reg / Admin Unlock by 1986)
-function renderCabinet(mode) {
+function renderCabinet() {
   const box = document.getElementById('authBox');
   const log = document.getElementById('authlog');
-  const loginTab = document.getElementById('authLoginTab');
-  const regTab = document.getElementById('authRegTab');
-
-  if (loginTab && regTab) {
-    loginTab.classList.toggle('active', mode === 'login');
-    regTab.classList.toggle('active', mode === 'reg');
-    loginTab.onclick = () => renderCabinet('login');
-    regTab.onclick = () => renderCabinet('reg');
-  }
-
+  
   if (!isAdmin) {
-    if (mode === 'login') {
-      box.innerHTML = `
-        <input type="text" id="userEmail" class="admin-input" placeholder="Email или логин..." />
-        <input type="password" id="adminPass" class="admin-input" placeholder="Пароль доступа..." />
-        <button type="button" id="adminLoginBtn" class="admin-btn">Войти в кабинет</button>
-      `;
-      log.innerHTML = '<div class="bubble">Авторизация для клиентов студии и доступ администратора.</div>';
-    } else {
-      box.innerHTML = `
-        <input type="text" id="regName" class="admin-input" placeholder="Ваше имя / Компания..." />
-        <input type="email" id="regEmail" class="admin-input" placeholder="Email для связи..." />
-        <input type="password" id="regPass" class="admin-input" placeholder="Придумайте пароль..." />
-        <button type="button" id="adminRegBtn" class="admin-btn">Зарегистрироваться</button>
-      `;
-      log.innerHTML = '<div class="bubble">Регистрация нового клиента студии. Сюда сядет аккаунт проекта.</div>';
-    }
-
-    const btn = document.getElementById('adminLoginBtn') || document.getElementById('adminRegBtn');
-    if (btn) {
-      btn.onclick = () => {
-        const pass = (document.getElementById('adminPass') || document.getElementById('regPass')).value;
-        if (pass === '1986') {
-          isAdmin = true;
-          renderAdminPanel();
-        } else {
-          log.innerHTML = '<div class="bubble">Кабинет клиента в разработке. Для админ-доступа введите ключ.</div>';
-        }
-      };
-    }
+    box.innerHTML = `
+      <input type="password" id="adminPass" class="admin-input" placeholder="Введите пароль доступа..." />
+      <button type="button" id="adminLoginBtn" class="admin-btn">Войти</button>
+    `;
+    log.innerHTML = '<div class="bubble">Вход для клиентов и режим администратора студии.</div>';
+    
+    document.getElementById('adminLoginBtn').onclick = () => {
+      const pass = document.getElementById('adminPass').value;
+      if (pass === '1986') {
+        isAdmin = true;
+        renderCabinet();
+      } else {
+        log.innerHTML = '<div class="bubble" style="border-color:#ef4444; color:#ef4444;">Неверный пароль. Попробуйте снова.</div>';
+      }
+    };
   } else {
-    renderAdminPanel();
+    const currentP = projects[currentProjectIndex] || projects[0];
+    box.innerHTML = `
+      <div class="bubble admin-badge">✓ Режим администратора активен</div>
+      
+      <div style="font-size:11px; color:#aaa; font-weight:500; margin-top:4px;">1. Проект #${currentP.id + 1} (${currentP.title})</div>
+      <input type="text" id="editTitle" class="admin-input" value="${currentP.title}" placeholder="Название проекта" />
+      <input type="text" id="editCover" class="admin-input" value="${currentP.img || ''}" placeholder="Фото обложки (URL/путь)" />
+      <input type="text" id="editShort" class="admin-input" value="${currentP.shortText}" placeholder="Краткое описание" />
+      <input type="text" id="editLink" class="admin-input" value="${currentP.link || ''}" placeholder="Ссылка на проект (https://...)" />
+      <textarea id="editGallery" class="admin-input" rows="2" placeholder="Галерея проекта (ссылки через запятую)">${(currentP.gallery || []).join(', ')}</textarea>
+      <textarea id="editDesc" class="admin-input" rows="2" placeholder="Полное описание">${currentP.desc || ''}</textarea>
+      <input type="text" id="editFree" class="admin-input" value="${currentP.free || ''}" placeholder="Свободное поле" />
+      
+      <div style="font-size:11px; color:#aaa; font-weight:500; margin-top:8px;">2. Команда студии</div>
+      <input type="text" id="editTName" class="admin-input" value="${team[0]?.name || ''}" placeholder="Имя специалиста" />
+      <input type="text" id="editTRole" class="admin-input" value="${team[0]?.role || ''}" placeholder="Должность" />
+      <input type="text" id="editTAvatar" class="admin-input" value="${team[0]?.avatar || ''}" placeholder="Аватар (URL/путь)" />
+      <textarea id="editTBio" class="admin-input" rows="2" placeholder="Описание / Биография">${team[0]?.bio || ''}</textarea>
+      
+      <div style="display:flex; gap:8px; margin-top:6px;">
+        <button type="button" id="saveAdminBtn" class="admin-btn" style="flex:1;">Сохранить всё</button>
+        <button type="button" id="logoutAdminBtn" class="admin-btn" style="width:70px;">Выйти</button>
+      </div>
+    `;
+    log.innerHTML = '<div class="bubble">Изменения мгновенно сохраняются и обновляют приложение.</div>';
+    
+    document.getElementById('saveAdminBtn').onclick = () => {
+      currentP.title = document.getElementById('editTitle').value;
+      currentP.img = document.getElementById('editCover').value;
+      currentP.shortText = document.getElementById('editShort').value;
+      currentP.link = document.getElementById('editLink').value;
+      currentP.desc = document.getElementById('editDesc').value;
+      currentP.free = document.getElementById('editFree').value;
+      const gRaw = document.getElementById('editGallery').value;
+      currentP.gallery = gRaw.split(',').map(s => s.trim()).filter(Boolean);
+      saveProjects(projects);
+      
+      if (team[0]) {
+        team[0].name = document.getElementById('editTName').value;
+        team[0].role = document.getElementById('editTRole').value;
+        team[0].avatar = document.getElementById('editTAvatar').value;
+        team[0].bio = document.getElementById('editTBio').value;
+        saveTeam(team);
+      }
+      
+      buildRail();
+      log.innerHTML = '<div class="bubble" style="border-color:#4ade80; color:#4ade80;">Данные успешно сохранены!</div>';
+    };
+    
+    document.getElementById('logoutAdminBtn').onclick = () => {
+      isAdmin = false;
+      renderCabinet();
+    };
   }
 }
 
-function renderAdminPanel() {
-  const box = document.getElementById('authBox');
-  const log = document.getElementById('authlog');
-  const currentP = projects[currentProjectIndex] || projects[0];
-
-  box.innerHTML = `
-    <div class="bubble admin-badge">✓ Режим администратора активен</div>
-    
-    <div style="font-size:11px; color:#aaa; font-weight:500; margin-top:4px;">1. Проект #${currentP.id + 1} (${currentP.title})</div>
-    <input type="text" id="editTitle" class="admin-input" value="${currentP.title}" placeholder="Название проекта" />
-    <input type="text" id="editCover" class="admin-input" value="${currentP.img || ''}" placeholder="Фото обложки (URL/путь)" />
-    <input type="text" id="editShort" class="admin-input" value="${currentP.shortText}" placeholder="Краткое описание" />
-    <input type="text" id="editLink" class="admin-input" value="${currentP.link || ''}" placeholder="Ссылка на проект (https://...)" />
-    <textarea id="editGallery" class="admin-input" rows="2" placeholder="Галерея проекта (ссылки через запятую)">${(currentP.gallery || []).join(', ')}</textarea>
-    <textarea id="editDesc" class="admin-input" rows="2" placeholder="Полное описание">${currentP.desc || ''}</textarea>
-    <input type="text" id="editFree" class="admin-input" value="${currentP.free || ''}" placeholder="Свободное поле" />
-    
-    <div style="font-size:11px; color:#aaa; font-weight:500; margin-top:8px;">2. Команда студии</div>
-    <input type="text" id="editTName" class="admin-input" value="${team[0]?.name || ''}" placeholder="Имя специалиста" />
-    <input type="text" id="editTRole" class="admin-input" value="${team[0]?.role || ''}" placeholder="Должность" />
-    <input type="text" id="editTAvatar" class="admin-input" value="${team[0]?.avatar || ''}" placeholder="Аватар (URL/путь)" />
-    <textarea id="editTBio" class="admin-input" rows="2" placeholder="Описание / Биография">${team[0]?.bio || ''}</textarea>
-    
-    <div style="display:flex; gap:8px; margin-top:6px;">
-      <button type="button" id="saveAdminBtn" class="admin-btn" style="flex:1;">Сохранить всё</button>
-      <button type="button" id="logoutAdminBtn" class="admin-btn" style="width:70px;">Выйти</button>
-    </div>
-  `;
-  log.innerHTML = '<div class="bubble">Изменения мгновенно сохраняются и обновляют приложение.</div>';
-
-  document.getElementById('saveAdminBtn').onclick = () => {
-    currentP.title = document.getElementById('editTitle').value;
-    currentP.img = document.getElementById('editCover').value;
-    currentP.shortText = document.getElementById('editShort').value;
-    currentP.link = document.getElementById('editLink').value;
-    currentP.desc = document.getElementById('editDesc').value;
-    currentP.free = document.getElementById('editFree').value;
-    const gRaw = document.getElementById('editGallery').value;
-    currentP.gallery = gRaw.split(',').map(s => s.trim()).filter(Boolean);
-    saveProjects(projects);
-    
-    if (team[0]) {
-      team[0].name = document.getElementById('editTName').value;
-      team[0].role = document.getElementById('editTRole').value;
-      team[0].avatar = document.getElementById('editTAvatar').value;
-      team[0].bio = document.getElementById('editTBio').value;
-      saveTeam(team);
-    }
-    
-    buildRail();
-    log.innerHTML = '<div class="bubble" style="border-color:#4ade80; color:#4ade80;">Данные успешно сохранены!</div>';
-  };
-
-  document.getElementById('logoutAdminBtn').onclick = () => {
-    isAdmin = false;
-    renderCabinet('login');
-  };
-}
-
-document.getElementById('discuss').onclick = () => { show('shell'); tab('dialog'); };
+document.getElementById('discuss').onclick = () => { show('shell'); tab('contacts_chat'); };
 document.querySelectorAll('#dock button').forEach(b => b.onclick = () => tab(b.dataset.tab));
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
