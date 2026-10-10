@@ -1,0 +1,125 @@
+/* Only capability introductions and the three Effect concepts. */
+.capability-intro {
+  width:100%; min-height:100%; padding:32px 24px; background:#000;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:30px; text-align:center;
+}
+.capability-kicker { font-size:8px; letter-spacing:.2em; color:#777; }
+.capability-intro h2 {
+  max-width:650px; margin:0; font:400 clamp(19px,3.1vw,38px)/1.4 "IBM Plex Mono",monospace;
+  letter-spacing:-.035em; text-wrap:balance; color:#f3f3f1; border:0; padding:0;
+}
+.capability-watch { padding:14px 30px; min-height:46px; background:transparent; color:#f3f3f1; }
+.capability-watch span { display:inline-block; margin-left:12px; transition:transform .3s; }
+.capability-watch:hover span { transform:translate(3px,-3px); }
+.capability-watch:hover { background:#f3f3f1; color:#000; }
+#capabilitiesContent:has(.capability-intro) { padding:0; background:#000; }
+.fxo .fx-site { bottom:calc(80px + env(safe-area-inset-bottom,0px)); padding-bottom:24px; }
+.fxo::after {
+  content:""; position:absolute; left:0; right:0; bottom:0; height:calc(80px + env(safe-area-inset-bottom,0px)); z-index:4;
+  background:#101311; border-top:1px solid rgba(255,255,255,.12); pointer-events:none;
+}
+.fxo.t1::after { background:#f1eee7; border-color:rgba(82,68,56,.16); }
+.fxo.t2::after { background:#070c12; }
+.fxo .fx-head { padding:25px clamp(24px,5.5vw,88px); min-height:88px; }
+.fxo .fx-nav button { position:relative; padding-bottom:8px; }
+.fxo .fx-nav button::after {
+  content:""; position:absolute; left:0; right:0; bottom:0; height:1px; background:currentColor;
+  transform:scaleX(0); transform-origin:left; transition:transform .3s;
+}
+.fxo .fx-nav button:hover::after { transform:scaleX(1); }
+.fxo .fx-hero { min-height:max(660px,calc(100dvh - 168px)); padding:80px clamp(24px,5.5vw,88px) 124px; }
+.fx-media { position:absolute; inset:0; z-index:-2; overflow:hidden; }
+.fxo .fx-photo,.fx-video {
+  position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:0;
+}
+.fx-video { opacity:0; transition:opacity 1s; pointer-events:none; }
+.fx-video.ready { opacity:1; }
+.fxo .fx-copy { gap:28px; max-width:850px; }
+.fxo .fx-title { font-weight:400; font-size:clamp(54px,7vw,106px); letter-spacing:-.065em; line-height:.98; }
+.fxo .fx-desc { max-width:330px; font-size:14px; line-height:1.85; }
+.fxo .fx-cta { padding:18px 28px; border-radius:40px; transition:transform .3s,background .3s,box-shadow .3s; }
+.fxo .fx-cta:hover { transform:translateY(-3px); box-shadow:0 12px 30px rgba(0,0,0,.18); }
+.fxo .fx-cta:active { transform:translateY(0) scale(.97); }
+.fx-editorial-note {
+  position:absolute; right:clamp(24px,5.5vw,88px); bottom:70px; max-width:230px;
+  border-top:1px solid currentColor; padding-top:16px; opacity:.8;
+}
+.fx-editorial-note span { font:8px/1.7 "IBM Plex Mono",monospace; letter-spacing:.12em; }
+.fx-editorial-note p { margin:9px 0 0; font-size:18px; line-height:1.4; letter-spacing:-.03em; }
+.fxo .fx-image-caption { left:clamp(24px,5.5vw,88px); right:auto; bottom:32px; }
+.fxo .fx-cards { padding:0 clamp(24px,5.5vw,88px); }
+.fxo .fx-card { padding-top:36px; padding-bottom:36px; }
+.fxo .fx-offer { padding:88px clamp(24px,5.5vw,88px); }
+.fxo .fx-offer h2 { max-width:850px; font-size:clamp(42px,5vw,76px); }
+.fxo .fx-offer-grid { margin-top:64px; gap:36px; }
+.fxo .fx-offer-grid article { transition:transform .35s; }
+.fxo .fx-offer-grid article:hover { transform:translateY(-5px); }
+.fx-philosophy { display:grid; grid-template-columns:1fr 2fr; gap:32px; border-top:1px solid rgba(255,255,255,.15); margin-top:88px; padding-top:30px; }
+.fx-philosophy span { font:8px/1.8 "IBM Plex Mono",monospace; opacity:.5; letter-spacing:.12em; }
+.fx-philosophy p { font-size:clamp(22px,3vw,38px); line-height:1.35; letter-spacing:-.04em; margin:0; max-width:650px; }
+.fxo .fx-btn { transition:transform .25s,box-shadow .25s; padding:16px 30px; }
+.fxo .fx-btn:hover { transform:translateX(-50%) translateY(-3px); box-shadow:0 12px 40px rgba(0,0,0,.25); }
+.fxo.t0 { --fx-accent:#e9e3d6; }
+.fxo.t0 .fx-bg { background:#101311; }
+.fxo.t0 .fx-head { border-color:rgba(255,255,255,.18); }
+.fxo.t0 .fx-hero::after { background:linear-gradient(90deg,rgba(5,10,9,.92),rgba(5,10,9,.28) 70%),linear-gradient(0deg,rgba(5,10,9,.65),transparent 35%); }
+.fxo.t0 .fx-title em { color:inherit; font-weight:300; }
+.fxo.t1 { --fx-accent:#524438; }
+.fxo.t1 .fx-bg { background:#f1eee7; }
+.fxo.t1 .fx-hero { grid-template-columns:1fr 1fr; gap:7%; align-items:center; padding-top:64px; padding-bottom:120px; }
+.fxo.t1 .fx-media { position:relative; grid-column:2; grid-row:1; width:100%; height:570px; border-radius:220px 220px 4px 4px; z-index:0; }
+.fxo.t1 .fx-photo,.fxo.t1 .fx-video { position:absolute; inset:0; width:100%; height:100%; border-radius:0; object-fit:cover; }
+.fxo.t1 .fx-copy { grid-column:1; grid-row:1; }
+.fxo.t1 .fx-title { font-size:clamp(50px,6vw,88px); line-height:1.06; letter-spacing:-.055em; }
+.fxo.t1 .fx-cta { color:#524438; }
+.fxo.t1 .fx-editorial-note { bottom:32px; right:clamp(24px,5.5vw,88px); max-width:none; width:calc(50% - 88px); }
+.fxo.t1 .fx-editorial-note p { font-size:22px; font-style:italic; }
+.fxo.t1 .fx-philosophy { border-color:rgba(82,68,56,.2); }
+.fxo.t1 .fx-offer { background:#e7e4da; }
+.fxo.t2 .fx-media { left:20%; width:80%; }
+.fxo.t2 .fx-photo,.fxo.t2 .fx-video { width:100%; left:0; object-fit:cover; opacity:.85; }
+.fxo.t2 .fx-video { opacity:0; }
+.fxo.t2 .fx-video.ready { opacity:.85; }
+.fxo.t2 .fx-hero::after { background:linear-gradient(90deg,#070c12,rgba(7,12,18,.87) 24%,rgba(7,12,18,.2) 80%),linear-gradient(0deg,#070c12,transparent 45%); }
+.fxo.t2 .fx-title { font-size:clamp(48px,6.5vw,98px); }
+.fxo.t2 .fx-editorial-note { border-color:#a6f1e5; color:#a6f1e5; }
+.fxo.t2 .fx-editorial-note span::before { content:""; display:inline-block; width:5px; height:5px; border-radius:50%; margin-right:8px; background:currentColor; box-shadow:0 0 12px currentColor; animation:fxSignal 3s ease-in-out infinite; }
+.fxo.t2 .fx-offer-grid article { border-color:rgba(166,241,229,.4); }
+@keyframes fxSignal { 50% { opacity:.35; } }
+@media (max-width:600px) {
+  .capability-intro { padding:24px 18px; gap:28px; }
+  .capability-intro h2 { font-size:clamp(18px,5.2vw,26px); }
+  .fxo .fx-head { padding:20px 22px; min-height:86px; }
+  .fxo .fx-nav { gap:20px; }
+  .fxo .fx-hero { min-height:max(670px,calc(100dvh - 166px)); padding:54px 22px 180px; }
+  .fxo .fx-copy { gap:24px; }
+  .fxo .fx-title { font-size:clamp(42px,12vw,70px); }
+  .fxo .fx-desc { max-width:290px; font-size:12px; }
+  .fxo .fx-cta { padding:16px 22px; font-size:9px; }
+  .fx-editorial-note { left:22px; right:22px; bottom:104px; max-width:none; padding-top:12px; }
+  .fx-editorial-note p { font-size:14px; margin-top:5px; }
+  .fxo .fx-image-caption { display:none; }
+  .fxo .fx-card { padding-top:24px; padding-bottom:24px; }
+  .fxo .fx-offer { padding:58px 22px; }
+  .fxo .fx-offer h2 { font-size:40px; }
+  .fxo .fx-offer-grid { gap:26px; margin-top:36px; }
+  .fx-philosophy { grid-template-columns:1fr; gap:18px; margin-top:48px; padding-top:24px; }
+  .fxo.t1 .fx-hero { grid-template-columns:1fr; min-height:0; gap:28px; padding:42px 22px 100px; }
+  .fxo.t1 .fx-media { grid-column:1; grid-row:2; height:340px; border-radius:170px 170px 3px 3px; }
+  .fxo.t1 .fx-title { font-size:clamp(44px,12vw,68px); }
+  .fxo.t1 .fx-editorial-note { width:auto; left:22px; right:22px; bottom:28px; }
+  .fxo.t1 .fx-editorial-note p { font-size:15px; }
+  .fxo.t2 .fx-media { left:0; width:100%; }
+  .fxo.t2 .fx-title { font-size:clamp(34px,10vw,56px); }
+}
+@media (max-width:600px) and (max-height:650px) {
+  .fxo .fx-hero { justify-content:flex-start; padding-top:32px; }
+  .fxo .fx-copy { gap:20px; }
+  .fxo.t1 .fx-hero { padding-top:32px; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .fx-video { display:none; }
+  .fxo .fx-cta,.fxo .fx-btn,.fxo .fx-offer-grid article { transition:none; }
+  .fxo.t2 .fx-editorial-note span::before { animation:none; }
+}

@@ -526,6 +526,7 @@
   .studio-earth .cube-caption { font-size:9px; }
   .studio-earth:focus-visible { outline:1px solid rgba(255,255,255,.6); outline-offset:-4px; border-radius:14px; }
 </style>
+<link rel="stylesheet" href="studio-refinements.css" />
 </head>
 <body>
 
@@ -626,13 +627,17 @@
   <div class="fx-site" id="fxSite">
     <div class="fx-head"><span class="fx-logo" id="fxLogo"></span><span class="fx-nav" id="fxNav"></span></div>
     <div class="fx-hero">
-      <img class="fx-photo" id="fxPhoto" alt="" />
+      <div class="fx-media">
+        <img class="fx-photo" id="fxPhoto" alt="" />
+        <video class="fx-video" id="fxVideo" muted loop playsinline preload="none" aria-hidden="true"></video>
+      </div>
       <div class="fx-copy">
         <div class="fx-eyebrow" id="fxEye"></div>
         <h1 class="fx-title" id="fxTitle"></h1>
         <p class="fx-desc" id="fxDesc"></p>
         <button type="button" class="fx-cta" id="fxCta"></button>
       </div>
+      <div class="fx-editorial-note" id="fxEditorial"></div>
       <div class="fx-image-caption" id="fxImageCaption"></div>
     </div>
     <div class="fx-cards" id="fxCards"></div>
@@ -1211,16 +1216,18 @@ function renderStudioView(view) {
   content.classList.toggle('top', view === 'projects');
   if (view === 'idea') { /* handled below, also launches scratch */ }
   if (view === 'aes') {
+    content.innerHTML = '<div class="capability-intro"><span class="capability-kicker">V³ / ЭСТЕТИКА</span><h2>ВИЗУАЛЬНЫЕ РЕШЕНИЯ КОТОРЫЕ ПРИВЛЕКАЮТ ВНИМАНИЕ</h2><button type="button" class="btn-detail capability-watch" id="aesStart">СМОТРЕТЬ <span aria-hidden="true">↗</span></button></div>';
+    document.getElementById('aesStart').onclick = () => {
     content.innerHTML = `
       <div class="cube-stage" id="${content.id === 'capabilitiesContent' ? 'capabilitiesCubeStage' : 'cubeStage'}">
         <div class="cube3" id="${content.id === 'capabilitiesContent' ? 'capabilitiesCube3D' : 'cube3D'}">
           <i></i><i></i><i></i><i></i><i></i><i></i>
         </div>
         <div class="touch-hint">ПРИКОСНИСЬ</div>
-        <div class="cube-caption">визуальные решения которые привлекают внимание</div>
       </div>
     `;
     setupCubeInteraction();
+    };
   } else if (view === 'idea') {
     setTimeout(openScratch, 60);
     content.innerHTML = `
@@ -1231,9 +1238,8 @@ function renderStudioView(view) {
       <div style="font-size:12px; letter-spacing:.14em; text-transform:uppercase; margin-top:16px;">смысл превыше формы</div>
     `;
   } else if (view === 'fx') {
-    content.innerHTML = '<div style="text-align:center"><div style="font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#888;margin-bottom:16px">дизайн меняет восприятие</div><button type="button" class="btn show" id="fxStart">открыть эффект</button></div>';
+    content.innerHTML = '<div class="capability-intro"><span class="capability-kicker">V³ / ЭФФЕКТ</span><h2>СТИЛЬ САЙТА ПЕРЕДАЕТ ФИЛОСОФИЮ ПРОДУКТА</h2><button type="button" class="btn-detail capability-watch" id="fxStart">СМОТРЕТЬ <span aria-hidden="true">↗</span></button></div>';
     document.getElementById('fxStart').onclick = openFx;
-    openFx();
   } else if (view === 'projects') {
     projects = getProjects();
     content.innerHTML = '<div class="proj-grid">' + projects.map((p,i) => '<button type="button" class="proj-tile" data-pi="'+i+'"><img src="'+p.img+'" alt=""><span>'+p.title+'</span></button>').join('') + '</div>';
@@ -1297,7 +1303,8 @@ const fxThemes = [
   { cls:'t0', logo:'GT / MOTORS', nav:['Коллекция','Философия','Контакт'], eye:'01 / AUTOMOTIVE · DESIGN CONCEPT',
     title:'Не просто<br>движение.<br><em>Характер.</em>',
     desc:'Точная инженерия. Чистая форма. Автомобили для тех, кто выбирает свой маршрут.',
-    cta:'ОТКРЫТЬ КОЛЛЕКЦИЮ ↗', image:'designs/motors.jpg', alt:'Спортивный автомобиль на дороге',
+    cta:'ОТКРЫТЬ КОЛЛЕКЦИЮ ↗', image:'designs/motors.jpg', video:'designs/motors-loop.mp4', alt:'Спортивный автомобиль на дороге',
+    editorial:['FORM FOLLOWS FEELING','Создано, чтобы чувствовать.'], philosophy:'Сдержанная палитра. Смелый масштаб. Чистая динамика.',
     caption:'THE GRAND TOUR / EDITION 01',
     cards:[['01','избранная коллекция'],['360°','внимание к деталям'],['GT','искусство движения']],
     offerEye:'CURATED PERFORMANCE', offerTitle:'Всё лишнее<br>остаётся позади.',
@@ -1307,7 +1314,8 @@ const fxThemes = [
   { cls:'t1', logo:'Fleur atelier', nav:['Цветы','Ателье','Доставка'], eye:'02 / FLORAL ATELIER · DESIGN CONCEPT',
     title:'Прекрасное<br>начинается<br><em>с малого.</em>',
     desc:'Сезонные цветы, свободные формы и внимание к моментам, которые хочется сохранить.',
-    cta:'ВЫБРАТЬ СВОЙ БУКЕТ ↗', image:'designs/flowers.jpg', alt:'Нежные цветы и тюльпаны в естественном свете',
+    cta:'ВЫБРАТЬ СВОЙ БУКЕТ ↗', image:'designs/flowers.jpg', video:'designs/flowers-loop.mp4', alt:'Нежные цветы и тюльпаны в естественном свете',
+    editorial:['NATURE, NOT A TEMPLATE','Красота не бывает одинаковой.'], philosophy:'Мягкий свет. Живая форма. Внимание к каждому моменту.',
     caption:'FLOWERS FOR EVERY LITTLE MOMENT',
     cards:[['Сезон','вместо шаблонов'],['Вручную','каждая композиция'],['С заботой','до вашей двери']],
     offerEye:'THE ART OF GIVING', offerTitle:'Не просто букет.<br>Маленькая история.',
@@ -1317,7 +1325,8 @@ const fxThemes = [
   { cls:'t2', logo:'ASTRON / LAB', nav:['Платформа','Миссии','Данные'], eye:'03 / SPACE TECHNOLOGY · DESIGN CONCEPT',
     title:'За пределами<br>привычного.<br><em>Ближе к будущему.</em>',
     desc:'Орбитальная аналитика и спутниковые технологии. Сложные данные становятся ясными решениями.',
-    cta:'ИССЛЕДОВАТЬ ПЛАТФОРМУ ↗', image:'designs/space.jpg', alt:'Планета Земля в глубоком космосе',
+    cta:'ИССЛЕДОВАТЬ ПЛАТФОРМУ ↗', image:'designs/space.jpg', video:'designs/space-loop.mp4', alt:'Планета Земля в глубоком космосе',
+    editorial:['SYSTEM STATUS / NOMINAL','Другой масштаб мышления.'], philosophy:'Точная сетка. Воздух. Технологии, которым доверяют.',
     caption:'EARTH OBSERVATION / LIVE SYSTEMS',
     cards:[['LEO','низкая орбита'],['24/7','мониторинг'],['API','единая платформа']],
     offerEye:'MISSION CONTROL', offerTitle:'Большая картина.<br>Точные решения.',
@@ -1329,6 +1338,28 @@ let fxStep = 0, fxBusy = false;
 const fxo = document.getElementById('fxo');
 const fxSite = document.getElementById('fxSite');
 const fxBtn = document.getElementById('fxBtn');
+const fxVideo = document.getElementById('fxVideo');
+let fxVideoGeneration = 0, fxCloseTimer = null;
+
+function stopFxVideo() {
+  fxVideoGeneration++;
+  fxVideo.pause();
+  fxVideo.classList.remove('ready');
+  fxVideo.removeAttribute('src');
+  fxVideo.load();
+}
+function playFxVideo(source) {
+  stopFxVideo();
+  if (!source || window.matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+  const generation = fxVideoGeneration;
+  fxVideo.muted = true;
+  fxVideo.src = source;
+  fxVideo.onplaying = () => {
+    if (generation === fxVideoGeneration && fxo.classList.contains('on')) fxVideo.classList.add('ready');
+  };
+  fxVideo.onerror = () => fxVideo.classList.remove('ready');
+  fxVideo.play().catch(() => {}); // Poster stays visible if autoplay is unavailable.
+}
 
 function fxFill(t) {
   fxo.className = 'fxo on vis ' + t.cls;
@@ -1349,9 +1380,11 @@ function fxFill(t) {
   const photo = document.getElementById('fxPhoto');
   photo.src = t.image;
   photo.alt = t.alt;
+  playFxVideo(t.video);
+  document.getElementById('fxEditorial').innerHTML = '<span>'+t.editorial[0]+'</span><p>'+t.editorial[1]+'</p>';
   document.getElementById('fxImageCaption').textContent = t.caption;
   document.getElementById('fxCta').onclick = () => document.getElementById('fxOffer').scrollIntoView({ behavior:'smooth', block:'start' });
-  document.getElementById('fxOffer').innerHTML = '<span class="fx-offer-eye">'+t.offerEye+'</span><h2>'+t.offerTitle+'</h2><p>'+t.offerDesc+'</p><div class="fx-offer-grid">'+t.offers.map(([name,desc])=>'<article><h3>'+name+'</h3><p>'+desc+'</p></article>').join('')+'</div>';
+  document.getElementById('fxOffer').innerHTML = '<span class="fx-offer-eye">'+t.offerEye+'</span><h2>'+t.offerTitle+'</h2><p>'+t.offerDesc+'</p><div class="fx-offer-grid">'+t.offers.map(([name,desc])=>'<article><h3>'+name+'</h3><p>'+desc+'</p></article>').join('')+'</div><div class="fx-philosophy"><span>DESIGN LANGUAGE / V³ STUDIO</span><p>'+t.philosophy+'</p></div>';
   document.getElementById('fxFoot').textContent = t.foot;
   document.getElementById('fxCards').innerHTML = t.cards.map(c => '<div class="fx-card"><b>'+c[0]+'</b><span>'+c[1]+'</span></div>').join('');
   document.querySelectorAll('#fxDots i').forEach((d,i) => d.classList.toggle('on', i === fxStep));
@@ -1359,17 +1392,19 @@ function fxFill(t) {
   fxSite.scrollTop = 0;
 }
 function openFx() {
+  clearTimeout(fxCloseTimer);
   fxStep = 0;
+  fxBusy = false;
+  fxSite.classList.remove('swap');
   fxo.classList.add('on');
   fxFill(fxThemes[0]);
   fxo.classList.remove('vis');
   requestAnimationFrame(() => requestAnimationFrame(() => fxo.classList.add('vis')));
 }
 function closeFx() {
+  stopFxVideo();
   fxo.classList.remove('vis');
-  setTimeout(() => fxo.classList.remove('on'), 520);
-  const b = document.querySelector('.capabilities-tabs button[data-view="aes"]') || document.querySelector('.studio-sidebar button[data-view="aes"]');
-  if (b) b.click();
+  fxCloseTimer = setTimeout(() => fxo.classList.remove('on'), 520);
 }
 fxBtn.onclick = () => {
   if (fxBusy) return;
@@ -1849,14 +1884,16 @@ window.V3StudioData = {
 // Install information is shown once, not over an already-installed app.
 const installWelcome = document.getElementById('installWelcome');
 const installContinuation = new URLSearchParams(location.search).get('install') === 'ios';
-const safariUA = /Safari/i.test(navigator.userAgent) && !/Chrome|CriOS|FxiOS|EdgiOS|OPiOS|Instagram|FBAN|FBAV/i.test(navigator.userAgent);
+const inAppInstallBrowser = /Telegram|Instagram|FBAN|FBAV|FB_IAB|TikTok|BytedanceWebview|musical_ly|LinkedInApp|\bTwitter\b/i.test(navigator.userAgent) ||
+  !!(window.TelegramWebviewProxy || window.TelegramWebview || window.Telegram?.WebApp);
 const safariInstallURL = 'https://stopsmokemsk-eng.github.io/v3-studio/?install=ios';
 function setInstallPlatform(platform) {
   const ios = platform === 'ios';
   document.getElementById('installIOS').setAttribute('aria-selected', String(ios));
   document.getElementById('installAndroid').setAttribute('aria-selected', String(!ios));
   document.getElementById('installSteps').innerHTML = ios
-    ? ((installContinuation || safariUA) ? '<li><span>Вы уже на нужной странице. Нажмите «Поделиться» в Safari.</span></li><li><span>Выберите «На экран Домой».</span></li><li><span>Если есть переключатель «Открывать как веб-приложение», включите его. Нажмите «Добавить».</span></li>' : '<li><span>Откройте нашу страницу в Safari. Инструкция продолжится там автоматически.<br><a class="install-safari" id="openSafari" href="x-safari-https://stopsmokemsk-eng.github.io/v3-studio/?install=ios" target="_blank" rel="noopener">ОТКРЫТЬ SAFARI ↗</a></span></li><li><span>В Safari нажмите «Поделиться» → «На экран Домой» → «Добавить».</span></li><li><span>Запускайте приложение с появившейся иконки.</span></li>') +
+    ? '<li><span>' + (installContinuation ? 'Продолжение установки. Если страница всё ещё открыта внутри Telegram или другого приложения, перейдите в Safari.' : 'Для установки откройте страницу в Safari, а не во встроенном браузере Telegram или другого приложения. Инструкция продолжится там.') +
+      '<br><a class="install-safari" id="openSafari" href="x-safari-https://stopsmokemsk-eng.github.io/v3-studio/?install=ios" rel="noopener">ОТКРЫТЬ SAFARI ↗</a><br><small>Если вы уже в Safari, переходить не нужно: выполните шаги ниже.</small></span></li><li><span>В Safari нажмите «Поделиться» → «На экран Домой».</span></li><li><span>Если есть переключатель «Открывать как веб-приложение», включите его. Нажмите «Добавить» и запускайте приложение с появившейся иконки.</span></li>' +
       '<li class="install-fallback" id="safariFallback">Если переход заблокирован: откройте меню текущего приложения и выберите «Открыть в Safari» или «Открыть в браузере». Инструкция остаётся на этой странице, копировать ссылку не нужно.</li>'
     : '<li><span>Откройте сайт в <a href="https://support.google.com/chrome/answer/9658361?hl=en-Gb&co=GENIE.Platform=Android" target="_blank" rel="noreferrer">Chrome</a>.</span></li><li><span>Откройте меню с тремя точками. Выберите «Добавить на главный экран» или «Установить приложение».</span></li><li><span>Подтвердите добавление и откройте приложение с появившейся иконки.</span></li>';
   const openSafari = document.getElementById('openSafari');
@@ -1882,7 +1919,7 @@ document.getElementById('installContinue').onclick = () => {
 };
 setInstallPlatform(/Android/i.test(navigator.userAgent) ? 'android' : 'ios');
 const installedMode = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
-if (installContinuation || (!installedMode && !readAppFlag('v3_install_guide_seen'))) {
+if (installContinuation || (!installedMode && (inAppInstallBrowser || !readAppFlag('v3_install_guide_seen')))) {
   installWelcome.classList.add('on');
   document.getElementById('installContinue').focus();
 }

@@ -1,6 +1,18 @@
 /* Partners and a self-contained, single-player cell game. No external libraries. */
 (() => {
   'use strict';
+  const brandMarks = new Map();
+  const assetBase = new URL('.', document.currentScript.src);
+  ['nike','apple','tesla','adidas','samsung','puma','sony','bmw','google','porsche'].forEach(name => {
+    fetch(new URL('brands/' + name + '.svg',assetBase)).then(response => {
+      if (!response.ok) throw new Error('Logo unavailable');
+      return response.text();
+    }).then(svg => {
+      const doc = new DOMParser().parseFromString(svg,'image/svg+xml');
+      const paths = [...doc.querySelectorAll('path')].map(path => new Path2D(path.getAttribute('d')));
+      if (paths.length) brandMarks.set(name.toUpperCase(),paths);
+    }).catch(() => {}); // Brand text remains the fallback; game never depends on a download.
+  });
   let closeCurrent = null;
   function createScreen(title, type) {
     if (closeCurrent) closeCurrent();
@@ -98,10 +110,14 @@
         <span class="cell-menu-kicker">V³ STUDIO / PLAYGROUND</span>
         <h1>Живи. Расти.</h1>
         <p class="cell-menu-description">Собирай свет. Поглощай меньших.<br>Не попадайся крупным.</p>
-        <p class="cell-control-hint">Мышь / WASD / стрелки · ПРОБЕЛ: ускорение<br>На телефоне: веди пальцем, как джойстиком.<br>Бусты на арене дают ускорение. Игра с ботами.</p>
+        <p class="cell-control-hint">Мышь / WASD / стрелки · На телефоне: веди пальцем.<br>ПРОБЕЛ: скорость · E: шипы · Q: магнит.<br>Шипы уменьшают и замедляют соперников.<br>Магнит притягивает свет. Игра с ботами.</p>
         <button type="button" class="cell-start">ИГРАТЬ</button>
       </div></div>
-      <button type="button" class="cell-boost" disabled>УСКОРЕНИЕ</button>
+      <div class="cell-powers">
+        <button type="button" class="cell-boost" disabled>СКОРОСТЬ</button>
+        <button type="button" class="cell-spikes" disabled>ШИПЫ</button>
+        <button type="button" class="cell-magnet" disabled>МАГНИТ</button>
+      </div>
       <div class="cell-bottom"><span>СОБИРАЙ / РАСТИ / НЕ ПОПАДИСЬ</span><span class="cell-debug">60 FPS</span></div>`;
     screen.page.appendChild(field);
     const canvas = field.querySelector('canvas');
@@ -116,12 +132,15 @@
     const leaderboard = field.querySelector('.cell-leaders div');
     const debugLabel = field.querySelector('.cell-debug');
     const boostButton = field.querySelector('.cell-boost');
+    const spikesButton = field.querySelector('.cell-spikes');
+    const magnetButton = field.querySelector('.cell-magnet');
     const reducedMotion = window.matchMedia('(prefers-reduced-motion:reduce)').matches;
     const WORLD = 1600, STEP = 1 / 60;
     let width = 1, height = 1, dpr = 1, zoom = 1;
     let phase = 'menu', alive = true, time = 0, score = 0;
-    let food = [], bots = [], flashes = [], player, camera, boosts = [], absorption = [];
+    let food = [], bots = [], flashes = [], player, camera, boosts = [], absorption = [], spikes = [];
     let boostUntil = 0, boostReady = 0, sessionLogin = '', resultSaved = false;
+    let spikesReady = 0, magnetReady = 0, magnetUntil = 0, spikeHits = 0;
     let raf = 0, lastTime = performance.now(), accumulator = 0, lastHud = 0;
     let fpsFrames = 0, fpsTime = lastTime, seed = 1313;
     const keys = new Set();
@@ -140,12 +159,13 @@
       do { x = 60 + random() * (WORLD - 120); y = 60 + random() * (WORLD - 120); }
       while (Math.hypot(x - player.x, y - player.y) < 260);
       const r = 15 + random() * 32;
-      return { name:names[i], x, y, mass:r * r, tx:x, ty:y, turn:0 };
+      return { name:names[i], x, y, mass:r * r, tx:x, ty:y, turn:0, slowUntil:0 };
     }
     function reset() {
       seed = 1313;
       score = 0; time = 0; flashes = []; absorption = []; keys.clear();
       boostUntil = 0; boostReady = 0; resultSaved = false;
+      spikes = []; spikesReady = 0; magnetReady = 0; magnetUntil = 0; spikeHits = 0;
       sessionLogin = window.V3StudioData?.getUser()?.login || '';
       player = { name:'V³', x:WORLD / 2, y:WORLD / 2, mass:24 * 24, shield:3 };
       camera = { x:player.x, y:player.y };
@@ -155,8 +175,10 @@
       bots = Array.from({ length:10 }, (_, i) => makeBot(i));
       // One nearby small rival lets a new player discover cell consumption.
       Object.assign(bots[8], { x:player.x - 150, y:player.y + 60, mass:14 * 14 });
-      boosts = Array.from({length:7},() => ({ x:60 + random() * (WORLD-120),y:60 + random() * (WORLD-120),ready:0 }));
+      boosts = Array.from({length:9},(_,i) => ({ x:60 + random() * (WORLD-120),y:60 + random() * (WORLD-120),ready:0,type:['speed','spikes','magnet'][i%3] }));
       boosts[0].x = player.x + 110; boosts[0].y = player.y + 90;
+      boosts[1].x = player.x - 110; boosts[1].y = player.y - 90;
+      boosts[2].x = player.x - 110; boosts[2].y = player.y + 90;
       pointer.active = false;
       updateHud(true);
     }
@@ -173,6 +195,22 @@
       if (phase !== 'playing' || (!pickup && time < boostReady)) return;
       boostUntil = time + 2.3; boostReady = time + 6;
       flashes.push({ x:player.x,y:player.y,age:0 });
+      updateHud(true);
+    }
+    function fireSpikes(pickup = false) {
+      if (phase !== 'playing' || (!pickup && time < spikesReady)) return;
+      spikesReady = time + 9;
+      const r = radius(player);
+      for (let i = 0; i < 12; i++) {
+        const a = i * Math.PI / 6;
+        spikes.push({ x:player.x + Math.cos(a)*(r+7),y:player.y + Math.sin(a)*(r+7),vx:Math.cos(a)*270,vy:Math.sin(a)*270,age:0 });
+      }
+      flashes.push({ x:player.x,y:player.y,age:0 });
+      updateHud(true);
+    }
+    function activateMagnet(pickup = false) {
+      if (phase !== 'playing' || (!pickup && time < magnetReady)) return;
+      magnetUntil = time + 5; magnetReady = time + 12;
       updateHud(true);
     }
     function resize() {
@@ -224,10 +262,32 @@
       moveCell(player, dx, dy, dt,boosted ? 2.25 : 1);
       boosts.forEach(boost => {
         if (time >= boost.ready && distance(boost,player) < radius(player) + 9) {
-          activateBoost(true); boost.ready = time + 10;
+          if (boost.type === 'spikes') fireSpikes(true);
+          else if (boost.type === 'magnet') activateMagnet(true);
+          else activateBoost(true);
+          boost.ready = time + 10;
           boost.x = 60 + random() * (WORLD-120); boost.y = 60 + random() * (WORLD-120);
         }
       });
+      if (time < magnetUntil) {
+        const range = radius(player) + 200;
+        for (const f of food) {
+          const d = distance(f,player);
+          if (d > range || d < 1) continue;
+          const pull = Math.min(d,dt*(150+(1-d/range)*230));
+          f.x += (player.x-f.x)/d*pull; f.y += (player.y-f.y)/d*pull;
+        }
+      }
+      for (const spike of spikes) {
+        spike.age += dt; spike.x += spike.vx*dt; spike.y += spike.vy*dt;
+        for (const b of bots) {
+          if (spike.age >= 2 || distance(spike,b) > radius(b)+5) continue;
+          b.mass = Math.max(144,b.mass*.84); b.slowUntil = time+3; spike.age = 2; spikeHits++;
+          flashes.push({x:spike.x,y:spike.y,age:0});
+          break;
+        }
+      }
+      spikes = spikes.filter(s=>s.age<2 && s.x>0 && s.x<WORLD && s.y>0 && s.y<WORLD);
       eatFood(player, true);
       for (let i = 0; i < bots.length; i++) {
         const b = bots[i], br = radius(b), pr = radius(player);
@@ -243,7 +303,7 @@
           }
           b.tx = target.x; b.ty = target.y; b.turn = .8 + random() * 1.5;
         }
-        moveCell(b, b.tx - b.x, b.ty - b.y, dt, .8);
+        moveCell(b, b.tx - b.x, b.ty - b.y, dt, time < b.slowUntil ? .32 : .8);
         eatFood(b, false);
         const gap = distance(b, player);
         if (pr > br * 1.16 && gap < pr - br * .38) {
@@ -282,8 +342,16 @@
       scoreLabel.textContent = 'СОБРАНО / ' + score;
       const cooldown = Math.max(0,Math.ceil(boostReady-time));
       boostButton.disabled = phase !== 'playing' || cooldown > 0;
-      boostButton.textContent = time < boostUntil ? 'БУСТ АКТИВЕН' : cooldown ? 'БУСТ / ' + cooldown + ' c' : 'УСКОРЕНИЕ';
+      boostButton.textContent = time < boostUntil ? 'СКОРОСТЬ ↑' : cooldown ? 'СКОРОСТЬ / ' + cooldown + ' c' : 'СКОРОСТЬ';
       boostButton.classList.toggle('is-active',time < boostUntil);
+      const spikeCooldown = Math.max(0,Math.ceil(spikesReady-time));
+      const magnetCooldown = Math.max(0,Math.ceil(magnetReady-time));
+      spikesButton.disabled = phase !== 'playing' || spikeCooldown > 0;
+      spikesButton.textContent = spikeCooldown ? 'ШИПЫ / ' + spikeCooldown + ' c' : 'ШИПЫ';
+      spikesButton.classList.toggle('is-active',spikes.length>0);
+      magnetButton.disabled = phase !== 'playing' || magnetCooldown > 0;
+      magnetButton.textContent = time < magnetUntil ? 'МАГНИТ ↑' : magnetCooldown ? 'МАГНИТ / ' + magnetCooldown + ' c' : 'МАГНИТ';
+      magnetButton.classList.toggle('is-active',time<magnetUntil);
       leaderboard.innerHTML = [player, ...bots].sort((a,b) => b.mass - a.mass).slice(0,5).map(b =>
         '<p class="' + (b === player ? 'is-player' : '') + '"><span>' + b.name + '</span><span>' + Math.floor(b.mass) + '</span></p>').join('');
     }
@@ -296,18 +364,37 @@
       glow.addColorStop(0, mine ? 'rgba(255,255,255,.14)' : 'rgba(255,255,255,.035)');
       glow.addColorStop(1,'rgba(255,255,255,0)');
       ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(0,0,r * 1.7,0,Math.PI * 2); ctx.fill();
-      ctx.beginPath(); ctx.arc(0,0,r * (1 + pulse),0,Math.PI * 2);
+      function membrane(scale) {
+        ctx.beginPath();
+        const seed = cell.mass*.002;
+        for (let i = 0; i <= 96; i++) {
+          const a = i/96*Math.PI*2;
+          const ripple = reducedMotion ? 0 : Math.sin(a*10-time*2.1+seed)*.025 + Math.sin(a*17+time*1.4-seed)*.013;
+          const rr = r*scale*(1+pulse+ripple);
+          const x = Math.cos(a)*rr,y = Math.sin(a)*rr;
+          if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+        }
+        ctx.closePath();
+      }
+      membrane(1);
       ctx.fillStyle = mine ? '#f3f3f1' : '#171717'; ctx.fill();
       ctx.strokeStyle = mine ? '#fff' : radius(cell) > radius(player) * 1.16 ? '#858585' : '#bcbcbc';
       ctx.lineWidth = mine ? 1.5 : .8; ctx.stroke();
       if (mine) {
-        ctx.beginPath(); ctx.arc(0,0,r * (1.13 + pulse),0,Math.PI * 2);
+        membrane(1.13);
         ctx.strokeStyle = player.shield ? 'rgba(255,255,255,.5)' : 'rgba(255,255,255,.18)'; ctx.lineWidth = .7; ctx.stroke();
       }
       ctx.fillStyle = mine ? '#0c0c0c' : '#bcbcbc';
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.font = (mine ? Math.max(12, r * .5) : Math.max(8, r * .24)) + 'px "IBM Plex Mono",monospace';
-      ctx.fillText(cell.name,0,0,r*1.7);
+      const mark = mine ? null : brandMarks.get(cell.name);
+      if (mark) {
+        ctx.save();
+        const size = r*1.08;
+        ctx.translate(-size/2,-size/2); ctx.scale(size/24,size/24);
+        mark.forEach(path=>ctx.fill(path));
+        ctx.restore();
+      } else ctx.fillText(cell.name,0,0,r*1.7);
       ctx.restore();
     }
     function render() {
@@ -334,7 +421,27 @@
         ctx.save(); ctx.translate(boost.x,boost.y); ctx.scale(pulse,pulse);
         ctx.strokeStyle = '#f3f3f1'; ctx.lineWidth = 1;
         ctx.beginPath(); ctx.arc(0,0,10,0,Math.PI*2); ctx.stroke();
-        ctx.fillStyle = '#f3f3f1'; ctx.beginPath(); ctx.moveTo(1,-6);ctx.lineTo(-4,1);ctx.lineTo(0,1);ctx.lineTo(-1,6);ctx.lineTo(4,-1);ctx.lineTo(0,-1);ctx.closePath();ctx.fill();
+        ctx.fillStyle = '#f3f3f1';
+        if (boost.type === 'spikes') {
+          ctx.beginPath();
+          for (let i=0;i<12;i++) { const a=i*Math.PI/6-Math.PI/2,rr=i%2?2.5:7; const x=Math.cos(a)*rr,y=Math.sin(a)*rr; if(!i)ctx.moveTo(x,y);else ctx.lineTo(x,y); }
+          ctx.closePath();ctx.fill();
+        } else if (boost.type === 'magnet') {
+          ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,-1,5,0,Math.PI);ctx.moveTo(-5,-1);ctx.lineTo(-5,-5);ctx.moveTo(5,-1);ctx.lineTo(5,-5);ctx.stroke();
+        } else {
+          ctx.beginPath(); ctx.moveTo(1,-6);ctx.lineTo(-4,1);ctx.lineTo(0,1);ctx.lineTo(-1,6);ctx.lineTo(4,-1);ctx.lineTo(0,-1);ctx.closePath();ctx.fill();
+        }
+        ctx.restore();
+      });
+      if (time < magnetUntil) {
+        ctx.strokeStyle='rgba(255,255,255,.13)';ctx.lineWidth=1;
+        for (let i=0;i<3;i++) { const rr=radius(player)+((time*.35+i/3)%1)*200; ctx.beginPath();ctx.arc(player.x,player.y,rr,0,Math.PI*2);ctx.stroke(); }
+      }
+      spikes.forEach(spike => {
+        ctx.save(); ctx.translate(spike.x,spike.y);ctx.rotate(Math.atan2(spike.vy,spike.vx));
+        ctx.fillStyle='rgba(255,255,255,'+Math.min(1,(2-spike.age)*2)+')';
+        ctx.beginPath();ctx.moveTo(10,0);ctx.lineTo(-5,-3);ctx.lineTo(-2,0);ctx.lineTo(-5,3);ctx.closePath();ctx.fill();
+        ctx.strokeStyle='rgba(255,255,255,.18)';ctx.beginPath();ctx.moveTo(-6,0);ctx.lineTo(-24,0);ctx.stroke();
         ctx.restore();
       });
       [...bots, player].sort((a,b) => a.mass - b.mass).forEach(b => drawCell(b,b === player));
@@ -381,18 +488,24 @@
         menuDescription.textContent = 'Арена подождёт. Продолжи, когда будешь готов.';
         startButton.textContent = 'ПРОДОЛЖИТЬ';
       }
+      updateHud(true);
     }
     startButton.onclick = () => {
       if (phase === 'paused') { togglePause(); return; }
       reset(); phase = 'playing'; menu.hidden = true; pauseButton.disabled = false; pauseButton.textContent = 'ПАУЗА';
+      updateHud(true);
     };
     pauseButton.onclick = togglePause;
     boostButton.onclick = () => activateBoost();
+    spikesButton.onclick = () => fireSpikes();
+    magnetButton.onclick = () => activateMagnet();
     function keydown(e) {
       const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
       if (key === 'Escape') { e.preventDefault(); screen.close(); return; }
       if (key === 'p') { e.preventDefault(); if (!e.repeat) togglePause(); return; }
       if (key === ' ') { e.preventDefault(); if (!e.repeat) activateBoost(); return; }
+      if (key === 'e') { e.preventDefault(); if (!e.repeat) fireSpikes(); return; }
+      if (key === 'q') { e.preventDefault(); if (!e.repeat) activateMagnet(); return; }
       if (['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','w','a','s','d'].includes(key)) { e.preventDefault(); keys.add(key); }
     }
     const keyup = e => keys.delete(e.key.length === 1 ? e.key.toLowerCase() : e.key);
@@ -425,10 +538,12 @@
       player:{ x:+player.x.toFixed(1),y:+player.y.toFixed(1),r:+radius(player).toFixed(1),mass:Math.floor(player.mass),shield:+player.shield.toFixed(2) },
       camera:{ x:+camera.x.toFixed(1),y:+camera.y.toFixed(1),zoom:+zoom.toFixed(2) }, score,
       boost:{active:time<boostUntil,readyIn:Math.max(0,+(boostReady-time).toFixed(1))},login:sessionLogin || null,
-      boostItems:boosts.filter(b=>time>=b.ready).map(b=>({x:+b.x.toFixed(1),y:+b.y.toFixed(1)})),
-      bots:bots.map(b=>({ name:b.name,x:+b.x.toFixed(1),y:+b.y.toFixed(1),r:+radius(b).toFixed(1) })),
+      powers:{spikesReadyIn:Math.max(0,+(spikesReady-time).toFixed(1)),spikeHits,magnetActive:time<magnetUntil,magnetReadyIn:Math.max(0,+(magnetReady-time).toFixed(1))},
+      spikes:spikes.map(s=>({x:+s.x.toFixed(1),y:+s.y.toFixed(1)})),
+      boostItems:boosts.filter(b=>time>=b.ready).map(b=>({x:+b.x.toFixed(1),y:+b.y.toFixed(1),type:b.type})),
+      bots:bots.map(b=>({ name:b.name,x:+b.x.toFixed(1),y:+b.y.toFixed(1),r:+radius(b).toFixed(1),slowed:time<b.slowUntil,logo:brandMarks.has(b.name) })),
       nearbyFood:food.filter(f=>distance(f,player)<300).slice(0,20).map(f=>({ x:+f.x.toFixed(1),y:+f.y.toFixed(1) })),
-      controls:'mouse follows pointer; touch drag joystick; arrows/WASD move; Space boost; P pause; Escape exit'
+      controls:'mouse follows pointer; touch drag joystick; arrows/WASD move; Space speed; E spikes; Q magnet; P pause; Escape exit'
     });
     window.advanceTime = ms => {
       const steps = Math.max(1,Math.ceil(Math.max(0,ms) / (STEP * 1000)));
