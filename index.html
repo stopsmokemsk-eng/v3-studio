@@ -354,6 +354,19 @@
   .dock { bottom:calc(12px + env(safe-area-inset-bottom,0px)); }
   .features-nav-line { gap:5px; padding:10px 10px; overflow-x:hidden; }
   .features-nav-line button { flex:0 1 auto; min-width:0; padding:7px 9px !important; font-size:9px !important; letter-spacing:.06em !important; white-space:nowrap; }
+  /* Projects page inside About */
+  .proj-page { position:absolute; inset:0; z-index:5; background:#0c0c0c; display:flex; flex-direction:column; border-radius:20px; overflow:hidden; }
+  .pp-top { display:flex; align-items:center; gap:12px; padding:12px 14px; border-bottom:1px solid rgba(255,255,255,.1); flex:0 0 auto; }
+  .pp-title { font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:#888; }
+  .pp-body { flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column; padding-bottom:8px; }
+  .proj-page .rail { padding:16px 14% 8px; flex:0 0 auto; }
+  .proj-page .card { flex:0 0 72%; max-width:none; cursor:pointer; }
+  .proj-page .card img { height:30vh; min-height:150px; max-height:300px; }
+  .proj-page .note { width:calc(100% - 28px); }
+  .proj-page .discuss { flex:0 0 auto; }
+  .proj-page { color:#f3f3f1; }
+  .modal-box { color:#f3f3f1; }
+  .proj-page .note-top h2 { padding:0; border:0; font-size:16px; letter-spacing:.1em; color:#f3f3f1; font-weight:500; }
 </style>
 </head>
 <body>
@@ -410,23 +423,6 @@
   <div class="vortex-canvas-box" id="vortexBox">
     <canvas id="vortexCanvas"></canvas>
   </div>
-</section>
-
-<!-- 5. Gallery -->
-<section class="scene" id="gallery">
-  <div class="gtop">примеры проектов</div>
-  <div class="rail" id="rail"></div>
-  <div class="note">
-    <div class="note-top">
-      <h2 id="gtitle">жест</h2>
-      <div class="note-actions">
-        <button type="button" class="btn-detail" id="openDetail">детально</button>
-        <button type="button" class="x" id="expand">+</button>
-      </div>
-    </div>
-    <div class="full" id="full">Кадр задаёт характер раньше слов.</div>
-  </div>
-  <button type="button" class="btn discuss" id="discuss">обсудим?<span class="glint"></span></button>
 </section>
 
 <!-- Project Detail Modal -->
@@ -555,7 +551,7 @@ setTimeout(() => {
   setTimeout(() => document.body.classList.add('dark'), 3400);
 }, 600);
 
-const scenes = ['home','film','after','how','gallery','shell'].map(id => document.getElementById(id));
+const scenes = ['home','film','after','how','shell'].map(id => document.getElementById(id));
 const vortexBox = document.getElementById('vortexBox');
 
 function show(id) {
@@ -745,9 +741,8 @@ document.getElementById('howBtn').onclick = () => {
 };
 
 document.getElementById('see').onclick = () => {
-  show('gallery');
-  buildRail();
-  document.getElementById('discuss').classList.add('show');
+  show('shell');
+  tab('studio');
 };
 
 // Gallery & Project Rail
@@ -784,15 +779,57 @@ function updateCardInfo(idx) {
   document.getElementById('full').textContent = p.shortText;
 }
 
-document.getElementById('expand').onclick = () => {
-  const full = document.getElementById('full');
-  full.classList.toggle('open');
-  document.getElementById('expand').textContent = full.classList.contains('open') ? '×' : '+';
-};
+
+
+// ===== Projects page (gallery moved here from the old gallery scene) =====
+function openProjectsPage() {
+  const panel = document.getElementById('panel');
+  const old = document.getElementById('projPage');
+  if (old) old.remove();
+  const el = document.createElement('div');
+  el.className = 'proj-page';
+  el.id = 'projPage';
+  el.innerHTML = `
+    <div class="pp-top">
+      <button type="button" class="btn-detail" id="ppBack">← назад</button>
+      <span class="pp-title">примеры проектов</span>
+    </div>
+    <div class="pp-body">
+      <div class="rail" id="rail"></div>
+      <div class="note">
+        <div class="note-top">
+          <h2 id="gtitle">жест</h2>
+          <div class="note-actions">
+            <button type="button" class="btn-detail" id="openDetail">детально</button>
+            <button type="button" class="x" id="expand">+</button>
+          </div>
+        </div>
+        <div class="full" id="full">Кадр задаёт характер раньше слов.</div>
+      </div>
+      <button type="button" class="btn discuss show" id="discuss">обсудим?<span class="glint"></span></button>
+    </div>`;
+  panel.appendChild(el);
+  buildRail();
+  document.getElementById('ppBack').onclick = () => el.remove();
+  document.getElementById('openDetail').onclick = () => openProject(projects[currentProjectIndex] || projects[0]);
+  document.getElementById('expand').onclick = () => {
+    const full = document.getElementById('full');
+    full.classList.toggle('open');
+    document.getElementById('expand').textContent = full.classList.contains('open') ? '×' : '+';
+  };
+  document.getElementById('discuss').onclick = () => { show('shell'); tab('contacts'); };
+  document.getElementById('rail').addEventListener('click', (e) => {
+    const c = e.target.closest('.card');
+    if (c) openProject(projects[+c.dataset.index] || projects[0]);
+  });
+  // center the current card
+  const rail = document.getElementById('rail');
+  const cur = rail.children[currentProjectIndex];
+  if (cur) rail.scrollLeft = cur.offsetLeft + cur.offsetWidth / 2 - rail.clientWidth / 2;
+}
 
 // Modal Detail View
 const modal = document.getElementById('projectModal');
-document.getElementById('openDetail').onclick = () => openProject(projects[currentProjectIndex] || projects[0]);
 function openProject(p) {
   document.getElementById('modalTitle').textContent = p.title;
   const linkEl = document.getElementById('modalLink');
@@ -816,14 +853,8 @@ document.getElementById('closeModal').onclick = () => modal.classList.remove('on
 modal.onclick = (e) => { if (e.target === modal) modal.classList.remove('on'); };
 
 // Bottom Ticker Links
-const nets = [
-  ['Telegram','https://t.me/stopsmoke'],
-  ['Instagram','https://instagram.com/'],
-  ['Behance','https://behance.net/'],
-  ['VK','https://vk.com/'],
-  ['Почта','mailto:hello@v3.studio']
-];
-const row = nets.map(([n,h]) => '<a href="'+h+'" target="_blank" rel="noreferrer">'+n+'</a>').join('');
+const partners = ['Kristina Vodoley','Mishel Vermishel','Alisa Vostorg','BIONIC','NEW WAWE MUSIC','STOP SMOKE','MULTY CUBE'];
+const row = partners.map(n => '<span>'+n+'</span>').join('');
 document.getElementById('ticker').innerHTML = row + row;
 
 // Panels in Shell
@@ -869,6 +900,7 @@ let morphStep = 0;
 function initStudioTab() {
   const btns = document.querySelectorAll('.studio-sidebar button');
   btns.forEach(b => b.onclick = () => {
+    if (b.dataset.view === 'projects') { openProjectsPage(); return; }
     btns.forEach(x => x.classList.remove('active'));
     b.classList.add('active');
     renderStudioView(b.dataset.view);
@@ -1361,7 +1393,7 @@ function renderCabinet() {
     document.getElementById('doLogin').onclick = () => {
       const login = document.getElementById('aLogin').value.trim();
       const pass = document.getElementById('aPass').value;
-      if (pass === '1986') { isAdmin = true; renderCabinet(); return; }
+      if (login.toLowerCase() === 'vlad' && pass === '1986') { isAdmin = true; renderCabinet(); return; }
       if (!login || !pass) return err('Введите юзернейм или телефон и пароль.');
       const u = getUsers().find(x => x.login.toLowerCase() === login.toLowerCase() && x.pass === pass);
       if (!u) return err('Неверные данные. Проверьте логин и пароль или зарегистрируйтесь.');
@@ -1374,7 +1406,7 @@ function renderCabinet() {
       const login = document.getElementById('rLogin').value.trim();
       const pass = document.getElementById('rPass').value;
       if (!login || !pass) return err('Укажите юзернейм или телефон и пароль.');
-      if (pass === '1986') return err('Этот пароль недоступен, выберите другой.');
+      if (login.toLowerCase() === 'vlad') return err('Этот логин недоступен, выберите другой.');
       const users = getUsers();
       if (users.some(x => x.login.toLowerCase() === login.toLowerCase())) return err('Такой пользователь уже существует.');
       users.push({ name, login, pass });
@@ -1437,7 +1469,6 @@ function renderAdmin(box, log) {
 }
 
 
-document.getElementById('discuss').onclick = () => { show('shell'); tab('contacts'); };
 document.querySelectorAll('#dock button').forEach(b => b.onclick = () => tab(b.dataset.tab));
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.unregister())).catch(()=>{});
