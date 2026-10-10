@@ -382,6 +382,123 @@
   #capabilitiesContent { min-height:0; }
   @keyframes capabilitiesMist { from { transform:translateX(-15%) rotate(-8deg); opacity:.5; } to { transform:translateX(15%) rotate(8deg); opacity:1; } }
   @media (prefers-reduced-motion:reduce) { .capabilities-tabs button::before { animation:none; } }
+  /* Larger project preview, fullscreen project detail. */
+  .proj-page .rail { padding:16px 5% 10px; }
+  .proj-page .card { flex-basis:90%; }
+  .proj-page .card img { height:clamp(270px,46dvh,560px); min-height:0; max-height:none; }
+  #projectModal { padding:0; background:#0c0c0c; backdrop-filter:none; }
+  #projectModal .modal-box { width:100%; height:100%; max-height:none; border:0; border-radius:0; padding:env(safe-area-inset-top,0px) 0 0; gap:0; overflow:hidden; background:#0c0c0c; }
+  .project-detail-header { display:flex; align-items:center; gap:14px; flex:0 0 auto; padding:14px 16px; border-bottom:1px solid rgba(255,255,255,.14); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:#999; }
+  #projectPhotoCount { margin-left:auto; font-size:9px; white-space:nowrap; }
+  .project-detail-body { min-height:0; flex:1; overflow-y:auto; overscroll-behavior:contain; -webkit-overflow-scrolling:touch; }
+  #modalGallery { position:relative; gap:12px; padding:14px 5% 10px; scroll-snap-type:x mandatory; overscroll-behavior-x:contain; }
+  #modalGallery img { flex:0 0 90%; width:90%; height:clamp(240px,46dvh,600px); object-fit:cover; scroll-snap-align:center; border-radius:14px; }
+  .project-detail-data { max-width:900px; margin:0 auto; padding:24px 20px 28px; display:flex; flex-direction:column; gap:18px; }
+  .project-detail-label { font-size:9px; letter-spacing:.16em; color:#888; }
+  #modalTitle { font-size:clamp(26px,5vw,44px); line-height:1.15; margin:0; overflow-wrap:anywhere; }
+  #modalDesc { white-space:pre-wrap; font-size:14px; line-height:1.7; }
+  #modalLink { display:inline-block; align-self:flex-start; border-bottom:1px solid rgba(107,182,255,.4); padding-bottom:5px; }
+  .project-order-footer { flex:0 0 auto; display:flex; justify-content:center; padding:20px 16px calc(20px + env(safe-area-inset-bottom,0px)); border-top:1px solid rgba(255,255,255,.12); }
+  .project-order-wrap { position:relative; width:180px; }
+  .project-order { position:relative; z-index:1; width:100%; min-height:46px; font-size:12px; letter-spacing:.18em; border-color:#f3f3f1; border-radius:30px; background:#f3f3f1; color:#0c0c0c; animation:projectOrderPulse 2.2s ease-in-out infinite; }
+  .project-order-rays { position:absolute; inset:0; pointer-events:none; }
+  .project-order-rays i { position:absolute; width:12px; height:1px; background:rgba(255,255,255,.7); animation:projectOrderRay 2.2s ease-out infinite; }
+  .project-order-rays i:nth-child(1) { left:-22px; top:50%; --ray-x:-9px; --ray-y:0px; }
+  .project-order-rays i:nth-child(2) { right:-22px; top:50%; --ray-x:9px; --ray-y:0px; }
+  .project-order-rays i:nth-child(3) { left:20px; top:-10px; rotate:45deg; --ray-x:-5px; --ray-y:-5px; }
+  .project-order-rays i:nth-child(4) { right:20px; top:-10px; rotate:-45deg; --ray-x:5px; --ray-y:-5px; }
+  .project-order-rays i:nth-child(5) { left:20px; bottom:-10px; rotate:-45deg; --ray-x:-5px; --ray-y:5px; }
+  .project-order-rays i:nth-child(6) { right:20px; bottom:-10px; rotate:45deg; --ray-x:5px; --ray-y:5px; }
+  .project-order-rays i:nth-child(7) { left:calc(50% - 6px); top:-10px; rotate:90deg; --ray-x:0px; --ray-y:-5px; }
+  .project-order-rays i:nth-child(8) { left:calc(50% - 6px); bottom:-10px; rotate:90deg; --ray-x:0px; --ray-y:5px; }
+  @keyframes projectOrderPulse { 0%,100% { transform:scale(1); box-shadow:0 0 0 0 rgba(255,255,255,0); } 45% { transform:scale(1.035); box-shadow:0 0 18px rgba(255,255,255,.12); } }
+  @keyframes projectOrderRay { 0%,100% { opacity:0; transform:translate(0,0); } 35% { opacity:.7; } 75% { opacity:0; transform:translate(var(--ray-x),var(--ray-y)); } }
+  .cube-caption { max-width:280px; margin-top:18px; padding:0 6px; font-size:10px; line-height:1.6; text-align:center; color:#999; letter-spacing:.02em; }
+
+  /* Three independent business-site art directions; isolated to the demo. */
+  .fxo { --fx-accent:#e6ff57; }
+  .fxo .fx-bg { background:#111313; }
+  .fxo .fx-site { overflow-y:auto; overscroll-behavior:contain; padding:env(safe-area-inset-top,0px) 0 calc(90px + env(safe-area-inset-bottom,0px)); display:block; }
+  .fxo .fx-head { position:relative; z-index:2; padding:22px clamp(20px,5vw,80px); min-height:72px; gap:18px; border-bottom:1px solid rgba(255,255,255,.15); }
+  .fxo .fx-logo { font-size:16px; letter-spacing:.04em; white-space:nowrap; }
+  .fxo .fx-nav { gap:20px; opacity:1; }
+  .fx-nav button { border:0; padding:4px 0; background:transparent; color:inherit; font:inherit; font-size:10px; text-transform:none; cursor:pointer; letter-spacing:.02em; }
+  .fx-nav button:focus-visible, .fx-cta:focus-visible { outline:2px solid currentColor; outline-offset:4px; }
+  .fxo .fx-hero { min-height:650px; padding:64px clamp(20px,5vw,80px) 80px; display:flex; flex-direction:column; align-items:flex-start; justify-content:center; gap:0; isolation:isolate; overflow:hidden; }
+  .fx-photo { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:-2; }
+  .fxo .fx-hero::after { content:""; position:absolute; inset:0; z-index:-1; background:linear-gradient(90deg,rgba(8,12,12,.9),rgba(8,12,12,.25) 75%),linear-gradient(0deg,rgba(8,12,12,.45),transparent 60%); }
+  .fx-copy { position:relative; max-width:740px; display:flex; flex-direction:column; gap:24px; }
+  .fxo .fx-eyebrow { font-family:"IBM Plex Mono",monospace; font-size:9px; line-height:1.5; letter-spacing:.13em; color:var(--fx-accent); opacity:1; }
+  .fxo .fx-title { font-size:clamp(46px,6.4vw,92px); line-height:1.02; margin:0; letter-spacing:-.055em; font-weight:500; text-transform:none; font-style:normal; transform:none; text-shadow:none; }
+  .fxo .fx-title em { color:var(--fx-accent); font-style:normal; }
+  .fxo .fx-desc { max-width:360px; margin:0; font-size:14px; line-height:1.7; opacity:.8; }
+  .fxo .fx-cta { align-self:flex-start; border:1px solid var(--fx-accent); padding:15px 20px; margin:0; background:var(--fx-accent); color:#111; border-radius:2px; box-shadow:none; clip-path:none; font-family:inherit; font-size:10px; letter-spacing:.08em; cursor:pointer; }
+  .fx-image-caption { position:absolute; bottom:28px; right:clamp(20px,5vw,80px); font-family:"IBM Plex Mono",monospace; font-size:8px; letter-spacing:.14em; color:inherit; opacity:.7; }
+  .fxo .fx-cards { margin:0; padding:0 clamp(20px,5vw,80px); gap:0; border-bottom:1px solid rgba(255,255,255,.12); }
+  .fxo .fx-card { flex:1; min-width:0; padding:24px 8px 24px 0; border:0; border-right:1px solid rgba(255,255,255,.12); border-radius:0; background:none; box-shadow:none; }
+  .fxo .fx-card + .fx-card { padding-left:20px; }
+  .fxo .fx-card:last-child { border-right:0; }
+  .fxo .fx-card b { font-size:clamp(18px,2.8vw,34px); font-weight:500; margin-bottom:8px; }
+  .fxo .fx-card span { font-size:8px; line-height:1.5; letter-spacing:.02em; text-transform:none; display:block; }
+  .fx-offer { padding:64px clamp(20px,5vw,80px); scroll-margin-top:20px; }
+  .fx-offer-eye { font-family:"IBM Plex Mono",monospace; font-size:9px; letter-spacing:.13em; opacity:.6; }
+  .fx-offer h2 { margin:24px 0 20px; font-size:clamp(32px,4vw,60px); line-height:1.1; letter-spacing:-.04em; font-weight:500; }
+  .fx-offer > p { max-width:520px; font-size:14px; line-height:1.8; opacity:.7; }
+  .fx-offer-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:28px; margin-top:40px; }
+  .fx-offer-grid article { padding-top:20px; border-top:1px solid currentColor; }
+  .fx-offer-grid h3 { font-size:11px; font-weight:500; letter-spacing:.08em; }
+  .fx-offer-grid p { font-size:12px; line-height:1.7; opacity:.65; }
+  .fxo .fx-foot { padding:22px clamp(20px,5vw,80px); border-top:1px solid rgba(255,255,255,.12); font-size:8px; letter-spacing:.06em; opacity:.65; }
+  .fxo .fx-btn { position:absolute; inset:auto auto calc(16px + env(safe-area-inset-bottom,0px)) 50%; transform:translateX(-50%); background:#f3f3f1; color:#0c0c0c; border:1px solid rgba(255,255,255,.4); border-radius:30px; padding:14px 28px; font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.14em; animation:none; box-shadow:0 4px 24px rgba(0,0,0,.2); white-space:nowrap; }
+  .fxo .fx-btn:active { transform:translateX(-50%) scale(.96); }
+  .fxo.t0 { color:#f8f8f5; font-family:"Helvetica Neue",Arial,sans-serif; text-shadow:none; }
+  .fxo.t0 .fx-photo { object-position:65% center; }
+  .fxo.t1 { --fx-accent:#6b4538; color:#352d26; font-family:Georgia,"Times New Roman",serif; text-shadow:none; }
+  .fxo.t1 .fx-bg { background:#f6f1e9; }
+  .fxo.t1 .fx-head, .fxo.t1 .fx-cards, .fxo.t1 .fx-card, .fxo.t1 .fx-foot { border-color:rgba(107,69,56,.18); }
+  .fxo.t1 .fx-logo { font-size:24px; font-weight:400; text-transform:none; letter-spacing:-.04em; }
+  .fxo.t1 .fx-nav, .fxo.t1 .fx-desc, .fxo.t1 .fx-card span, .fxo.t1 .fx-offer p { font-family:"Helvetica Neue",Arial,sans-serif; }
+  .fxo.t1 .fx-hero { display:grid; grid-template-columns:1fr 1fr; gap:6%; min-height:640px; padding-top:50px; padding-bottom:50px; }
+  .fxo.t1 .fx-hero::after { display:none; }
+  .fxo.t1 .fx-copy { grid-column:1; grid-row:1; }
+  .fxo.t1 .fx-photo { position:relative; grid-column:2; grid-row:1; width:100%; height:480px; border-radius:180px 180px 2px 2px; z-index:0; object-position:center; }
+  .fxo.t1 .fx-title { font-weight:400; font-size:clamp(46px,5vw,76px); line-height:1.08; letter-spacing:-.05em; }
+  .fxo.t1 .fx-title em { font-style:italic; }
+  .fxo.t1 .fx-cta { background:transparent; color:#6b4538; border-radius:30px; }
+  .fxo.t1 .fx-image-caption { display:none; }
+  .fxo.t1 .fx-offer { background:#ebe5da; }
+  .fxo.t2 { --fx-accent:#a6f1e5; color:#e8edee; font-family:"Helvetica Neue",Arial,sans-serif; text-shadow:none; }
+  .fxo.t2 .fx-bg { background:#070c12; }
+  .fxo.t2 .fx-bg::after { display:none; }
+  .fxo.t2 .fx-photo { object-fit:contain; object-position:right center; opacity:.8; width:70%; left:30%; }
+  .fxo.t2 .fx-hero::after { background:linear-gradient(90deg,#070c12 5%,rgba(7,12,18,.8) 30%,transparent 90%); }
+  .fxo.t2 .fx-title { font-size:clamp(40px,5.8vw,84px); }
+  .fxo.t2 .fx-title em { font-weight:300; }
+  .fxo.t2 .fx-cta { background:transparent; color:var(--fx-accent); }
+  .fxo.t2 .fx-card b { font-family:"IBM Plex Mono",monospace; }
+  .fxo.t2 .fx-offer { border-top:1px solid rgba(166,241,229,.12); background:#0b121b; }
+  @media (max-width:600px) {
+    .fxo .fx-head { padding:20px; min-height:68px; flex-wrap:wrap; gap:14px; }
+    .fxo .fx-nav { gap:16px; }
+    .fxo .fx-nav button { font-size:9px; }
+    .fxo .fx-hero { min-height:570px; padding:52px 22px 70px; }
+    .fxo .fx-title { font-size:clamp(38px,11.7vw,62px); }
+    .fx-copy { gap:22px; }
+    .fxo .fx-desc { font-size:13px; max-width:310px; }
+    .fxo .fx-card { padding-top:22px; padding-bottom:22px; }
+    .fxo .fx-card + .fx-card { padding-left:12px; }
+    .fxo.t1 .fx-hero { grid-template-columns:1fr; min-height:0; padding:42px 22px 32px; gap:32px; }
+    .fxo.t1 .fx-copy { grid-column:1; grid-row:1; }
+    .fxo.t1 .fx-photo { grid-column:1; grid-row:2; height:300px; border-radius:140px 140px 2px 2px; }
+    .fxo.t1 .fx-title { font-size:clamp(40px,12vw,62px); }
+    .fxo.t2 .fx-title { font-size:clamp(33px,9.7vw,55px); line-height:1.08; }
+    .fxo.t2 .fx-photo { width:110%; left:0; object-position:center; opacity:.55; }
+    .fx-offer { padding:48px 22px; }
+    .fx-offer-grid { grid-template-columns:1fr; gap:16px; margin-top:28px; }
+    .project-detail-header { gap:10px; padding:12px; font-size:9px; }
+    #projectPhotoCount { font-size:8px; }
+  }
+  @media (prefers-reduced-motion:reduce) { .project-order, .project-order-rays i { animation:none; } }
 </style>
 </head>
 <body>
@@ -443,12 +560,27 @@
 <!-- Project Detail Modal -->
 <div class="modal" id="projectModal">
   <div class="modal-box">
-    <button type="button" class="modal-close" id="closeModal">×</button>
-    <h3 class="modal-title" id="modalTitle">Название проекта</h3>
-    <a href="#" target="_blank" rel="noreferrer" class="modal-link" id="modalLink">Перейти к проекту →</a>
-    <div class="modal-gallery" id="modalGallery"></div>
-    <div class="modal-desc" id="modalDesc">Описание</div>
-    <div class="modal-free" id="modalFree">Свободное поле</div>
+    <div class="project-detail-header">
+      <button type="button" class="btn-detail" id="closeModal">← назад</button>
+      <span>проект / подробно</span>
+      <span id="projectPhotoCount"></span>
+    </div>
+    <div class="project-detail-body">
+      <div class="modal-gallery" id="modalGallery" aria-label="Галерея проекта"></div>
+      <div class="project-detail-data">
+        <span class="project-detail-label">V³ STUDIO / SELECTED WORK</span>
+        <h3 class="modal-title" id="modalTitle">Название проекта</h3>
+        <div class="modal-desc" id="modalDesc">Описание</div>
+        <a href="#" target="_blank" rel="noreferrer" class="modal-link" id="modalLink">Перейти к проекту →</a>
+        <div class="modal-free" id="modalFree">Свободное поле</div>
+      </div>
+    </div>
+    <div class="project-order-footer">
+      <div class="project-order-wrap">
+        <div class="project-order-rays" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <button type="button" class="btn-detail project-order" id="projectOrder">заказать</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -468,13 +600,17 @@
   <div class="fx-site" id="fxSite">
     <div class="fx-head"><span class="fx-logo" id="fxLogo"></span><span class="fx-nav" id="fxNav"></span></div>
     <div class="fx-hero">
-      <div class="fx-art" id="fxArt"><span id="fxArtT"></span></div>
-      <div class="fx-eyebrow" id="fxEye"></div>
-      <h1 class="fx-title" id="fxTitle"></h1>
-      <p class="fx-desc" id="fxDesc"></p>
-      <div class="fx-cta" id="fxCta"></div>
+      <img class="fx-photo" id="fxPhoto" alt="" />
+      <div class="fx-copy">
+        <div class="fx-eyebrow" id="fxEye"></div>
+        <h1 class="fx-title" id="fxTitle"></h1>
+        <p class="fx-desc" id="fxDesc"></p>
+        <button type="button" class="fx-cta" id="fxCta"></button>
+      </div>
+      <div class="fx-image-caption" id="fxImageCaption"></div>
     </div>
     <div class="fx-cards" id="fxCards"></div>
+    <section class="fx-offer" id="fxOffer"></section>
     <div class="fx-foot"><span id="fxFoot"></span><span class="fx-dots" id="fxDots"><i></i><i></i><i></i></span></div>
   </div>
   <button type="button" class="fx-btn" id="fxBtn">НАЖМИ</button>
@@ -853,15 +989,31 @@ function openProject(p) {
   
   const gBox = document.getElementById('modalGallery');
   gBox.innerHTML = '';
-  (p.gallery || [p.img]).forEach(src => {
+  const photos = p.gallery && p.gallery.length ? p.gallery : [p.img];
+  photos.forEach((src, i) => {
     const img = document.createElement('img');
     img.src = src;
+    img.alt = p.title + ' / ' + (i + 1);
+    img.loading = i ? 'lazy' : 'eager';
     gBox.appendChild(img);
   });
+  document.getElementById('projectPhotoCount').textContent = photos.length + ' фото →';
   
   document.getElementById('modalDesc').textContent = p.desc || p.shortText;
   document.getElementById('modalFree').textContent = p.free || 'Свободное поле проекта';
+  document.getElementById('projectOrder').onclick = () => {
+    modal.classList.remove('on');
+    show('shell');
+    tab('contacts');
+    const input = document.getElementById('msg');
+    if (input) {
+      input.value = 'Хочу заказать проект в стиле «' + p.title + '».';
+      input.focus();
+    }
+  };
   modal.classList.add('on');
+  gBox.scrollLeft = 0;
+  document.querySelector('.project-detail-body').scrollTop = 0;
 }
 
 document.getElementById('closeModal').onclick = () => modal.classList.remove('on');
@@ -877,9 +1029,9 @@ const panels = {
   studio: `<h2>о нас / концепция</h2>
     <div class="studio-layout">
       <div class="studio-sidebar">
-        <button type="button" data-view="capabilities">возможности</button>
-        <button type="button" data-view="team">команда</button>
         <button type="button" data-view="projects">проекты</button>
+        <button type="button" data-view="team">команда</button>
+        <button type="button" data-view="capabilities">возможности</button>
         <button type="button" data-view="contacts">контакты</button>
       </div>
       <div class="studio-content" id="studioContent"></div>
@@ -962,6 +1114,7 @@ function renderStudioView(view) {
           <i></i><i></i><i></i><i></i><i></i><i></i>
         </div>
         <div class="touch-hint">ПРИКОСНИСЬ</div>
+        <div class="cube-caption">визуальные решения которые привлекают внимание</div>
       </div>
     `;
     setupCubeInteraction();
@@ -1037,12 +1190,36 @@ function renderStudioView(view) {
 
 // ===== Fullscreen "Эффект": 3 website designs, then return =====
 const fxThemes = [
-  { cls:'t0', logo:'GT MOTORS', nav:'<span>модели</span><span>салон</span><span>тест-драйв</span>', eye:'Hypercar · 2026', title:'Скорость<br>без<br>компромиссов', desc:'Инженерия на грани физики. 640 л.с. и 3,1 секунды до сотни.', cta:'ЗАБРОНИРОВАТЬ', art:'320 KM/H',
-    cards:[['640','л.с.'],['3.1s','0–100'],['V8','twin turbo']], foot:'GT PERFORMANCE · SINCE 1986' },
-  { cls:'t1', logo:'Doll House', nav:'<span>куклы</span><span>наряды</span><span>подарки</span>', eye:'Коллекция «Весна»', title:'Сказочный<br>мир кукол', desc:'Авторские игрушки и наряды ручной работы. Каждая кукла со своей историей.', cta:'В КОРЗИНУ', art:'♡ ♡ ♡',
-    cards:[['120+','кукол'],['40','нарядов'],['♡','с любовью']], foot:'сделано руками · с нежностью' },
-  { cls:'t2', logo:'ASTRON//LAB', nav:'<span>миссии</span><span>телеметрия</span><span>архив</span>', eye:'Deep Space Program', title:'Исследуем<br>глубокий<br>космос', desc:'Зонды, орбитальные станции и данные из-за границ Солнечной системы.', cta:'НАЧАТЬ МИССИЮ', art:'ORBIT 4',
-    cards:[['1.2M','световых лет'],['07','станций'],['∞','орбита']], foot:'сигнал стабилен · канал 7' }
+  { cls:'t0', logo:'GT / MOTORS', nav:['Коллекция','Философия','Контакт'], eye:'01 / AUTOMOTIVE · DESIGN CONCEPT',
+    title:'Не просто<br>движение.<br><em>Характер.</em>',
+    desc:'Точная инженерия. Чистая форма. Автомобили для тех, кто выбирает свой маршрут.',
+    cta:'ОТКРЫТЬ КОЛЛЕКЦИЮ ↗', image:'designs/motors.jpg', alt:'Спортивный автомобиль на дороге',
+    caption:'THE GRAND TOUR / EDITION 01',
+    cards:[['01','избранная коллекция'],['360°','внимание к деталям'],['GT','искусство движения']],
+    offerEye:'CURATED PERFORMANCE', offerTitle:'Всё лишнее<br>остаётся позади.',
+    offerDesc:'От первого взгляда до последнего поворота. Коллекция, в которой дизайн и удовольствие от вождения говорят на одном языке.',
+    offers:[['DESIGN','Силуэт, который невозможно перепутать.'],['PERFORMANCE','Динамика, которую нужно почувствовать.'],['PERSONAL','Индивидуальность в каждой детали.']],
+    foot:'GT / MOTORS · DEMO BY V³ STUDIO' },
+  { cls:'t1', logo:'Fleur atelier', nav:['Цветы','Ателье','Доставка'], eye:'02 / FLORAL ATELIER · DESIGN CONCEPT',
+    title:'Прекрасное<br>начинается<br><em>с малого.</em>',
+    desc:'Сезонные цветы, свободные формы и внимание к моментам, которые хочется сохранить.',
+    cta:'ВЫБРАТЬ СВОЙ БУКЕТ ↗', image:'designs/flowers.jpg', alt:'Нежные цветы и тюльпаны в естественном свете',
+    caption:'FLOWERS FOR EVERY LITTLE MOMENT',
+    cards:[['Сезон','вместо шаблонов'],['Вручную','каждая композиция'],['С заботой','до вашей двери']],
+    offerEye:'THE ART OF GIVING', offerTitle:'Не просто букет.<br>Маленькая история.',
+    offerDesc:'Для нежного признания, большого праздника или обычного вторника. Мы собираем цветы так, чтобы они были похожи на вас.',
+    offers:[['01 / КАЖДЫЙ ДЕНЬ','Небольшие радости без особого повода.'],['02 / ОСОБЫЙ МОМЕНТ','Композиции для самых важных слов.'],['03 / ПРОСТРАНСТВО','Цветочное оформление событий и интерьеров.']],
+    foot:'FLEUR ATELIER · DEMO BY V³ STUDIO' },
+  { cls:'t2', logo:'ASTRON / LAB', nav:['Платформа','Миссии','Данные'], eye:'03 / SPACE TECHNOLOGY · DESIGN CONCEPT',
+    title:'За пределами<br>привычного.<br><em>Ближе к будущему.</em>',
+    desc:'Орбитальная аналитика и спутниковые технологии. Сложные данные становятся ясными решениями.',
+    cta:'ИССЛЕДОВАТЬ ПЛАТФОРМУ ↗', image:'designs/space.jpg', alt:'Планета Земля в глубоком космосе',
+    caption:'EARTH OBSERVATION / LIVE SYSTEMS',
+    cards:[['LEO','низкая орбита'],['24/7','мониторинг'],['API','единая платформа']],
+    offerEye:'MISSION CONTROL', offerTitle:'Большая картина.<br>Точные решения.',
+    offerDesc:'Наблюдайте изменения, находите закономерности и превращайте спутниковые данные в инструменты для вашего бизнеса.',
+    offers:[['OBSERVE','Геопространственные данные в одном интерфейсе.'],['ANALYZE','Аналитика, которая объясняет сложное.'],['CONNECT','Интеграция с вашими процессами через API.']],
+    foot:'ASTRON / LAB · DEMO BY V³ STUDIO' }
 ];
 let fxStep = 0, fxBusy = false;
 const fxo = document.getElementById('fxo');
@@ -1052,16 +1229,30 @@ const fxBtn = document.getElementById('fxBtn');
 function fxFill(t) {
   fxo.className = 'fxo on vis ' + t.cls;
   document.getElementById('fxLogo').textContent = t.logo;
-  document.getElementById('fxNav').innerHTML = t.nav;
+  const nav = document.getElementById('fxNav');
+  nav.replaceChildren();
+  t.nav.forEach(label => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = label;
+    button.onclick = () => document.getElementById('fxOffer').scrollIntoView({ behavior:'smooth', block:'start' });
+    nav.appendChild(button);
+  });
   document.getElementById('fxEye').textContent = t.eye;
   document.getElementById('fxTitle').innerHTML = t.title;
   document.getElementById('fxDesc').textContent = t.desc;
   document.getElementById('fxCta').textContent = t.cta;
-  document.getElementById('fxArtT').textContent = t.art;
+  const photo = document.getElementById('fxPhoto');
+  photo.src = t.image;
+  photo.alt = t.alt;
+  document.getElementById('fxImageCaption').textContent = t.caption;
+  document.getElementById('fxCta').onclick = () => document.getElementById('fxOffer').scrollIntoView({ behavior:'smooth', block:'start' });
+  document.getElementById('fxOffer').innerHTML = '<span class="fx-offer-eye">'+t.offerEye+'</span><h2>'+t.offerTitle+'</h2><p>'+t.offerDesc+'</p><div class="fx-offer-grid">'+t.offers.map(([name,desc])=>'<article><h3>'+name+'</h3><p>'+desc+'</p></article>').join('')+'</div>';
   document.getElementById('fxFoot').textContent = t.foot;
   document.getElementById('fxCards').innerHTML = t.cards.map(c => '<div class="fx-card"><b>'+c[0]+'</b><span>'+c[1]+'</span></div>').join('');
   document.querySelectorAll('#fxDots i').forEach((d,i) => d.classList.toggle('on', i === fxStep));
-  fxBtn.textContent = fxStep === fxThemes.length - 1 ? 'ВЕРНУТЬСЯ' : 'НАЖМИ';
+  fxBtn.textContent = fxStep === fxThemes.length - 1 ? 'ВЕРНУТЬСЯ' : 'ДАЛЕЕ →';
+  fxSite.scrollTop = 0;
 }
 function openFx() {
   fxStep = 0;
