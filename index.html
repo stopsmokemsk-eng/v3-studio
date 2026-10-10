@@ -367,6 +367,21 @@
   .proj-page { color:#f3f3f1; }
   .modal-box { color:#f3f3f1; }
   .proj-page .note-top h2 { padding:0; border:0; font-size:16px; letter-spacing:.1em; color:#f3f3f1; font-weight:500; }
+  /* Capabilities: isolated page, original effects and site typography. */
+  .capabilities-page { position:absolute; inset:0; z-index:5; display:flex; flex-direction:column; min-height:0; overflow:hidden; border-radius:20px; background:#0c0c0c; color:#f3f3f1; }
+  .capabilities-header { display:flex; align-items:center; gap:12px; padding:12px 14px; border-bottom:1px solid rgba(255,255,255,.1); flex:0 0 auto; }
+  .capabilities-header > span { font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:#888; }
+  .capabilities-tabs { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; padding:14px 12px; flex:0 0 auto; border-bottom:1px solid rgba(255,255,255,.1); }
+  .capabilities-tabs button { position:relative; isolation:isolate; overflow:hidden; min-width:0; min-height:38px; padding:8px 4px; border:1px solid rgba(255,255,255,.4); border-radius:24px; background:transparent; color:inherit; font-family:inherit; font-size:10px; letter-spacing:.08em; text-transform:uppercase; cursor:pointer; }
+  .capabilities-tabs button::before { content:""; position:absolute; inset:-60% -30%; z-index:-1; pointer-events:none; background:radial-gradient(ellipse at 30% 45%,rgba(255,255,255,.32),transparent 55%),radial-gradient(ellipse at 70% 60%,rgba(255,255,255,.2),transparent 60%); filter:blur(9px); animation:capabilitiesMist 6s ease-in-out infinite alternate; }
+  .capabilities-tabs button:nth-child(2)::before { animation-delay:-2s; }
+  .capabilities-tabs button:nth-child(3)::before { animation-delay:-4s; }
+  .capabilities-tabs button[aria-selected="true"] { border-color:#f3f3f1; background:rgba(255,255,255,.08); }
+  .capabilities-tabs button:focus-visible { outline:2px solid #fff; outline-offset:2px; }
+  .capabilities-tabs button > span { position:relative; }
+  #capabilitiesContent { min-height:0; }
+  @keyframes capabilitiesMist { from { transform:translateX(-15%) rotate(-8deg); opacity:.5; } to { transform:translateX(15%) rotate(8deg); opacity:1; } }
+  @media (prefers-reduced-motion:reduce) { .capabilities-tabs button::before { animation:none; } }
 </style>
 </head>
 <body>
@@ -862,9 +877,7 @@ const panels = {
   studio: `<h2>о нас / концепция</h2>
     <div class="studio-layout">
       <div class="studio-sidebar">
-        <button type="button" data-view="aes" class="active">эстетика</button>
-        <button type="button" data-view="idea">креатив</button>
-        <button type="button" data-view="fx">эффект</button>
+        <button type="button" data-view="capabilities">возможности</button>
         <button type="button" data-view="team">команда</button>
         <button type="button" data-view="projects">проекты</button>
         <button type="button" data-view="contacts">контакты</button>
@@ -900,6 +913,7 @@ let morphStep = 0;
 function initStudioTab() {
   const btns = document.querySelectorAll('.studio-sidebar button');
   btns.forEach(b => b.onclick = () => {
+    if (b.dataset.view === 'capabilities') { openCapabilitiesPage(); return; }
     if (b.dataset.view === 'projects') { openProjectsPage(); return; }
     btns.forEach(x => x.classList.remove('active'));
     b.classList.add('active');
@@ -908,14 +922,43 @@ function initStudioTab() {
   renderStudioView('aes');
 }
 
+function openCapabilitiesPage() {
+  if (document.getElementById('capabilitiesPage')) return;
+  const page = document.createElement('div');
+  page.id = 'capabilitiesPage';
+  page.className = 'capabilities-page';
+  page.innerHTML = `
+    <div class="capabilities-header">
+      <button type="button" class="btn-detail" id="capabilitiesBack">← назад</button>
+      <span>возможности</span>
+    </div>
+    <div class="capabilities-tabs" role="tablist" aria-label="Возможности студии">
+      <button type="button" role="tab" data-view="aes" aria-selected="true"><span>эстетика</span></button>
+      <button type="button" role="tab" data-view="idea" aria-selected="false"><span>креатив</span></button>
+      <button type="button" role="tab" data-view="fx" aria-selected="false"><span>эффект</span></button>
+    </div>
+    <div class="studio-content" id="capabilitiesContent" role="tabpanel"></div>`;
+  document.getElementById('panel').appendChild(page);
+  document.getElementById('capabilitiesBack').onclick = () => page.remove();
+  page.querySelectorAll('[role="tab"]').forEach(button => {
+    button.onclick = () => {
+      page.querySelectorAll('[role="tab"]').forEach(tab => {
+        tab.setAttribute('aria-selected', String(tab === button));
+      });
+      renderStudioView(button.dataset.view);
+    };
+  });
+  renderStudioView('aes');
+}
+
 function renderStudioView(view) {
-  const content = document.getElementById('studioContent');
+  const content = document.getElementById('capabilitiesContent') || document.getElementById('studioContent');
   content.classList.toggle('top', view === 'projects');
   if (view === 'idea') { /* handled below, also launches scratch */ }
   if (view === 'aes') {
     content.innerHTML = `
-      <div class="cube-stage" id="cubeStage">
-        <div class="cube3" id="cube3D">
+      <div class="cube-stage" id="${content.id === 'capabilitiesContent' ? 'capabilitiesCubeStage' : 'cubeStage'}">
+        <div class="cube3" id="${content.id === 'capabilitiesContent' ? 'capabilitiesCube3D' : 'cube3D'}">
           <i></i><i></i><i></i><i></i><i></i><i></i>
         </div>
         <div class="touch-hint">ПРИКОСНИСЬ</div>
@@ -1030,7 +1073,7 @@ function openFx() {
 function closeFx() {
   fxo.classList.remove('vis');
   setTimeout(() => fxo.classList.remove('on'), 520);
-  const b = document.querySelector('.studio-sidebar button[data-view="aes"]');
+  const b = document.querySelector('.capabilities-tabs button[data-view="aes"]') || document.querySelector('.studio-sidebar button[data-view="aes"]');
   if (b) b.click();
 }
 fxBtn.onclick = () => {
@@ -1116,8 +1159,9 @@ document.getElementById('scrClose').onclick = closeScratch;
 
 
 function setupCubeInteraction() {
-  const stage = document.getElementById('cubeStage');
-  const cube = document.getElementById('cube3D');
+  const content = document.getElementById('capabilitiesContent') || document.getElementById('studioContent');
+  const stage = content && content.querySelector('.cube-stage');
+  const cube = stage && stage.querySelector('.cube3');
   if (!stage || !cube) return;
 
   // light trail canvas
