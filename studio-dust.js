@@ -14,7 +14,7 @@
     return logoPromise;
   }
 
-  window.openStudioDust = () => {
+  window.openStudioDust = (options = {}) => {
     if (closeCurrent) closeCurrent();
     const previousFocus = document.activeElement;
     const root = document.createElement('section');
@@ -23,7 +23,8 @@
     root.setAttribute('role','dialog');
     root.setAttribute('aria-modal','true');
     root.setAttribute('aria-label','V³ STUDIO. Звёздная пыль и чёрная дыра.');
-    root.innerHTML = '<canvas class="studio-dust-canvas" role="img" aria-label="Логотип V³ и слово STUDIO собираются из частиц. Проведите мышью или пальцем, чтобы создать чёрную дыру."></canvas><header class="studio-dust-header"><button type="button">← НАЗАД</button><span>V³ / ЗВЁЗДНАЯ ПЫЛЬ</span></header><footer class="studio-dust-footer"><span>ПРОВЕДИТЕ МЫШЬЮ ИЛИ ПАЛЬЦЕМ</span><span>ПРОСТРАНСТВО РЕАГИРУЕТ НА ВАС</span></footer>';
+    root.innerHTML = '<canvas class="studio-dust-canvas" role="img" aria-label="Логотип V³ и слово STUDIO собираются из частиц. Проведите мышью или пальцем, чтобы создать чёрную дыру."></canvas><header class="studio-dust-header"><button type="button">← НАЗАД</button><span>V³ / ЗВЁЗДНАЯ ПЫЛЬ</span></header><footer class="studio-dust-footer"><span>ПРОВЕДИТЕ МЫШЬЮ ИЛИ ПАЛЬЦЕМ</span><span>ПРОСТРАНСТВО РЕАГИРУЕТ НА ВАС</span></footer>' +
+      (typeof options.onMore === 'function' ? '<button type="button" class="btn-detail studio-dust-more">ЕЩЕ <span aria-hidden="true">↗</span></button>' : '');
     document.body.appendChild(root);
     const canvas = root.querySelector('canvas');
     const ctx = canvas.getContext('2d');
@@ -32,7 +33,8 @@
     const reduced = matchMedia('(prefers-reduced-motion:reduce)').matches;
     let alive = true, raf = 0, width = 1, height = 1, dpr = 1;
     let logo = null, ready = false, started = performance.now(), last = started, elapsed = 0;
-    let particles = [], stars = [];
+    let particles = [], stars = [], dust = [];
+    let markBox = { x:0,y:0,w:1,h:1 };
     let seed = 1986;
     const pointer = { active:false,x:0,y:0,tx:0,ty:0,strength:0,touch:false,id:null };
     const random = () => { seed=(Math.imul(seed,1664525)+1013904223)>>>0; return seed/4294967296; };
@@ -51,6 +53,8 @@
     }
     closeCurrent = close;
     back.onclick = close;
+    const more = root.querySelector('.studio-dust-more');
+    if (more) more.onclick = () => { close(); options.onMore(); };
     back.focus();
     if (!ctx) { root.querySelector('canvas').remove(); return; }
 
@@ -86,6 +90,8 @@
       }
       const targets=[], step=small ? 1.45 : 2.15;
       const ox=(width-mask.width)/2,oy=(height-mask.height)/2;
+      markBox = { x:ox,y:oy,w:mask.width,h:mask.height };
+      buildDust();
       for (let y=1;y<mask.height;y+=step) for(let x=1;x<mask.width;x+=step) {
         const i=(Math.floor(y)*mask.width+Math.floor(x))*4;
         if (pixels[i] > 160 || pixels[i+3] < 100) continue;
@@ -104,6 +110,21 @@
       if (reduced) particles.forEach(p=>{p.x=p.tx;p.y=p.ty;});
       root.dataset.particles=String(particles.length);
     }
+    // Soft stardust cloud around the wordmark: slow orbits, faint twinkle, never covering the letters.
+    function buildDust() {
+      const cx=markBox.x+markBox.w/2, cy=markBox.y+markBox.h/2;
+      const rx=markBox.w*.62+24, ry=markBox.h*.95+30;
+      const count=width<600?520:1100;
+      dust=Array.from({length:count},()=>{
+        const a=random()*Math.PI*2;
+        const band=Math.pow(random(),.65);
+        const r=.78+band*.95;
+        return { a, r, rx, ry, cx, cy,
+          speed:(.012+random()*.03)*(random()<.5?1:-1)*(1.6-band*.6),
+          wobble:random()*6.28, size:.55+random()*1.45*(1-band*.4),
+          alpha:.26+random()*.62*(1-band*.5), x:0,y:0,vx:0,vy:0,ox:0,oy:0 };
+      });
+    }
     function resize() {
       width=Math.max(1,root.clientWidth);height=Math.max(1,root.clientHeight);
       dpr=Math.min(devicePixelRatio || 1,1.75);
@@ -121,7 +142,7 @@
       glow.addColorStop(.35,'rgba(220,235,245,'+(.07*strength)+')');
       glow.addColorStop(1,'rgba(0,0,0,0)');
       ctx.fillStyle=glow;ctx.beginPath();ctx.arc(0,0,65,0,Math.PI*2);ctx.fill();
-      ctx.rotate(reduced ? -.3 : elapsed*.15);
+      ctx.rotate(reduced ? -.3 : elapsed*.07);
       ctx.strokeStyle='rgba(220,230,240,'+(.28*strength)+')';ctx.lineWidth=.7;
       ctx.beginPath();ctx.ellipse(0,0,30,12,0,0,Math.PI*2);ctx.stroke();
       ctx.fillStyle='rgba(0,0,0,'+strength+')';ctx.beginPath();ctx.arc(0,0,16,0,Math.PI*2);ctx.fill();
@@ -135,7 +156,7 @@
       const dt=clamp((now-last)/16.667,.1,2);last=now;
       if (document.hidden) { started += dt*16.667; return; }
       elapsed=(now-started)/1000;
-      const blend=1-Math.pow(.8,dt);
+      const blend=1-Math.pow(.9,dt);
       pointer.x+=(pointer.tx-pointer.x)*blend;pointer.y+=(pointer.ty-pointer.y)*blend;
       pointer.strength+=((pointer.active?1:0)-pointer.strength)*blend;
       const radius=Math.min(190,width*.38);
@@ -147,6 +168,34 @@
         ctx.rect(s.x,s.y,s.r*twinkle,s.r*twinkle);
       }
       ctx.fill();
+      if (dust.length) {
+        const appear=reduced?1:clamp((elapsed-.8)/2.6,0,1);
+        const ncx=markBox.x+markBox.w/2, ncy=markBox.y+markBox.h/2, nr=Math.max(markBox.w*.75,120);
+        ctx.save(); ctx.translate(ncx,ncy); ctx.scale(1,.42);
+        const neb=ctx.createRadialGradient(0,0,0,0,0,nr);
+        neb.addColorStop(0,'rgba(190,205,230,'+(.075*appear)+')');
+        neb.addColorStop(.55,'rgba(160,180,215,'+(.035*appear)+')');
+        neb.addColorStop(1,'rgba(0,0,0,0)');
+        ctx.fillStyle=neb; ctx.beginPath(); ctx.arc(0,0,nr,0,Math.PI*2); ctx.fill(); ctx.restore();
+        ctx.fillStyle='rgb(230,236,244)';
+        for(const d of dust) {
+          if(!reduced) d.a+=d.speed*.016*dt;
+          const bx=d.cx+Math.cos(d.a)*d.rx*d.r+Math.sin(elapsed*.35+d.wobble)*6;
+          const by=d.cy+Math.sin(d.a)*d.ry*d.r*.62+Math.cos(elapsed*.3+d.wobble)*5;
+          if(pointer.strength>.01){
+            const dx=bx+d.ox-pointer.x,dy=by+d.oy-pointer.y,dist=Math.max(6,Math.hypot(dx,dy));
+            const f=Math.pow(Math.max(0,1-dist/(radius*1.15)),2)*pointer.strength;
+            d.vx+=(-dx/dist*1.5-dy/dist*1.1)*f*dt; d.vy+=(-dy/dist*1.5+dx/dist*1.1)*f*dt;
+          }
+          d.vx+=(-d.ox*.012)*dt; d.vy+=(-d.oy*.012)*dt;
+          d.vx*=Math.pow(.9,dt); d.vy*=Math.pow(.9,dt);
+          d.ox+=d.vx*dt; d.oy+=d.vy*dt;
+          const tw=reduced?1:.55+.45*Math.sin(elapsed*1.1+d.wobble*3);
+          ctx.globalAlpha=d.alpha*tw*appear;
+          ctx.fillRect(bx+d.ox,by+d.oy,d.size,d.size);
+        }
+        ctx.globalAlpha=1;
+      }
       for(const p of particles) {
         const assembly=clamp((elapsed-p.delay)/3.2,0,1);
         if (!reduced && assembly < 1) {
@@ -161,8 +210,8 @@
         if(pointer.strength>.01 && (reduced || assembly>.95)) {
           const dx=p.x-pointer.x,dy=p.y-pointer.y,d=Math.max(5,Math.hypot(dx,dy));
           const force=Math.pow(Math.max(0,1-d/radius),2)*pointer.strength;
-          p.vx+=(-dx/d*4.4-dy/d*3.3)*force*dt;
-          p.vy+=(-dy/d*4.4+dx/d*3.3)*force*dt;
+          p.vx+=(-dx/d*2.1-dy/d*1.45)*force*dt;
+          p.vy+=(-dy/d*2.1+dx/d*1.45)*force*dt;
         }
         p.x+=p.vx*dt;p.y+=p.vy*dt;
       }

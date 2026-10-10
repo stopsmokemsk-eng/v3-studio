@@ -116,6 +116,11 @@
   async function restoreSavedTrack() {
     const revision = trackRevision;
     const item = window.V3Content.read(TRACK_KEY,null);
+    if (item?.src && /^https:\/\//.test(item.src)) {
+      if (!currentTrack || currentTrack.src !== item.src) applyTrack(item.src,item);
+      else { loadingTrack = false; reconcile(); }
+      return;
+    }
     if (!item?.src?.startsWith('v3media:')) { loadingTrack = false; reconcile(); return; }
     try {
       const url = await window.V3Content.resolveSource(item.src);
@@ -150,8 +155,8 @@
     if (!window.V3StudioData.isAdmin() || box.querySelector('#adminSoundPanel')) return;
     const panel = document.createElement('section');
     panel.id = 'adminSoundPanel'; panel.className = 'studio-sound-admin';
-    panel.innerHTML = '<h3>ФОНОВАЯ МУЗЫКА</h3><p class="studio-sound-current"></p><label class="local-upload">ЗАГРУЗИТЬ ФОНОВЫЙ ТРЕК<input id="backgroundMusicFile" type="file" accept="audio/*,.mp3,.m4a,.aac,.wav,.ogg,.flac,.opus"></label><button type="button" class="admin-btn">ВЕРНУТЬ СТАНДАРТНЫЙ ТРЕК</button><small>MP3, M4A, WAV и другие поддерживаемые аудиофайлы · до 50 МБ. Сохраняется автоматически только на этом устройстве и в этом браузере. Для других посетителей музыка не изменится.</small><p class="local-status" role="status" aria-live="polite"></p>';
-    box.querySelector('.admin-badge').after(panel);
+    panel.innerHTML = '<h3>ФОНОВАЯ МУЗЫКА</h3><p class="studio-sound-current"></p><label class="local-upload">ЗАГРУЗИТЬ ФОНОВЫЙ ТРЕК<input id="backgroundMusicFile" type="file" accept="audio/*,.mp3,.m4a,.aac,.wav,.ogg,.flac,.opus"></label><button type="button" class="admin-btn">ВЕРНУТЬ СТАНДАРТНЫЙ ТРЕК</button><small>MP3, M4A, WAV и другие поддерживаемые аудиофайлы · до 50 МБ. Трек загружается на сервер и звучит у всех посетителей.</small><p class="local-status" role="status" aria-live="polite"></p>';
+    (box.querySelector('.admin-topbar') || box.querySelector('.admin-badge')).after(panel);
     const input = panel.querySelector('input'), reset = panel.querySelector('button'), status = panel.querySelector('.local-status');
     const refresh = () => {
       const item = window.V3Content.read(TRACK_KEY,null);
@@ -219,6 +224,7 @@
     document.body.append(audio,button,dialog,note);
     document.body.classList.add('studio-sound-ready');
     restoreSavedTrack();
+    window.addEventListener('v3:synced',() => { if (!window.V3StudioData?.isAdmin()) restoreSavedTrack(); });
     button.onclick = () => {
       interacted = true;
       if (blocked && wanted) {

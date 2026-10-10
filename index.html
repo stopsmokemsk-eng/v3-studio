@@ -529,6 +529,7 @@
 <link rel="stylesheet" href="studio-refinements.css" />
 <link rel="stylesheet" href="studio-sound.css" />
 <link rel="stylesheet" href="studio-dust.css" />
+<link rel="stylesheet" href="studio-v4.css" />
 </head>
 <body>
 
@@ -680,11 +681,13 @@
     <button type="button" id="installContinue">ПРОДОЛЖИТЬ</button>
   </div>
 </div>
+<script src="studio-sync.js"></script>
 <script src="studio-globe.js"></script>
 <script src="studio-content.js"></script>
 <script src="studio-extras.js"></script>
 <script src="studio-sound.js"></script>
 <script src="studio-dust.js"></script>
+<script src="studio-fx-plus.js"></script>
 <script>
 // Data store for projects & team
 const defaultProjects = [
@@ -697,8 +700,8 @@ const defaultProjects = [
 ];
 
 const defaultTeam = [
-  { id: 0, name: 'ВЛАДИСЛАВ В', role: 'Арт-директор / Проектный лид', avatar: 'logo.png', bio: 'Руководство визуальными концепциями, айдентикой брендов и цифровыми интерфейсами.' },
-  { id: 1, name: 'АЛЕКСЕЙ П', role: 'Разработка / Автоматизация', avatar: 'logo.png', bio: 'Разработка сайтов и приложений, внедрение CRM, автоматизация процессов и ИИ-решения.' }
+  { id: 0, name: 'ВЛАДИСЛАВ В', role: 'Арт-директор / Проектный лид', avatar: 'logo.png', bio: 'Руководство визуальными концепциями, айдентикой брендов и цифровыми интерфейсами.', phone: '+7 (915) 472-63-35', telegram: '' },
+  { id: 1, name: 'АЛЕКСЕЙ П', role: 'Разработка / Автоматизация', avatar: 'logo.png', bio: 'Разработка сайтов и приложений, внедрение CRM, автоматизация процессов и ИИ-решения.', phone: '+7 (915) 207-19-50', telegram: '' }
 ];
 
 function getProjects() {
@@ -710,7 +713,7 @@ function getProjects() {
   }
 }
 function saveProjects(p) {
-  window.V3Content.write('v3_projects',p);
+  return window.V3Content.write('v3_projects',p);
 }
 
 function getTeam() {
@@ -722,7 +725,7 @@ function getTeam() {
   }
 }
 function saveTeam(t) {
-  window.V3Content.write('v3_team2',t);
+  return window.V3Content.write('v3_team2',t);
 }
 
 let projects = getProjects();
@@ -1057,6 +1060,152 @@ function openProjectsPage() {
   const rail = document.getElementById('rail');
   const cur = rail.children[currentProjectIndex];
   if (cur) rail.scrollLeft = cur.offsetLeft + cur.offsetWidth / 2 - rail.clientWidth / 2;
+  if (isAdmin) {
+    const tools = document.createElement('div');
+    tools.className = 'pp-admin-tools';
+    tools.innerHTML = '<button type="button" class="btn-detail" id="ppEdit">✎ изменить</button><button type="button" class="btn-detail" id="ppNew">+ проект</button>';
+    el.querySelector('.pp-top').appendChild(tools);
+    document.getElementById('ppEdit').onclick = () => openProjectEditor(currentProjectIndex, false);
+    document.getElementById('ppNew').onclick = () => openProjectEditor(-1, true);
+  }
+}
+
+// ===== Admin: project editor inside the Projects page =====
+function openProjectEditor(index, isNew) {
+  const page = document.getElementById('projPage');
+  if (!page || !isAdmin) return;
+  projects = getProjects();
+  const source = isNew
+    ? { id: Math.max(-1, ...projects.map(p => +p.id || 0)) + 1, img: 'logo.png', title: 'новый проект', shortText: '', link: '', gallery: [], media: [], desc: '', free: '' }
+    : projects[index];
+  if (!source) return;
+  const draft = JSON.parse(JSON.stringify(source));
+  draft.media = window.V3Content.getProjectMedia(draft).slice();
+  const old = document.getElementById('projEditor'); if (old) old.remove();
+  const ed = document.createElement('div');
+  ed.id = 'projEditor'; ed.className = 'proj-editor';
+  ed.innerHTML = `
+    <div class="pe-top">
+      <button type="button" class="btn-detail" id="peBack">← назад</button>
+      <span>${isNew ? 'новый проект' : 'редактор проекта'}</span>
+      ${isNew ? '' : '<button type="button" class="btn-detail pe-delete" id="peDelete">удалить</button>'}
+    </div>
+    <div class="pe-body">
+      <div class="pe-label">обложка</div>
+      <div class="pe-cover"><img id="peCoverImg" alt=""><label class="pe-file">заменить обложку<input type="file" accept="image/*" id="peCoverFile"></label></div>
+      <div class="pe-label">название</div>
+      <input class="admin-input" id="peTitle" placeholder="Название проекта">
+      <div class="pe-label">краткое описание</div>
+      <input class="admin-input" id="peShort" placeholder="Одна строка под названием">
+      <div class="pe-label">полное описание</div>
+      <textarea class="admin-input" id="peDesc" rows="4" placeholder="Описание проекта"></textarea>
+      <div class="pe-label">свободное поле</div>
+      <input class="admin-input" id="peFree" placeholder="Например: Брендинг • 2026">
+      <div class="pe-label">ссылка</div>
+      <input class="admin-input" id="peLink" placeholder="https://...">
+      <div class="pe-label">фото и видео проекта</div>
+      <div class="pe-media" id="peMedia"></div>
+      <label class="pe-file pe-add">+ добавить фото / видео<input type="file" accept="image/*,video/*" multiple id="peAddFiles"></label>
+      <p class="pe-status" id="peStatus"></p>
+      <button type="button" class="admin-btn pe-save" id="peSave">Сохранить проект</button>
+    </div>`;
+  page.appendChild(ed);
+  const $ = id => document.getElementById(id);
+  $('peTitle').value = draft.title || ''; $('peShort').value = draft.shortText || '';
+  $('peDesc').value = draft.desc || ''; $('peFree').value = draft.free || ''; $('peLink').value = draft.link || '';
+  const status = (text, error) => { const st = $('peStatus'); st.textContent = text || ''; st.classList.toggle('is-error', !!error); };
+  const drawCover = () => window.V3Content.bindMedia($('peCoverImg'), draft.img || 'logo.png');
+  const upload = async (file, kinds) => {
+    const item = await window.V3Content.storeFile(file, kinds);
+    return item;
+  };
+  const busy = on => ed.querySelectorAll('button,input[type=file]').forEach(x => { if (x.id !== 'peBack') x.disabled = on; });
+  const drawMedia = () => {
+    const box = $('peMedia'); box.replaceChildren();
+    if (!draft.media.length) { box.innerHTML = '<div class="pe-empty">Пока нет фото. Добавьте файлы ниже.</div>'; return; }
+    draft.media.forEach((item, i) => {
+      const tile = document.createElement('div'); tile.className = 'pe-tile';
+      const media = document.createElement(item.type === 'video' ? 'video' : 'img');
+      if (item.type === 'video') { media.muted = true; media.playsInline = true; media.preload = 'metadata'; }
+      window.V3Content.bindMedia(media, item.src);
+      const bar = document.createElement('div'); bar.className = 'pe-tile-bar';
+      const left = document.createElement('button'); left.type = 'button'; left.textContent = '←'; left.title = 'Переместить влево'; left.disabled = i === 0;
+      left.onclick = () => { [draft.media[i - 1], draft.media[i]] = [draft.media[i], draft.media[i - 1]]; drawMedia(); };
+      const replace = document.createElement('label'); replace.className = 'pe-replace'; replace.textContent = 'заменить';
+      const rInput = document.createElement('input'); rInput.type = 'file'; rInput.accept = 'image/*,video/*'; replace.appendChild(rInput);
+      rInput.onchange = async () => {
+        const file = rInput.files[0]; if (!file) return;
+        busy(true); status('Загружаем файл…');
+        try { draft.media[i] = await upload(file, ['image', 'video']); status('Файл заменён. Не забудьте сохранить проект.'); drawMedia(); }
+        catch (e) { status(e.message, true); }
+        finally { busy(false); }
+      };
+      const del = document.createElement('button'); del.type = 'button'; del.textContent = '×'; del.title = 'Удалить';
+      del.onclick = () => { draft.media.splice(i, 1); drawMedia(); status('Файл убран. Не забудьте сохранить проект.'); };
+      const cover = document.createElement('button'); cover.type = 'button'; cover.textContent = '★'; cover.title = 'Сделать обложкой';
+      cover.disabled = item.type !== 'image';
+      cover.onclick = () => { draft.img = item.src; drawCover(); status('Обложка выбрана. Не забудьте сохранить проект.'); };
+      bar.append(left, replace, cover, del);
+      tile.append(media, bar); box.appendChild(tile);
+    });
+  };
+  drawCover(); drawMedia();
+  $('peCoverFile').onchange = async () => {
+    const file = $('peCoverFile').files[0]; if (!file) return;
+    busy(true); status('Загружаем обложку…');
+    try { const item = await upload(file, ['image']); draft.img = item.src; drawCover(); status('Обложка загружена. Не забудьте сохранить проект.'); }
+    catch (e) { status(e.message, true); }
+    finally { busy(false); $('peCoverFile').value = ''; }
+  };
+  $('peAddFiles').onchange = async () => {
+    const files = [...$('peAddFiles').files]; if (!files.length) return;
+    busy(true);
+    try {
+      for (let k = 0; k < files.length; k++) {
+        status('Загружаем ' + (k + 1) + ' из ' + files.length + '…');
+        draft.media.push(await upload(files[k], ['image', 'video']));
+        drawMedia();
+      }
+      if (!draft.img || draft.img === 'logo.png') { const first = draft.media.find(m => m.type === 'image'); if (first) { draft.img = first.src; drawCover(); } }
+      status('Файлы добавлены. Не забудьте сохранить проект.');
+    } catch (e) { status(e.message, true); }
+    finally { busy(false); $('peAddFiles').value = ''; }
+  };
+  $('peBack').onclick = () => ed.remove();
+  $('peSave').onclick = async () => {
+    const btn = $('peSave');
+    draft.title = $('peTitle').value.trim() || 'без названия';
+    draft.shortText = $('peShort').value.trim(); draft.desc = $('peDesc').value.trim();
+    draft.free = $('peFree').value.trim(); draft.link = $('peLink').value.trim();
+    draft.gallery = draft.media.filter(m => m.type === 'image').map(m => m.src);
+    draft.links = [...new Set([draft.link, ...(source.links || []).filter(u => u !== source.link)].filter(u => /^https?:\/\//i.test(u || '')))];
+    projects = getProjects();
+    let at = isNew ? projects.length : projects.findIndex(p => p.id === source.id);
+    if (at < 0) at = Math.min(index, projects.length);
+    projects[at] = draft;
+    markSaving(btn);
+    try {
+      const r = await saveProjects(projects);
+      flashSave(btn, true, r && r.local ? 'Сохранено на устройстве ✓' : 'Сохранено ✓');
+      status('');
+      currentProjectIndex = at;
+      if (isNew) { isNew = false; source.id = draft.id; }
+      buildRail();
+      const rail = document.getElementById('rail');
+      const card = rail && rail.children[at];
+      if (card) rail.scrollLeft = card.offsetLeft + card.offsetWidth / 2 - rail.clientWidth / 2;
+    } catch (e) { flashSave(btn, false, 'Не сохранено'); status(e.message, true); }
+  };
+  const delBtn = $('peDelete');
+  if (delBtn) delBtn.onclick = async () => {
+    projects = getProjects();
+    if (projects.length <= 1) { status('Нельзя удалить последний проект.', true); return; }
+    if (!confirm('Удалить проект «' + (source.title || '') + '»?')) return;
+    projects = projects.filter(p => p.id !== source.id);
+    currentProjectIndex = Math.max(0, Math.min(currentProjectIndex, projects.length - 1));
+    try { await saveProjects(projects); } catch (e) {}
+    buildRail(); ed.remove();
+  };
 }
 
 // Modal Detail View
@@ -1112,7 +1261,7 @@ document.getElementById('closeModal').onclick = closeProject;
 modal.onclick = (e) => { if (e.target === modal) closeProject(); };
 
 // Bottom Ticker Links
-const partners = ['Kristina Vodoley','Mishel Vermishel','Alisa Vostorg','BIONIC','NEW WAWE MUSIC','STOP SMOKE','MULTY CUBE'];
+const partners = ['дизайн','разработка приложений','мини игры','CRM','ВИДЕО','ФОТО КОНТЕНТ','АНИМАЦИЯ','SMM','МАРКЕТИНГ'];
 const row = partners.map(n => '<span>'+n+'</span>').join('');
 document.getElementById('ticker').innerHTML = row + row;
 
@@ -1122,13 +1271,14 @@ const panels = {
     <div class="studio-layout">
       <div class="studio-sidebar">
         <button type="button" data-view="projects">проекты</button>
-        <button type="button" data-view="team">команда</button>
         <button type="button" data-view="capabilities">возможности</button>
+        <button type="button" data-view="team">команда</button>
         <button type="button" data-view="contacts">контакты</button>
-        <button type="button" data-view="intro">заставка</button>
+        <button type="button" data-view="intro">видео</button>
         <button type="button" data-view="partners">партнеры</button>
         <button type="button" data-view="game">игра</button>
         <button type="button" data-view="presentation">презентация</button>
+        <button type="button" data-view="documents">документы</button>
       </div>
       <div class="studio-content" id="studioContent"></div>
     </div>`,
@@ -1137,7 +1287,9 @@ const panels = {
   prices: '<h2>тарифы</h2><div class="svc-list" id="svcList"></div><div class="cartwrap" id="cartWrap"></div>'
 };
 
+let currentTab = '';
 function tab(name) {
+  currentTab = name;
   document.getElementById('panel').innerHTML = panels[name];
   const buttons = [...document.querySelectorAll('#dock button')];
   buttons.forEach((b,i) => {
@@ -1160,11 +1312,13 @@ let morphStep = 0;
 
 function initStudioTab() {
   const btns = document.querySelectorAll('.studio-sidebar button');
+  btns.forEach((b, i) => b.style.setProperty('--wave-i', i));
   btns.forEach(b => b.onclick = () => {
     if (b.dataset.view === 'partners') { window.openStudioPartners(); return; }
     if (b.dataset.view === 'game') { window.openStudioGame(); return; }
     if (b.dataset.view === 'presentation') { window.V3Content.openPresentation(); return; }
     if (b.dataset.view === 'intro') { window.V3Content.openVideoGallery(); return; }
+    if (b.dataset.view === 'documents') { window.V3Content.openDocuments(); return; }
     if (b.dataset.view === 'capabilities') { openCapabilitiesPage(); return; }
     if (b.dataset.view === 'projects') { openProjectsPage(); return; }
     btns.forEach(x => x.classList.remove('active'));
@@ -1221,7 +1375,8 @@ function renderStudioView(view) {
   if (view === 'idea') { /* handled below, also launches scratch */ }
   if (view === 'aes') {
     content.innerHTML = '<div class="capability-intro"><span class="capability-kicker">V³ / ЭСТЕТИКА</span><h2>ВИЗУАЛЬНЫЕ РЕШЕНИЯ КОТОРЫЕ ПРИВЛЕКАЮТ ВНИМАНИЕ</h2><button type="button" class="btn-detail capability-watch" id="aesStart">СМОТРЕТЬ <span aria-hidden="true">↗</span></button></div>';
-    document.getElementById('aesStart').onclick = () => {
+    const showCube = () => {
+    if (!content.isConnected) return;
     content.innerHTML = `
       <div class="cube-stage" id="${content.id === 'capabilitiesContent' ? 'capabilitiesCubeStage' : 'cubeStage'}">
         <div class="cube3" id="${content.id === 'capabilitiesContent' ? 'capabilitiesCube3D' : 'cube3D'}">
@@ -1234,8 +1389,9 @@ function renderStudioView(view) {
     setupCubeInteraction();
     const more = document.getElementById('aesMore');
     more.addEventListener('pointerdown',event=>event.stopPropagation());
-    more.onclick = () => window.openStudioDust();
+    more.onclick = () => window.openStudioDust({ onMore: showCube });
     };
+    document.getElementById('aesStart').onclick = () => window.openStudioDust({ onMore: showCube });
   } else if (view === 'idea') {
     setTimeout(openScratch, 60);
     content.innerHTML = `
@@ -1275,35 +1431,103 @@ function renderStudioView(view) {
       </div>`;
   } else if (view === 'team') {
     team = getTeam();
-    let html = '<div class="team-list">';
+    content.classList.add('top');
+    content.innerHTML = '<div class="team-scroller" id="teamScroller" aria-label="Команда студии"></div>';
+    const scroller = document.getElementById('teamScroller');
     team.forEach((m, idx) => {
-      html += `
-        <div class="team-card">
-          <img class="team-avatar" data-team-avatar="${idx}" alt="${m.name}">
-          <div class="team-info">
-            <div class="team-header">
-              <span class="team-name">${m.name}</span>
-              <button type="button" class="team-expand" data-team-idx="${idx}">+</button>
-            </div>
-            <div class="team-role">${m.role}</div>
-            <div class="team-bio" id="teambio-${idx}">${m.bio}</div>
-          </div>
-        </div>
-      `;
+      const row = document.createElement('button');
+      row.type = 'button'; row.className = 'team-row'; row.dataset.idx = idx;
+      row.innerHTML = '<img class="team-avatar" alt=""><span class="team-row-text"><span class="team-name"></span><span class="team-role"></span></span><span class="team-row-open" aria-hidden="true">+</span>';
+      row.querySelector('.team-name').textContent = m.name;
+      row.querySelector('.team-role').textContent = m.role || '';
+      window.V3Content.bindMedia(row.querySelector('img'), m.avatar || 'logo.png');
+      row.onclick = () => openTeamMember(idx);
+      scroller.appendChild(row);
     });
-    html += '</div>';
-    content.innerHTML = html;
-    content.querySelectorAll('[data-team-avatar]').forEach(image => window.V3Content.bindMedia(image,team[+image.dataset.teamAvatar].avatar || 'logo.png'));
-    
-    document.querySelectorAll('.team-expand').forEach(btn => {
-      btn.onclick = () => {
-        const idx = btn.dataset.teamIdx;
-        const bio = document.getElementById('teambio-' + idx);
-        bio.classList.toggle('open');
-        btn.textContent = bio.classList.contains('open') ? '×' : '+';
-      };
-    });
+    const paintTeam = () => {
+      if (!scroller.isConnected) return;
+      const rows = [...scroller.children];
+      if (!rows.length) return;
+      const rowH = rows[0].offsetHeight + 8;
+      const pad = parseFloat(getComputedStyle(scroller).paddingTop) || 0;
+      const box = scroller.getBoundingClientRect();
+      const windowTop = pad - 4, windowBottom = windowTop + rowH * 3 + 8;
+      rows.forEach(r => {
+        const rr = r.getBoundingClientRect();
+        const mid = rr.top - box.top + rr.height / 2;
+        const outside = mid < windowTop ? windowTop - mid : mid > windowBottom ? mid - windowBottom : 0;
+        const k = Math.max(0, 1 - outside / rowH);
+        r.style.transform = 'scale(' + (0.8 + 0.2 * k).toFixed(3) + ')';
+        r.style.opacity = (0.35 + 0.65 * k).toFixed(3);
+      });
+    };
+    let teamFrame = 0;
+    scroller.onscroll = () => { if (!teamFrame) teamFrame = requestAnimationFrame(() => { teamFrame = 0; paintTeam(); }); };
+    requestAnimationFrame(paintTeam);
   }
+}
+
+// ===== Team member card: view and copy contacts =====
+const teamDefaultsByName = Object.fromEntries(defaultTeam.map(m => [m.name, m]));
+function teamContact(m) {
+  const fallback = teamDefaultsByName[m.name] || {};
+  return { phone: m.phone || fallback.phone || '', telegram: m.telegram || fallback.telegram || '' };
+}
+function telegramParts(value) {
+  const v = String(value || '').trim();
+  if (!v) return null;
+  const handle = v.replace(/^https?:\/\/(t\.me|telegram\.me)\//i, '').replace(/^@/, '').replace(/\/$/, '');
+  if (!/^[\w+]{3,}$/.test(handle)) return { label: v, url: /^https?:\/\//i.test(v) ? v : '' };
+  return { label: '@' + handle, url: 'https://t.me/' + handle };
+}
+function copyText(text) {
+  if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(text);
+  return new Promise((resolve, reject) => {
+    const area = document.createElement('textarea');
+    area.value = text; area.setAttribute('readonly', ''); area.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0';
+    document.body.appendChild(area); area.select(); area.setSelectionRange(0, text.length);
+    let ok = false; try { ok = document.execCommand('copy'); } catch (e) {}
+    area.remove(); ok ? resolve() : reject(new Error('copy'));
+  });
+}
+function openTeamMember(idx) {
+  const m = team[idx]; if (!m) return;
+  const content = document.getElementById('studioContent'); if (!content) return;
+  const old = document.getElementById('teamDetail'); if (old) old.remove();
+  const c = teamContact(m);
+  const tg = telegramParts(c.telegram);
+  const digits = c.phone.replace(/[^\d+]/g, '');
+  const el = document.createElement('div');
+  el.id = 'teamDetail'; el.className = 'team-detail';
+  el.innerHTML = `
+    <div class="team-detail-top"><button type="button" class="btn-detail" id="teamDetailBack">← назад</button><span>команда</span></div>
+    <div class="team-detail-body">
+      <img class="team-detail-avatar" alt="">
+      <div class="team-detail-name"></div>
+      <div class="team-detail-role"></div>
+      <div class="team-detail-bio"></div>
+      <div class="team-contacts"></div>
+    </div>`;
+  el.querySelector('.team-detail-name').textContent = m.name;
+  el.querySelector('.team-detail-role').textContent = m.role || '';
+  el.querySelector('.team-detail-bio').textContent = m.bio || '';
+  window.V3Content.bindMedia(el.querySelector('img'), m.avatar || 'logo.png');
+  const box = el.querySelector('.team-contacts');
+  const addRow = (label, value, href) => {
+    const row = document.createElement('div'); row.className = 'team-contact-row';
+    const info = document.createElement(href ? 'a' : 'div'); info.className = 'team-contact-info';
+    if (href) { info.href = href; if (/^https?:/.test(href)) { info.target = '_blank'; info.rel = 'noreferrer'; } }
+    info.innerHTML = '<small></small><span></span>';
+    info.querySelector('small').textContent = label; info.querySelector('span').textContent = value;
+    const copy = document.createElement('button'); copy.type = 'button'; copy.className = 'team-copy'; copy.textContent = 'копировать';
+    copy.onclick = () => copyText(value).then(() => { copy.textContent = 'скопировано ✓'; copy.classList.add('done'); setTimeout(() => { copy.textContent = 'копировать'; copy.classList.remove('done'); }, 1800); }, () => { copy.textContent = 'не удалось'; });
+    row.append(info, copy); box.appendChild(row);
+  };
+  if (c.phone) addRow('телефон', c.phone, digits ? 'tel:' + digits : '');
+  if (tg) addRow('telegram', tg.label, tg.url);
+  if (!c.phone && !tg) box.innerHTML = '<div class="team-contact-empty">Контакты скоро появятся</div>';
+  content.appendChild(el);
+  document.getElementById('teamDetailBack').onclick = () => el.remove();
 }
 
 // ===== Fullscreen "Эффект": 3 website designs, then return =====
@@ -1398,6 +1622,7 @@ function fxFill(t) {
   document.querySelectorAll('#fxDots i').forEach((d,i) => d.classList.toggle('on', i === fxStep));
   fxBtn.textContent = fxStep === fxThemes.length - 1 ? 'ВЕРНУТЬСЯ' : 'ДАЛЕЕ →';
   fxSite.scrollTop = 0;
+  if (window.V3FxPlus) window.V3FxPlus.enter(t, fxStep);
 }
 function openFx() {
   clearTimeout(fxCloseTimer);
@@ -1411,6 +1636,7 @@ function openFx() {
 }
 function closeFx() {
   stopFxVideo();
+  if (window.V3FxPlus) window.V3FxPlus.leave();
   fxo.classList.remove('vis');
   fxCloseTimer = setTimeout(() => fxo.classList.remove('on'), 520);
 }
@@ -1421,13 +1647,14 @@ fxBtn.onclick = () => {
   fxSite.classList.add('swap');
   fxStep++;
   const next = fxThemes[fxStep];
+  if (window.V3FxPlus) window.V3FxPlus.wipe(next.cls);
   fxo.classList.remove(...fxThemes.map(t => t.cls));
   fxo.classList.add(next.cls);
   setTimeout(() => {
     fxFill(next);
     fxSite.classList.remove('swap');
     fxBusy = false;
-  }, 300);
+  }, 380);
 };
 
 // ===== Scratch card "Креатив" =====
@@ -1599,7 +1826,27 @@ const defaultServices = [
 function getServices() {
   try { const s = localStorage.getItem('v3_services'); return s ? JSON.parse(s) : JSON.parse(JSON.stringify(defaultServices)); } catch(e) { return JSON.parse(JSON.stringify(defaultServices)); }
 }
-function saveServices(a) { try { localStorage.setItem('v3_services', JSON.stringify(a)); } catch(e){} }
+function saveServices(a) {
+  try { return window.V3Content.write('v3_services', a); }
+  catch(e) { return Promise.reject(e); }
+}
+function flashSave(button, ok, label) {
+  if (!button) return;
+  const idle = button.dataset.idleLabel || button.textContent;
+  button.dataset.idleLabel = idle;
+  button.disabled = false;
+  button.classList.remove('is-saving', 'is-saved', 'is-failed');
+  button.classList.add(ok ? 'is-saved' : 'is-failed');
+  button.textContent = label || (ok ? 'Сохранено ✓' : 'Ошибка');
+  clearTimeout(button._flashTimer);
+  button._flashTimer = setTimeout(() => { button.classList.remove('is-saved', 'is-failed'); button.textContent = idle; }, ok ? 2600 : 4200);
+}
+function markSaving(button) {
+  if (!button) return;
+  button.dataset.idleLabel = button.dataset.idleLabel || button.textContent;
+  button.classList.remove('is-saved', 'is-failed');
+  button.classList.add('is-saving'); button.disabled = true; button.textContent = 'Сохраняем…';
+}
 let services = getServices();
 let cart = [];
 try { cart = JSON.parse(localStorage.getItem('v3_cart') || '[]'); } catch(e) {}
@@ -1652,14 +1899,18 @@ function renderPrices() {
       sv.title = card.querySelector('[data-f=title]').value;
       sv.desc = card.querySelector('[data-f=desc]').value;
       sv.price = card.querySelector('[data-f=price]').value;
-      saveServices(services); renderPrices();
+      card.querySelector('.svc-name').textContent = sv.title;
+      card.querySelector('.svc-price').textContent = fmtPrice(sv.price);
+      markSaving(b);
+      saveServices(services).then(r => flashSave(b, true, r && r.local ? 'Сохранено ✓' : 'Сохранено ✓'), e => flashSave(b, false, 'Не сохранено'));
+      renderCartBar();
     } else if (act === 'del') {
       services = services.filter(x => x.id !== id);
-      saveServices(services); renderPrices();
+      saveServices(services).catch(() => {}); renderPrices();
     } else if (act === 'new') {
       const nid = Math.max(0, ...services.map(x => x.id)) + 1;
       services.push({ id:nid, title:'Новая опция', price:'', desc:'Описание' });
-      openSvc.add(nid); saveServices(services); renderPrices();
+      openSvc.add(nid); saveServices(services).catch(() => {}); renderPrices();
       list.scrollTop = list.scrollHeight;
     }
   };
@@ -1748,6 +1999,14 @@ function typeInto(el, text) {
 
 // ===== Cabinet: login / registration / admin =====
 let authMode = 'login';
+const ADMIN_HASH = 'e55d127f641752b548af4e7b42a6280fb6a701c16101d740c6c640714879ceef';
+async function adminHashMatches(pass) {
+  try {
+    const bytes = new TextEncoder().encode('v3-studio:' + pass);
+    const digest = await crypto.subtle.digest('SHA-256', bytes);
+    return [...new Uint8Array(digest)].map(b => b.toString(16).padStart(2, '0')).join('') === ADMIN_HASH;
+  } catch (e) { return false; }
+}
 function getUsers() { try { return JSON.parse(localStorage.getItem('v3_users') || '[]'); } catch(e) { return []; } }
 function getCurUser() { try { return JSON.parse(localStorage.getItem('v3_cur') || 'null'); } catch(e) { return null; } }
 
@@ -1785,10 +2044,18 @@ function renderCabinet() {
   document.getElementById('modeReg').onclick = () => { authMode = 'reg'; renderCabinet(); };
 
   if (authMode === 'login') {
-    document.getElementById('doLogin').onclick = () => {
+    document.getElementById('doLogin').onclick = async () => {
       const login = document.getElementById('aLogin').value.trim();
       const pass = document.getElementById('aPass').value;
-      if (login.toLowerCase() === 'vlad' && pass === '1986') { isAdmin = true; renderCabinet(); return; }
+      if (login.toLowerCase() === 'vlad' && pass) {
+        const btn = document.getElementById('doLogin');
+        btn.disabled = true; btn.textContent = 'Проверяем…';
+        const res = await window.V3Sync.verifyAdmin(login, pass);
+        const offlineOk = !res.reachable && await adminHashMatches(pass);
+        btn.disabled = false; btn.textContent = 'Войти';
+        if (res.ok || offlineOk) { isAdmin = true; window.V3Sync.setAdmin(pass); renderCabinet(); return; }
+        return err('Неверный пароль администратора.');
+      }
       if (!login || !pass) return err('Введите юзернейм или телефон и пароль.');
       const u = getUsers().find(x => x.login.toLowerCase() === login.toLowerCase() && x.pass === pass);
       if (!u) return err('Неверные данные. Проверьте логин и пароль или зарегистрируйтесь.');
@@ -1818,8 +2085,11 @@ function renderAdmin(box, log) {
   const c = getContactInfo();
   team = getTeam();
   box.innerHTML = `
-    <div class="bubble admin-badge">✓ Режим администратора активен</div>
-    <div style="font-size:11px;color:#aaa;margin-top:4px">Тарифы: откройте вкладку «тарифы» — там можно менять тексты, ставить цены, добавлять и удалять опции.</div>
+    <div class="admin-topbar">
+      <div class="bubble admin-badge">✓ Режим администратора</div>
+      <button type="button" id="logoutAdminTop" class="admin-btn admin-exit">Выйти</button>
+    </div>
+    <div style="font-size:11px;color:#aaa;margin-top:4px">Тарифы: откройте вкладку «тарифы», там можно менять тексты и цены, добавлять и удалять опции. Проекты удобно править прямо в разделе «О нас → Проекты».</div>
 
     <div style="font-size:11px;color:#aaa;font-weight:500;margin-top:8px">1. Проект #${currentP.id + 1} (${esc(currentP.title)})</div>
     <input type="text" id="editTitle" class="admin-input" value="${esc(currentP.title)}" placeholder="Название проекта" />
@@ -1830,12 +2100,18 @@ function renderAdmin(box, log) {
     <textarea id="editDesc" class="admin-input" rows="2" placeholder="Полное описание">${esc(currentP.desc || '')}</textarea>
     <input type="text" id="editFree" class="admin-input" value="${esc(currentP.free || '')}" placeholder="Свободное поле" />
 
-    <div style="font-size:11px;color:#aaa;font-weight:500;margin-top:8px">2. Команда</div>
+    <div style="font-size:11px;color:#aaa;font-weight:500;margin-top:8px">2. Команда (${team.length})</div>
     ${team.map((m, i) => `
-      <input type="text" id="tn${i}" class="admin-input" value="${esc(m.name)}" placeholder="Имя" />
-      <input type="text" id="tr${i}" class="admin-input" value="${esc(m.role)}" placeholder="Должность" />
-      <input type="text" id="ta${i}" class="admin-input" value="${esc(m.avatar || '')}" placeholder="Аватар (URL/путь)" />
-      <textarea id="tb${i}" class="admin-input" rows="2" placeholder="Описание">${esc(m.bio || '')}</textarea>`).join('<div style="height:1px;background:rgba(255,255,255,.12)"></div>')}
+      <div class="admin-team-member">
+        <div class="admin-team-head"><span>Участник ${i + 1}</span><button type="button" class="admin-btn admin-team-remove" data-team-remove="${i}">Убрать</button></div>
+        <input type="text" id="tn${i}" class="admin-input" value="${esc(m.name)}" placeholder="Имя" />
+        <input type="text" id="tr${i}" class="admin-input" value="${esc(m.role)}" placeholder="Должность" />
+        <input type="tel" id="tp${i}" class="admin-input" value="${esc(teamContact(m).phone)}" placeholder="Телефон" />
+        <input type="text" id="tt${i}" class="admin-input" value="${esc(teamContact(m).telegram)}" placeholder="Telegram (@username или https://t.me/...)" />
+        <input type="text" id="ta${i}" class="admin-input" value="${esc(m.avatar || '')}" placeholder="Аватар (URL/путь)" />
+        <textarea id="tb${i}" class="admin-input" rows="2" placeholder="Описание">${esc(m.bio || '')}</textarea>
+      </div>`).join('')}
+    <button type="button" id="addTeamMember" class="admin-btn">+ Добавить участника</button>
 
     <div style="font-size:11px;color:#aaa;font-weight:500;margin-top:8px">3. Контакты</div>
     <input type="text" id="cAddr" class="admin-input" value="${esc(c.address)}" placeholder="Адрес" />
@@ -1848,12 +2124,39 @@ function renderAdmin(box, log) {
       <button type="button" id="saveAdminBtn" class="admin-btn" style="flex:1">Сохранить всё</button>
       <button type="button" id="logoutAdminBtn" class="admin-btn" style="width:70px">Выйти</button>
     </div>`;
-  log.innerHTML = '<div class="bubble">Изменения и загруженные файлы сохраняются только на этом устройстве.</div>';
+  const serverNote = window.V3Sync.status() === 'ok'
+    ? 'Изменения и загруженные файлы сохраняются на сервере и видны всем посетителям.'
+    : 'Сервер пока недоступен: изменения сохранятся только на этом устройстве.';
+  log.innerHTML = '<div class="bubble"></div>';
+  log.firstChild.textContent = serverNote;
   box.insertAdjacentHTML('beforeend',window.V3Content.gameSummary('VLAD'));
   window.V3Content.attachAdmin(box,currentP,projects,team);
+  window.V3Content.attachAdminSections(box);
   window.V3Sound.attachAdmin(box);
   const v = id => document.getElementById(id).value;
-  document.getElementById('saveAdminBtn').onclick = () => {
+  const collectTeam = () => team.forEach((m, i) => {
+    m.name = v('tn'+i); m.role = v('tr'+i); m.avatar = v('ta'+i); m.bio = v('tb'+i);
+    m.phone = v('tp'+i).trim(); m.telegram = v('tt'+i).trim();
+  });
+  document.getElementById('addTeamMember').onclick = () => {
+    collectTeam();
+    const nid = Math.max(-1, ...team.map(m => +m.id || 0)) + 1;
+    team.push({ id: nid, name: 'НОВЫЙ УЧАСТНИК', role: '', avatar: 'logo.png', bio: '', phone: '', telegram: '' });
+    saveTeam(team).catch(() => {});
+    renderCabinet();
+    const last = document.getElementById('tn' + (team.length - 1));
+    if (last) { last.scrollIntoView({ block: 'center' }); last.focus(); last.select(); }
+  };
+  box.querySelectorAll('[data-team-remove]').forEach(btn => btn.onclick = () => {
+    const i = +btn.dataset.teamRemove;
+    if (!confirm('Убрать «' + (team[i] && team[i].name) + '» из команды?')) return;
+    collectTeam();
+    team.splice(i, 1);
+    saveTeam(team).catch(() => {});
+    renderCabinet();
+  });
+  document.getElementById('saveAdminBtn').onclick = async () => {
+    const btn = document.getElementById('saveAdminBtn');
     try {
     currentP.title = v('editTitle'); currentP.img = v('editCover'); currentP.shortText = v('editShort');
     currentP.link = v('editLink'); currentP.desc = v('editDesc'); currentP.free = v('editFree');
@@ -1864,24 +2167,43 @@ function renderAdmin(box, log) {
       ...previousMedia.filter(m=>m.type==='video' && !currentP.gallery.includes(m.src))
     ];
     currentP.links = [...new Set([currentP.link,...v('editMoreLinks').split('\n')].map(url=>url.trim()).filter(url=>/^https?:\/\//i.test(url)))];
-    saveProjects(projects);
-    team.forEach((m, i) => { m.name = v('tn'+i); m.role = v('tr'+i); m.avatar = v('ta'+i); m.bio = v('tb'+i); });
-    saveTeam(team);
-    try { localStorage.setItem('v3_contacts', JSON.stringify({ address:v('cAddr'), phone:v('cPhone'), telegram:v('cTg'), whatsapp:v('cWa'), instagram:v('cIg') })); } catch(e){}
+    collectTeam();
+    markSaving(btn);
+    const jobs = [
+      saveProjects(projects),
+      saveTeam(team),
+      window.V3Content.write('v3_contacts', { address:v('cAddr'), phone:v('cPhone'), telegram:v('cTg'), whatsapp:v('cWa'), instagram:v('cIg') })
+    ];
     buildRail();
-    log.innerHTML = '<div class="bubble" style="border-color:#4ade80;color:#4ade80">Данные успешно сохранены!</div>';
+    const results = await Promise.all(jobs);
+    const local = results.some(r => r && r.local);
+    flashSave(btn, true, 'Сохранено ✓');
+    log.innerHTML = '<div class="bubble" style="border-color:#4ade80;color:#4ade80"></div>';
+    log.firstChild.textContent = local ? 'Данные сохранены на этом устройстве.' : 'Данные сохранены на сервере ✓';
     } catch(error) {
-      log.innerHTML = '<div class="bubble"></div>';
+      flashSave(btn, false, 'Не сохранено');
+      log.innerHTML = '<div class="bubble" style="border-color:#ef4444;color:#ef4444"></div>';
       log.firstChild.textContent = error.message;
     }
   };
-  document.getElementById('logoutAdminBtn').onclick = () => { isAdmin = false; renderCabinet(); };
+  const logout = () => { isAdmin = false; window.V3Sync.clearAdmin(); renderCabinet(); };
+  document.getElementById('logoutAdminBtn').onclick = logout;
+  document.getElementById('logoutAdminTop').onclick = logout;
 }
 
 
 document.querySelectorAll('#dock button').forEach(b => b.onclick = () => tab(b.dataset.tab));
 
 // Narrow bridge: local content/game modules do not reach into other UI state.
+window.addEventListener('v3:synced', () => {
+  projects = getProjects(); team = getTeam(); services = getServices();
+  if (currentProjectIndex >= projects.length) currentProjectIndex = 0;
+  if (isAdmin) return;
+  if (document.getElementById('projPage') && !document.getElementById('projEditor')) buildRail();
+  if (currentTab === 'prices') renderPrices();
+  if (currentTab === 'studio' && document.getElementById('teamScroller') && !document.getElementById('teamDetail')) renderStudioView('team');
+});
+
 window.V3StudioData = {
   isAdmin:() => isAdmin,
   getUser:() => isAdmin ? { login:'VLAD',name:'VLAD' } : getCurUser(),

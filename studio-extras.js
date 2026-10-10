@@ -84,10 +84,41 @@
       wheel.scrollTop = cycle;
       paint();
     }
-    wheel.onscroll = () => { if (!scheduled) scheduled = requestAnimationFrame(paint); };
-    const observer = new ResizeObserver(resize); observer.observe(wheel);
-    resize();
-    screen.onCleanup(() => { observer.disconnect(); cancelAnimationFrame(scheduled); });
+    // Very slow automatic drift upwards; a finger flick adds speed that eases back to the base drift.
+    const BASE = matchMedia('(prefers-reduced-motion:reduce)').matches ? 0 : 0.22; // px per frame
+    let pos = 0, speed = BASE, userActive = false, idleTimer = 0, lastTop = 0, lastTime = 0, flick = 0, autoRaf = 0, prevNow = 0;
+    const markUser = () => {
+      userActive = true; clearTimeout(idleTimer);
+      idleTimer = setTimeout(() => { userActive = false; pos = wheel.scrollTop; speed = Math.max(BASE, Math.min(14, flick)); flick = 0; }, 160);
+    };
+    ['touchstart','touchmove','wheel','pointerdown'].forEach(type => wheel.addEventListener(type, markUser, { passive:true }));
+    wheel.addEventListener('touchend', markUser, { passive:true });
+    function drift(now) {
+      autoRaf = requestAnimationFrame(drift);
+      if (!screen.page.isConnected) return;
+      const dt = prevNow ? Math.min(3, (now - prevNow) / 16.667) : 1; prevNow = now;
+      if (userActive || document.hidden) return;
+      speed += (BASE - speed) * (1 - Math.pow(0.975, dt));
+      pos += speed * dt;
+      if (pos > cycle * 1.5) pos -= cycle;
+      else if (pos < cycle * .5) pos += cycle;
+      wheel.scrollTop = pos;
+    }
+    wheel.onscroll = () => {
+      const now = performance.now(), top = wheel.scrollTop;
+      if (userActive && lastTime) {
+        const frames = Math.max(0.5, (now - lastTime) / 16.667);
+        const v = (top - lastTop) / frames;
+        if (Math.abs(top - lastTop) < cycle * .4) flick = flick * 0.4 + v * 0.6;
+        markUser();
+      }
+      lastTop = top; lastTime = now;
+      if (!scheduled) scheduled = requestAnimationFrame(paint);
+    };
+    const observer = new ResizeObserver(() => { resize(); pos = wheel.scrollTop; }); observer.observe(wheel);
+    resize(); pos = wheel.scrollTop;
+    autoRaf = requestAnimationFrame(drift);
+    screen.onCleanup(() => { observer.disconnect(); cancelAnimationFrame(scheduled); cancelAnimationFrame(autoRaf); clearTimeout(idleTimer); });
   };
 
   window.openStudioGame = () => {

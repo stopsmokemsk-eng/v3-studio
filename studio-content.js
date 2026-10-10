@@ -5,10 +5,23 @@
   let database;
   const escape = value => String(value == null ? '' : value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   function read(key, fallback) { try { const value = localStorage.getItem(key); return value ? JSON.parse(value) : fallback; } catch(e) { return fallback; } }
+  let toastTimer = 0;
+  function toast(message, kind = '') {
+    let el = document.getElementById('v3Toast');
+    if (!el) { el = document.createElement('div'); el.id = 'v3Toast'; el.className = 'v3-toast'; el.setAttribute('role','status'); document.body.appendChild(el); }
+    el.textContent = message; el.className = 'v3-toast on ' + kind;
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('on'), kind === 'is-error' ? 5200 : 2200);
+  }
   function write(key, value) {
     try { localStorage.setItem(key, JSON.stringify(value)); }
     catch(e) { throw new Error('Не удалось сохранить данные в этом браузере. Проверьте свободное место и настройки приватности.'); }
+    const sync = window.V3Sync;
+    if (!sync || !sync.isAdmin() || !sync.KEYS.includes(key)) return Promise.resolve({ ok:true,local:true });
+    const pending = sync.push(key,value);
+    pending.then(() => toast('Сохранено на сервере ✓','is-ok'), e => toast(e.message,'is-error'));
+    return pending;
   }
+  const serverMode = () => !!(window.V3Sync && window.V3Sync.isAdmin() && window.V3Sync.status() !== 'offline');
   function db() {
     if (database) return database;
     database = new Promise((resolve,reject) => {
@@ -26,6 +39,7 @@
     const type = file.type.startsWith('image/') ? 'image' : file.type.startsWith('video/') ? 'video' :
       file.type.startsWith('audio/') || (allowed.includes('audio') && /\.(mp3|m4a|aac|wav|ogg|flac|opus)$/i.test(file.name)) ? 'audio' : '';
     if (!allowed.includes(type)) throw new Error(allowed.includes('audio') ? 'Выберите аудиофайл.' : 'Выберите файл подходящего типа: фото или видео.');
+    if (serverMode()) { const uploaded = await window.V3Sync.uploadFile(file,type + 's'); return { src:uploaded.src,type,name:file.name }; }
     if (file.size > 150 * 1024 * 1024) throw new Error('Файл больше 150 МБ. Сожмите видео или добавьте прямую ссылку на него.');
     const id = 'f-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,10);
     const connection = await db();
@@ -38,6 +52,7 @@
     return { src:'v3media:' + id,type,name:file.name };
   }
   async function removeFile(source) {
+    if (/^https:/.test(source || '') && window.V3Sync) { await window.V3Sync.removeRemote(source); return; }
     if (!source?.startsWith('v3media:')) return;
     const id = source.slice(8);
     const connection = await db();
@@ -114,10 +129,12 @@
     const files = [...input.files]; if (!files.length) return;
     const locks = [...parent.querySelectorAll('select,button,input[type="file"]')].map(element=>({element,disabled:element.disabled}));
     locks.forEach(({element})=>element.disabled=true);
-    input.disabled = true; notice(parent,'Сохраняем файлы на этом устройстве…');
+    const remote = serverMode();
+    input.disabled = true; notice(parent,remote ? 'Загружаем файлы на сервер…' : 'Сохраняем файлы на этом устройстве…');
     try {
-      for (const file of files) await done(await storeFile(file,allowed));
-      notice(parent,'Сохранено на этом устройстве.');
+      let n = 0;
+      for (const file of files) { if (remote && files.length > 1) notice(parent,'Загружаем на сервер: ' + (++n) + ' из ' + files.length + '…'); await done(await storeFile(file,allowed)); }
+      notice(parent,remote ? 'Файлы загружены на сервер ✓' : 'Сохранено на этом устройстве.');
     } catch(e) { notice(parent,e.message,true); }
     finally { locks.forEach(({element,disabled})=>element.disabled=disabled); input.disabled = false; input.value = ''; }
   }
@@ -125,7 +142,92 @@
     const saved = read('v3_intro_videos',null);
     return Array.isArray(saved) && saved.length ? saved : [{ src:'ink.mp4',type:'video',name:'Заставка V³ Studio',poster:'frames/f01.jpg' }];
   }
-  function setVideos(items) { write('v3_intro_videos',items); }
+  function setVideos(items) { return write('v3_intro_videos',items); }
+  function getDocuments() { const saved = read('v3_documents',[]); return Array.isArray(saved) ? saved : []; }
+  function setDocuments(items) { return write('v3_documents',items); }
+  function formatSize(bytes) {
+    if (!bytes) return '';
+    const mb = bytes / 1048576;
+    return mb >= 1 ? mb.toFixed(1).replace('.',',') + ' МБ' : Math.max(1,Math.round(bytes / 1024)) + ' КБ';
+  }
+  function docExt(item) { const m = String(item.name || item.src || '').match(/\.([a-z0-9]{1,5})(?:[?#]|$)/i); return m ? m[1].toUpperCase() : 'FILE'; }
+  function openDocuments() {
+    const screen = openContentScreen('ДОКУМЕНТЫ');
+    const items = getDocuments();
+    if (!items.length) {
+      const empty = document.createElement('div'); empty.className = 'content-empty';
+      empty.innerHTML = '<span>V³ / ДОКУМЕНТЫ</span><h2>Скоро здесь.</h2><p>Документы пока не добавлены.</p>';
+      screen.body.appendChild(empty); return;
+    }
+    const list = document.createElement('div'); list.className = 'doc-list';
+    items.forEach(item => {
+      const row = document.createElement('a'); row.className = 'doc-row'; row.target = '_blank'; row.rel = 'noreferrer';
+      resolveSource(item.src).then(url => { row.href = url; }).catch(() => {});
+      row.innerHTML = '<span class="doc-ext"></span><span class="doc-meta"><b></b><small></small></span><span class="doc-open" aria-hidden="true">↗</span>';
+      row.querySelector('.doc-ext').textContent = docExt(item);
+      row.querySelector('b').textContent = item.title || item.name || 'Документ';
+      row.querySelector('small').textContent = [formatSize(item.size), item.date ? new Date(item.date).toLocaleDateString('ru-RU') : ''].filter(Boolean).join(' · ');
+      list.appendChild(row);
+    });
+    screen.body.appendChild(list);
+  }
+  async function storeDocument(file) {
+    if (serverMode()) { const up = await window.V3Sync.uploadFile(file,'documents'); return { src:up.src,type:'document',name:file.name,size:file.size,date:new Date().toISOString() }; }
+    if (file.size > 150 * 1024 * 1024) throw new Error('Файл больше 150 МБ.');
+    const id = 'f-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,10);
+    const connection = await db();
+    await new Promise((resolve,reject) => {
+      const tx = connection.transaction('files','readwrite');
+      tx.objectStore('files').put({ id,blob:file,name:file.name,type:'document',size:file.size });
+      tx.oncomplete = resolve; tx.onerror = tx.onabort = () => reject(new Error('Файл не сохранён.'));
+    });
+    return { src:'v3media:' + id,type:'document',name:file.name,size:file.size,date:new Date().toISOString() };
+  }
+  function adminPanel(box, id, title) {
+    const panel = document.createElement('section'); panel.id = id; panel.className = 'admin-section-panel';
+    const head = document.createElement('div'); head.className = 'admin-section-title'; head.textContent = title;
+    panel.appendChild(head); box.appendChild(panel); return panel;
+  }
+  function attachAdminSections(box) {
+    if (!window.V3StudioData.isAdmin()) return;
+    // ВИДЕО
+    const videoPanel = adminPanel(box,'adminVideoPanel','Раздел «Видео»');
+    const videoList = document.createElement('div'); videoList.className = 'admin-media-list'; videoPanel.appendChild(videoList);
+    const drawVideos = () => mediaList(videoList,getVideos(),i => {
+      const items = getVideos(); const [gone] = items.splice(i,1); setVideos(items); if (gone && gone.src !== 'ink.mp4') removeFile(gone.src).catch(()=>{}); drawVideos();
+    });
+    drawVideos();
+    const vUp = uploadControl('Загрузить видео в раздел «Видео»','video/*',true); vUp.input.id = 'adminVideoFiles';
+    vUp.input.onchange = () => uploadBatch(vUp.input,['video'],async item => { const items = getVideos(); items.push(item); await setVideos(items); drawVideos(); },videoPanel);
+    const vOpen = document.createElement('button'); vOpen.type = 'button'; vOpen.className = 'admin-btn'; vOpen.textContent = 'Открыть раздел «Видео»'; vOpen.onclick = openVideoGallery;
+    videoPanel.append(vUp.el,vOpen);
+    // ДОКУМЕНТЫ
+    const docPanel = adminPanel(box,'adminDocsPanel','Раздел «Документы»');
+    const docList = document.createElement('div'); docList.className = 'admin-media-list'; docPanel.appendChild(docList);
+    const drawDocs = () => {
+      docList.replaceChildren();
+      getDocuments().forEach((item,i) => {
+        const row = document.createElement('div'); row.className = 'admin-media-row';
+        const label = document.createElement('span'); label.textContent = docExt(item) + ' / ' + (item.name || ('документ ' + (i + 1)));
+        const del = document.createElement('button'); del.type = 'button'; del.className = 'admin-btn'; del.textContent = 'Удалить';
+        del.onclick = () => { const items = getDocuments(); const [gone] = items.splice(i,1); setDocuments(items); if (gone) removeFile(gone.src).catch(()=>{}); drawDocs(); };
+        row.append(label,del); docList.appendChild(row);
+      });
+    };
+    drawDocs();
+    const dUp = uploadControl('Загрузить документы','.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.rtf,.csv,.zip,.key,.pages,.numbers,image/*',true); dUp.input.id = 'adminDocFiles';
+    dUp.input.onchange = async () => {
+      const files = [...dUp.input.files]; if (!files.length) return;
+      dUp.input.disabled = true; notice(docPanel,serverMode() ? 'Загружаем документы на сервер…' : 'Сохраняем документы…');
+      try {
+        for (const file of files) { const item = await storeDocument(file); const items = getDocuments(); items.push(item); await setDocuments(items); drawDocs(); }
+        notice(docPanel,serverMode() ? 'Документы загружены на сервер ✓' : 'Сохранено на этом устройстве.');
+      } catch(e) { notice(docPanel,e.message,true); }
+      finally { dUp.input.disabled = false; dUp.input.value = ''; }
+    };
+    const dOpen = document.createElement('button'); dOpen.type = 'button'; dOpen.className = 'admin-btn'; dOpen.textContent = 'Открыть раздел «Документы»'; dOpen.onclick = openDocuments;
+    docPanel.append(dUp.el,dOpen);
+  }
   function closePlayer() {
     const root = document.getElementById('studioVideoPlayer');
     if (!root) return;
@@ -188,17 +290,17 @@
     return controls;
   }
   function openVideoGallery() {
-    const screen = openContentScreen('ЗАСТАВКА / ВИДЕО');
+    const screen = openContentScreen('ВИДЕО');
     const admin = window.V3StudioData.isAdmin();
     const grid = document.createElement('div'); grid.className = 'content-video-grid'; screen.body.appendChild(grid);
     getVideos().forEach((item,i) => appendVideoCard(grid,item,admin && item.src !== 'ink.mp4' ? () => {
       const items = getVideos(); items.splice(i,1); setVideos(items); openVideoGallery();
     } : null));
     if (admin) videoControls(screen.root,screen.body,async item => {
-      const items = getVideos(); items.push(item); setVideos(items);
+      const items = getVideos(); items.push(item); await setVideos(items);
       appendVideoCard(grid,item,() => { setVideos(getVideos().filter(v=>v.src!==item.src)); openVideoGallery(); });
     });
-    const note = document.createElement('p'); note.className = 'content-local-note'; note.textContent = 'Загруженные файлы сохраняются только на этом устройстве.'; if (admin) screen.body.appendChild(note);
+    const note = document.createElement('p'); note.className = 'content-local-note'; note.textContent = serverMode() ? 'Загруженные файлы сохраняются на сервере.' : 'Загруженные файлы сохраняются только на этом устройстве.'; if (admin) screen.body.appendChild(note);
   }
   function openPresentation() {
     const screen = openContentScreen('ПРЕЗЕНТАЦИЯ',true);
@@ -256,7 +358,7 @@
       },box);
     });
     const shortcuts = document.createElement('div'); shortcuts.className = 'content-admin-shortcuts';
-    const intro = document.createElement('button'); intro.type = 'button'; intro.className = 'admin-btn'; intro.textContent = 'Видео заставки'; intro.onclick = openVideoGallery;
+    const intro = document.createElement('button'); intro.type = 'button'; intro.className = 'admin-btn'; intro.textContent = 'Раздел «Видео»'; intro.onclick = openVideoGallery;
     const presentation = document.createElement('button'); presentation.type = 'button'; presentation.className = 'admin-btn'; presentation.textContent = 'Видео презентации'; presentation.onclick = openPresentation;
     shortcuts.append(intro,presentation); box.appendChild(shortcuts);
   }
@@ -274,7 +376,8 @@
       : '<p>Пока нет сохранённых результатов.</p>') + '</div>';
   }
   window.V3Content = {
-    bindMedia,resolveSource,getProjectMedia,attachAdmin,openVideoGallery,openPresentation,
+    bindMedia,resolveSource,getProjectMedia,attachAdmin,attachAdminSections,openVideoGallery,openPresentation,openDocuments,
+    getDocuments,uploadControl,uploadBatch,notice,toast,mediaList,
     scoreRecord,saveScore,gameSummary,escape,
     read,write,storeFile,removeFile
   };
