@@ -1,0 +1,45 @@
+/* Isolated optional soundtrack controls. No global theme or navigation changes. */
+#studioSoundToggle {
+  position:fixed; top:max(8px,env(safe-area-inset-top,0px)); right:max(8px,env(safe-area-inset-right,0px));
+  z-index:74; width:42px; height:42px; border:1px solid rgba(243,243,241,.35);
+  border-radius:50%; background:rgba(12,12,12,.92); color:#f3f3f1;
+  display:flex; align-items:center; justify-content:center; gap:2px;
+  cursor:pointer; box-shadow:0 2px 14px rgba(0,0,0,.1);
+}
+#studioSoundToggle i { width:2px; height:4px; background:currentColor; border-radius:2px; }
+#studioSoundToggle i:nth-child(2),#studioSoundToggle i:nth-child(4) { height:10px; }
+#studioSoundToggle i:nth-child(3) { height:15px; }
+#studioSoundToggle::after { content:""; position:absolute; width:22px; height:1px; background:currentColor; transform:rotate(-45deg); opacity:.8; }
+#studioSoundToggle[aria-pressed="true"]::after { opacity:0; }
+#studioSoundToggle[data-playing="true"] i { animation:studioSoundWave 1.4s ease-in-out infinite alternate; }
+#studioSoundToggle i:nth-child(2) { animation-delay:-.7s; }
+#studioSoundToggle i:nth-child(3) { animation-delay:-.35s; }
+#studioSoundToggle i:nth-child(4) { animation-delay:-1s; }
+#studioSoundToggle[data-blocked="true"] { border-style:dashed; }
+#studioSoundToggle:focus-visible,.studio-sound-card button:focus-visible { outline:2px solid #f3f3f1; outline-offset:3px; }
+@keyframes studioSoundWave { to { transform:scaleY(.35); opacity:.55; } }
+/* Reserve the corner instead of covering Pause, Back or demo navigation. */
+body.studio-sound-ready .extra-header,body.studio-sound-ready .content-header { padding-right:60px; }
+body.studio-sound-ready .fx-head { padding-right:max(60px,5.5vw); }
+body.studio-sound-ready .skip-btn,body.studio-sound-ready .scr-close { right:60px; }
+body.studio-sound-ready .project-detail-header { padding-right:60px; }
+.studio-sound-dialog {
+  position:fixed; inset:0; z-index:84; display:flex; align-items:center; justify-content:center;
+  padding:24px 18px; background:rgba(0,0,0,.88); color:#f3f3f1;
+  backdrop-filter:blur(6px); font-family:"IBM Plex Mono",monospace;
+}
+.studio-sound-dialog[hidden] { display:none; }
+.studio-sound-card {
+  width:min(410px,100%); max-height:calc(100dvh - 48px); overflow-y:auto;
+  padding:32px 26px; background:#0c0c0c; border:1px solid rgba(243,243,241,.32); border-radius:22px;
+}
+.studio-sound-kicker { font-size:8px; letter-spacing:.18em; color:#777; }
+.studio-sound-card h2 { margin:26px 0 18px; font:400 clamp(21px,6vw,28px)/1.35 "IBM Plex Mono",monospace; letter-spacing:-.035em; }
+.studio-sound-card p { font-size:11px; line-height:1.9; color:#aaa; }
+.studio-sound-card small { display:block; font-size:9px; line-height:1.8; color:#777; margin-top:18px; }
+.studio-sound-actions { display:flex; gap:12px; margin-top:28px; }
+.studio-sound-actions button { flex:1; min-height:44px; border:1px solid rgba(243,243,241,.45); border-radius:26px; background:transparent; color:#f3f3f1; font:11px "IBM Plex Mono",monospace; letter-spacing:.12em; cursor:pointer; }
+.studio-sound-actions button:first-child { background:#f3f3f1; color:#0c0c0c; }
+.studio-sound-note { position:fixed; top:62px; right:12px; max-width:260px; z-index:75; padding:12px 16px; border:1px solid #555; border-radius:14px; background:#0c0c0c; color:#bbb; font:10px/1.7 "IBM Plex Mono",monospace; }
+.studio-sound-note[hidden] { display:none; }
+@media (prefers-reduced-motion:reduce) { #studioSoundToggle i { animation:none !important; } }
