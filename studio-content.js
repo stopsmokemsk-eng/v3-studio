@@ -23,8 +23,9 @@
     return database;
   }
   async function storeFile(file, allowed = ['image','video']) {
-    const type = file.type.startsWith('image/') ? 'image' : file.type.startsWith('video/') ? 'video' : '';
-    if (!allowed.includes(type)) throw new Error('Выберите файл подходящего типа: фото или видео.');
+    const type = file.type.startsWith('image/') ? 'image' : file.type.startsWith('video/') ? 'video' :
+      file.type.startsWith('audio/') || (allowed.includes('audio') && /\.(mp3|m4a|aac|wav|ogg|flac|opus)$/i.test(file.name)) ? 'audio' : '';
+    if (!allowed.includes(type)) throw new Error(allowed.includes('audio') ? 'Выберите аудиофайл.' : 'Выберите файл подходящего типа: фото или видео.');
     if (file.size > 150 * 1024 * 1024) throw new Error('Файл больше 150 МБ. Сожмите видео или добавьте прямую ссылку на него.');
     const id = 'f-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,10);
     const connection = await db();
@@ -35,6 +36,18 @@
       tx.onerror = tx.onabort = () => reject(new Error('Файл не сохранён. Возможно, на устройстве недостаточно свободного места.'));
     });
     return { src:'v3media:' + id,type,name:file.name };
+  }
+  async function removeFile(source) {
+    if (!source?.startsWith('v3media:')) return;
+    const id = source.slice(8);
+    const connection = await db();
+    await new Promise((resolve,reject) => {
+      const tx = connection.transaction('files','readwrite');
+      tx.objectStore('files').delete(id);
+      tx.oncomplete = resolve;
+      tx.onerror = tx.onabort = () => reject(new Error('Не удалось удалить старый файл.'));
+    });
+    if (urls.has(id)) { URL.revokeObjectURL(urls.get(id)); urls.delete(id); }
   }
   async function resolveSource(source) {
     if (!source) return '';
@@ -263,6 +276,6 @@
   window.V3Content = {
     bindMedia,resolveSource,getProjectMedia,attachAdmin,openVideoGallery,openPresentation,
     scoreRecord,saveScore,gameSummary,escape,
-    read,write
+    read,write,storeFile,removeFile
   };
 })();

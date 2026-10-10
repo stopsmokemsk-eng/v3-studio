@@ -1851,6 +1851,7 @@ function renderAdmin(box, log) {
   log.innerHTML = '<div class="bubble">Изменения и загруженные файлы сохраняются только на этом устройстве.</div>';
   box.insertAdjacentHTML('beforeend',window.V3Content.gameSummary('VLAD'));
   window.V3Content.attachAdmin(box,currentP,projects,team);
+  window.V3Sound.attachAdmin(box);
   const v = id => document.getElementById(id).value;
   document.getElementById('saveAdminBtn').onclick = () => {
     try {

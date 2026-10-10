@@ -3,6 +3,8 @@
   'use strict';
   const source = new URL('audio/v3-soft-circuit.mp3',document.currentScript.src).href;
   const KEY = 'v3_sound_choice';
+  const TRACK_KEY = 'v3_background_track';
+  let currentTrack = null, trackRevision = 0, loadingTrack = true;
   let saved = null;
   try { saved = localStorage.getItem(KEY); } catch(e) {}
   let wanted = saved === 'on', interacted = false, blocked = false, pending = false;
@@ -53,10 +55,12 @@
   function reconcile() {
     if (!audio) return;
     if (!wanted || temporarilyPaused()) { stop(); return; }
-    if (!interacted || pending || !audio.paused) { paint(); return; }
+    if (loadingTrack || !interacted || pending || !audio.paused) { paint(); return; }
     pending = true;
+    const revision = trackRevision;
     audio.volume = 0;
     audio.play().then(() => {
+      if (revision !== trackRevision) return;
       pending = false;
       blocked = false;
       if (!wanted || temporarilyPaused()) { stop(); return; }
@@ -64,6 +68,7 @@
       fadeIn();
       paint();
     }).catch(error => {
+      if (revision !== trackRevision) return;
       pending = false;
       if (!wanted) return;
       if (error.name === 'AbortError') {
@@ -97,6 +102,96 @@
     dialog.hidden = false;
     dialog.querySelector('[data-sound="yes"]').focus();
   }
+  function applyTrack(url, item) {
+    trackRevision++;
+    pending = false;
+    stop();
+    currentTrack = item;
+    audio.src = url;
+    audio.load();
+    blocked = false;
+    loadingTrack = false;
+    reconcile();
+  }
+  async function restoreSavedTrack() {
+    const revision = trackRevision;
+    const item = window.V3Content.read(TRACK_KEY,null);
+    if (!item?.src?.startsWith('v3media:')) { loadingTrack = false; reconcile(); return; }
+    try {
+      const url = await window.V3Content.resolveSource(item.src);
+      if (revision === trackRevision) applyTrack(url,item);
+    } catch(e) {
+      if (revision !== trackRevision) return;
+      loadingTrack = false;
+      showNote('Сохранённый трек недоступен. Используется стандартная музыка.');
+      reconcile();
+    }
+  }
+  function validateAudio(file) {
+    if (!file.size) return Promise.reject(new Error('Выбранный файл пуст.'));
+    if (file.size > 50 * 1024 * 1024) return Promise.reject(new Error('Выберите аудиофайл до 50 МБ.'));
+    if (!file.type.startsWith('audio/') && !/\.(mp3|m4a|aac|wav|ogg|flac|opus)$/i.test(file.name))
+      return Promise.reject(new Error('Выберите аудиофайл, например MP3, M4A или WAV.'));
+    return new Promise((resolve,reject) => {
+      const probe = document.createElement('audio');
+      const url = URL.createObjectURL(file);
+      const finish = error => {
+        clearTimeout(timer); probe.onloadedmetadata = probe.onerror = null;
+        probe.removeAttribute('src'); probe.load(); URL.revokeObjectURL(url);
+        error ? reject(error) : resolve();
+      };
+      const timer = setTimeout(()=>finish(new Error('Не удалось прочитать трек. Попробуйте MP3 или M4A.')),15000);
+      probe.onloadedmetadata = () => finish(Number.isFinite(probe.duration) && probe.duration > 0 ? null : new Error('Не удалось определить длительность трека.'));
+      probe.onerror = () => finish(new Error('Браузер не поддерживает этот файл. Попробуйте MP3 или M4A.'));
+      probe.preload = 'metadata'; probe.src = url;
+    });
+  }
+  function attachAdmin(box) {
+    if (!window.V3StudioData.isAdmin() || box.querySelector('#adminSoundPanel')) return;
+    const panel = document.createElement('section');
+    panel.id = 'adminSoundPanel'; panel.className = 'studio-sound-admin';
+    panel.innerHTML = '<h3>ФОНОВАЯ МУЗЫКА</h3><p class="studio-sound-current"></p><label class="local-upload">ЗАГРУЗИТЬ ФОНОВЫЙ ТРЕК<input id="backgroundMusicFile" type="file" accept="audio/*,.mp3,.m4a,.aac,.wav,.ogg,.flac,.opus"></label><button type="button" class="admin-btn">ВЕРНУТЬ СТАНДАРТНЫЙ ТРЕК</button><small>MP3, M4A, WAV и другие поддерживаемые аудиофайлы · до 50 МБ. Сохраняется автоматически только на этом устройстве и в этом браузере. Для других посетителей музыка не изменится.</small><p class="local-status" role="status" aria-live="polite"></p>';
+    box.querySelector('.admin-badge').after(panel);
+    const input = panel.querySelector('input'), reset = panel.querySelector('button'), status = panel.querySelector('.local-status');
+    const refresh = () => {
+      const item = window.V3Content.read(TRACK_KEY,null);
+      panel.querySelector('.studio-sound-current').textContent = 'Текущий трек: ' + (item?.name || 'V³ / Soft Circuit');
+      reset.disabled = !item;
+    };
+    const lock = value => { input.disabled = value; reset.disabled = value || !window.V3Content.read(TRACK_KEY,null); };
+    const report = (message,error=false) => { status.textContent = message; status.classList.toggle('is-error',error); };
+    input.onchange = async () => {
+      const file = input.files[0]; if (!file || !window.V3StudioData.isAdmin()) return;
+      lock(true); report('Проверяем и сохраняем трек…');
+      let item, committed = false;
+      try {
+        await validateAudio(file);
+        if (!window.V3StudioData.isAdmin()) throw new Error('Войдите в режим администратора снова.');
+        item = await window.V3Content.storeFile(file,['audio']);
+        const url = await window.V3Content.resolveSource(item.src);
+        const previous = window.V3Content.read(TRACK_KEY,null);
+        window.V3Content.write(TRACK_KEY,item); committed = true;
+        applyTrack(url,item);
+        if (previous?.src) window.V3Content.removeFile(previous.src).catch(()=>{});
+        refresh(); report('Трек заменён и сохранён. Включить музыку можно кнопкой в верхнем углу.');
+      } catch(e) {
+        if (item && !committed) window.V3Content.removeFile(item.src).catch(()=>{});
+        report(e.message,true);
+      } finally { lock(false); input.value = ''; }
+    };
+    reset.onclick = () => {
+      if (!window.V3StudioData.isAdmin()) return;
+      try {
+        const previous = window.V3Content.read(TRACK_KEY,null);
+        window.V3Content.write(TRACK_KEY,null);
+        applyTrack(source,null);
+        if (previous?.src) window.V3Content.removeFile(previous.src).catch(()=>{});
+        refresh(); report('Стандартный трек восстановлен.');
+      } catch(e) { report(e.message,true); }
+    };
+    refresh();
+  }
+  window.V3Sound = { attachAdmin };
   function setup() {
     audio = document.createElement('audio');
     audio.id = 'studioBackgroundAudio';
@@ -123,6 +218,7 @@
     note.hidden = true;
     document.body.append(audio,button,dialog,note);
     document.body.classList.add('studio-sound-ready');
+    restoreSavedTrack();
     button.onclick = () => {
       interacted = true;
       if (blocked && wanted) {
