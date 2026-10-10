@@ -12,6 +12,7 @@
 <link rel="apple-touch-icon" href="logo.png" />
 <link rel="preload" href="ink.mp4" as="video" type="video/mp4" />
 <link rel="preload" href="logo.png" as="image" />
+<link rel="stylesheet" href="studio-extras.css" />
 <title>V³ studio</title>
 <meta http-equiv="Cache-Control" content="no-cache" />
 <style>
@@ -672,6 +673,7 @@
   </div>
 </div>
 <script src="studio-globe.js"></script>
+<script src="studio-extras.js"></script>
 <script>
 // Data store for projects & team
 const defaultProjects = [
@@ -1098,6 +1100,8 @@ const panels = {
         <button type="button" data-view="capabilities">возможности</button>
         <button type="button" data-view="contacts">контакты</button>
         <button type="button" data-view="intro">заставка</button>
+        <button type="button" data-view="partners">партнеры</button>
+        <button type="button" data-view="game">игра</button>
       </div>
       <div class="studio-content" id="studioContent"></div>
     </div>`,
@@ -1130,6 +1134,8 @@ let morphStep = 0;
 function initStudioTab() {
   const btns = document.querySelectorAll('.studio-sidebar button');
   btns.forEach(b => b.onclick = () => {
+    if (b.dataset.view === 'partners') { window.openStudioPartners(); return; }
+    if (b.dataset.view === 'game') { window.openStudioGame(); return; }
     if (b.dataset.view === 'intro') { openFilm(true); return; }
     if (b.dataset.view === 'capabilities') { openCapabilitiesPage(); return; }
     if (b.dataset.view === 'projects') { openProjectsPage(); return; }

@@ -155,6 +155,7 @@
       previous = now;
       lastDraw = now;
       const visible = document.getElementById('shell').classList.contains('on')
+        && !document.getElementById('studioExtras')
         && !document.getElementById('capabilitiesPage') && !document.getElementById('projPage')
         && !document.getElementById('projectModal').classList.contains('on');
       if (!visible || document.hidden) return;
