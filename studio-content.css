@@ -1,0 +1,39 @@
+.local-upload { display:block; padding:12px 14px; border:1px solid rgba(255,255,255,.4); border-radius:20px; font-size:10px; letter-spacing:.06em; cursor:pointer; text-align:center; color:#f3f3f1; }
+.local-upload input { display:none; }
+.local-status { font-size:11px; line-height:1.7; color:#aaa; }
+.local-status.is-error,.media-error { color:#efb2b2; }
+.admin-media-list { display:flex; flex-direction:column; gap:8px; }
+.admin-media-row { display:flex; align-items:center; gap:12px; padding:8px 10px; border:1px solid rgba(255,255,255,.12); border-radius:10px; }
+.admin-media-row > span { flex:1; min-width:0; overflow-wrap:anywhere; font-size:10px; color:#bbb; }
+.admin-media-row .admin-btn { flex:0 0 auto; font-size:9px; padding:0 10px; }
+.admin-avatar-preview { width:54px; height:54px; border-radius:50%; object-fit:cover; border:1px solid rgba(255,255,255,.25); }
+.content-admin-shortcuts { display:flex; flex-direction:column; gap:10px; }
+.content-screen { position:fixed; inset:0; z-index:46; display:flex; flex-direction:column; background:#0c0c0c; color:#f3f3f1; padding-top:env(safe-area-inset-top,0px); }
+.content-header { flex:0 0 auto; padding:16px; min-height:66px; display:flex; align-items:center; gap:14px; border-bottom:1px solid rgba(255,255,255,.14); }
+.content-header > span { font-size:10px; letter-spacing:.12em; }
+.content-screen-body { flex:1; min-height:0; overflow-y:auto; padding:18px 16px calc(24px + env(safe-area-inset-bottom,0px)); }
+.content-video-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr)); gap:18px; }
+.content-video-card { position:relative; border:1px solid rgba(255,255,255,.22); border-radius:16px; overflow:hidden; background:#101010; }
+.content-video-card > video { display:block; width:100%; height:clamp(220px,38dvh,480px); object-fit:cover; cursor:pointer; }
+.content-video-open { width:100%; padding:16px; background:transparent; border:0; color:inherit; text-align:left; font-size:12px; cursor:pointer; }
+.content-video-delete { margin:0 16px 16px; }
+.content-upload-controls { display:flex; flex-direction:column; gap:12px; max-width:620px; margin:24px auto; }
+.content-local-note { font-size:10px; color:#888; line-height:1.7; margin-top:20px; }
+.content-player { z-index:48; }
+.content-player > video { display:block; flex:1; min-height:0; width:100%; height:100%; object-fit:contain; background:#000; }
+.content-player > .local-status { padding:20px; }
+.content-empty { min-height:55dvh; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; gap:20px; }
+.content-empty > span { font-size:9px; letter-spacing:.18em; color:#666; }
+.content-empty h2 { font-size:28px; font-weight:400; }
+.content-empty p { font-size:12px; color:#888; }
+.project-media-slide { position:relative; flex:0 0 90%; scroll-snap-align:center; min-width:0; border-radius:14px; overflow:hidden; background:#080808; }
+#modalGallery .project-media-slide img,#modalGallery .project-media-slide video { display:block; width:100%; height:clamp(240px,46dvh,600px); flex:none; border-radius:14px; object-fit:cover; }
+#modalGallery .project-media-slide video { object-fit:contain; }
+.media-error { position:absolute; bottom:12px; left:12px; right:12px; font-size:11px; line-height:1.6; background:#111; padding:10px; }
+#projectLinks { display:flex; flex-direction:column; align-items:flex-start; gap:12px; font-size:12px; }
+#projectLinks a { color:#6bb6ff; text-decoration:none; word-break:break-all; }
+.game-account-record { border:1px solid rgba(255,255,255,.18); border-radius:12px; padding:14px; font-size:11px; line-height:1.8; color:#bbb; }
+.game-account-record > span { display:block; font-size:9px; letter-spacing:.1em; color:#777; margin-bottom:8px; }
+.install-safari { display:inline-block; padding:8px 16px; margin-top:8px; border:1px solid rgba(255,255,255,.6) !important; border-radius:20px; background:#f3f3f1; color:#0c0c0c; font-size:11px; }
+.install-steps .install-fallback { display:none; padding-top:12px; color:#aaa; font-size:10px; line-height:1.7; }
+.install-steps .install-fallback.on { display:block; }

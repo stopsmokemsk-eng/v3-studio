@@ -156,6 +156,7 @@
       lastDraw = now;
       const visible = document.getElementById('shell').classList.contains('on')
         && !document.getElementById('studioExtras')
+        && !document.getElementById('studioContentScreen') && !document.getElementById('studioVideoPlayer')
         && !document.getElementById('capabilitiesPage') && !document.getElementById('projPage')
         && !document.getElementById('projectModal').classList.contains('on');
       if (!visible || document.hidden) return;

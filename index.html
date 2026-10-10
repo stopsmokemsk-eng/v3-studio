@@ -13,6 +13,7 @@
 <link rel="preload" href="ink.mp4" as="video" type="video/mp4" />
 <link rel="preload" href="logo.png" as="image" />
 <link rel="stylesheet" href="studio-extras.css" />
+<link rel="stylesheet" href="studio-content.css" />
 <title>V³ studio</title>
 <meta http-equiv="Cache-Control" content="no-cache" />
 <style>
@@ -596,7 +597,7 @@
         <span class="project-detail-label">V³ STUDIO / SELECTED WORK</span>
         <h3 class="modal-title" id="modalTitle">Название проекта</h3>
         <div class="modal-desc" id="modalDesc">Описание</div>
-        <a href="#" target="_blank" rel="noreferrer" class="modal-link" id="modalLink">Перейти к проекту →</a>
+        <div id="projectLinks"><a href="#" target="_blank" rel="noreferrer" class="modal-link" id="modalLink">Перейти к проекту →</a></div>
         <div class="modal-free" id="modalFree">Свободное поле</div>
       </div>
     </div>
@@ -673,6 +674,7 @@
   </div>
 </div>
 <script src="studio-globe.js"></script>
+<script src="studio-content.js"></script>
 <script src="studio-extras.js"></script>
 <script>
 // Data store for projects & team
@@ -699,7 +701,7 @@ function getProjects() {
   }
 }
 function saveProjects(p) {
-  try { localStorage.setItem('v3_projects', JSON.stringify(p)); } catch(e){}
+  window.V3Content.write('v3_projects',p);
 }
 
 function getTeam() {
@@ -711,7 +713,7 @@ function getTeam() {
   }
 }
 function saveTeam(t) {
-  try { localStorage.setItem('v3_team2', JSON.stringify(t)); } catch(e){}
+  window.V3Content.write('v3_team2',t);
 }
 
 let projects = getProjects();
@@ -970,7 +972,10 @@ function buildRail() {
   projects.forEach((p, i) => {
     const d = document.createElement('article');
     d.className = 'card' + (i === currentProjectIndex ? ' focus' : '');
-    d.innerHTML = '<img alt="' + p.title + '" src="' + p.img + '">';
+    const image = document.createElement('img');
+    image.alt = p.title;
+    window.V3Content.bindMedia(image,p.img);
+    d.appendChild(image);
     d.dataset.index = i;
     rail.appendChild(d);
   });
@@ -1049,26 +1054,34 @@ function openProjectsPage() {
 const modal = document.getElementById('projectModal');
 function openProject(p) {
   document.getElementById('modalTitle').textContent = p.title;
-  const linkEl = document.getElementById('modalLink');
-  linkEl.href = p.link || '#';
-  linkEl.textContent = p.link ? p.link : 'Ссылка не указана';
+  const links = document.getElementById('projectLinks');
+  links.replaceChildren();
+  [...new Set([p.link,...(p.links || [])].filter(Boolean))].forEach(url => {
+    try {
+      const parsed = new URL(url);
+      if (!['https:','http:'].includes(parsed.protocol)) return;
+      const link = document.createElement('a'); link.href = parsed.href; link.textContent = url;
+      link.target = '_blank'; link.rel = 'noreferrer'; link.className = 'modal-link'; links.appendChild(link);
+    } catch(e) {}
+  });
   
   const gBox = document.getElementById('modalGallery');
   gBox.innerHTML = '';
-  const photos = p.gallery && p.gallery.length ? p.gallery : [p.img];
-  photos.forEach((src, i) => {
-    const img = document.createElement('img');
-    img.src = src;
-    img.alt = p.title + ' / ' + (i + 1);
-    img.loading = i ? 'lazy' : 'eager';
-    gBox.appendChild(img);
+  const media = window.V3Content.getProjectMedia(p);
+  media.forEach((item, i) => {
+    const slide = document.createElement('div'); slide.className = 'project-media-slide';
+    const element = document.createElement(item.type === 'video' ? 'video' : 'img');
+    if (item.type === 'video') { element.controls = true; element.playsInline = true; element.preload = 'metadata'; }
+    else { element.alt = p.title + ' / ' + (i + 1); element.loading = i ? 'lazy' : 'eager'; }
+    window.V3Content.bindMedia(element,item.src);
+    slide.appendChild(element); gBox.appendChild(slide);
   });
-  document.getElementById('projectPhotoCount').textContent = photos.length + ' фото →';
+  document.getElementById('projectPhotoCount').textContent = media.length + ' медиа →';
   
   document.getElementById('modalDesc').textContent = p.desc || p.shortText;
   document.getElementById('modalFree').textContent = p.free || 'Свободное поле проекта';
   document.getElementById('projectOrder').onclick = () => {
-    modal.classList.remove('on');
+    closeProject();
     show('shell');
     tab('contacts');
     const input = document.getElementById('msg');
@@ -1082,8 +1095,12 @@ function openProject(p) {
   document.querySelector('.project-detail-body').scrollTop = 0;
 }
 
-document.getElementById('closeModal').onclick = () => modal.classList.remove('on');
-modal.onclick = (e) => { if (e.target === modal) modal.classList.remove('on'); };
+function closeProject() {
+  modal.querySelectorAll('video').forEach(video=>video.pause());
+  modal.classList.remove('on');
+}
+document.getElementById('closeModal').onclick = closeProject;
+modal.onclick = (e) => { if (e.target === modal) closeProject(); };
 
 // Bottom Ticker Links
 const partners = ['Kristina Vodoley','Mishel Vermishel','Alisa Vostorg','BIONIC','NEW WAWE MUSIC','STOP SMOKE','MULTY CUBE'];
@@ -1102,6 +1119,7 @@ const panels = {
         <button type="button" data-view="intro">заставка</button>
         <button type="button" data-view="partners">партнеры</button>
         <button type="button" data-view="game">игра</button>
+        <button type="button" data-view="presentation">презентация</button>
       </div>
       <div class="studio-content" id="studioContent"></div>
     </div>`,
@@ -1136,7 +1154,8 @@ function initStudioTab() {
   btns.forEach(b => b.onclick = () => {
     if (b.dataset.view === 'partners') { window.openStudioPartners(); return; }
     if (b.dataset.view === 'game') { window.openStudioGame(); return; }
-    if (b.dataset.view === 'intro') { openFilm(true); return; }
+    if (b.dataset.view === 'presentation') { window.V3Content.openPresentation(); return; }
+    if (b.dataset.view === 'intro') { window.V3Content.openVideoGallery(); return; }
     if (b.dataset.view === 'capabilities') { openCapabilitiesPage(); return; }
     if (b.dataset.view === 'projects') { openProjectsPage(); return; }
     btns.forEach(x => x.classList.remove('active'));
@@ -1246,7 +1265,7 @@ function renderStudioView(view) {
     team.forEach((m, idx) => {
       html += `
         <div class="team-card">
-          <img class="team-avatar" src="${m.avatar || 'logo.png'}" alt="${m.name}">
+          <img class="team-avatar" data-team-avatar="${idx}" alt="${m.name}">
           <div class="team-info">
             <div class="team-header">
               <span class="team-name">${m.name}</span>
@@ -1260,6 +1279,7 @@ function renderStudioView(view) {
     });
     html += '</div>';
     content.innerHTML = html;
+    content.querySelectorAll('[data-team-avatar]').forEach(image => window.V3Content.bindMedia(image,team[+image.dataset.teamAvatar].avatar || 'logo.png'));
     
     document.querySelectorAll('.team-expand').forEach(btn => {
       btn.onclick = () => {
@@ -1627,12 +1647,18 @@ function renderCartBar() {
 // ===== Dialog =====
 function renderContacts() {
   const log = document.getElementById('log');
-  const bubble = document.createElement('div');
-  bubble.className = 'bubble';
-  log.appendChild(bubble);
-  typeInto(bubble, 'Здравствуйте. Напишите, на какой стадии проект — мы свяжемся и предложим решения.');
-
-  const post = (text, cls) => {
+  const user = isAdmin ? { login:'VLAD' } : getCurUser();
+  const key = 'v3_dialog_' + (user ? user.login.toLowerCase() : 'guest');
+  const greeting = 'Здравствуйте , мы рады что вы посетили нашу студию и готовы ответить на все ваши вопросы';
+  let messages = window.V3Content.read(key,[]);
+  if (!Array.isArray(messages)) messages = [];
+  messages = messages.filter(m => m && typeof m.text === 'string' && ['','you'].includes(m.cls));
+  messages = [{ text:greeting,cls:'' }, ...messages.filter(m => m.text !== greeting).slice(-199)];
+  const persist = () => {
+    messages = [messages[0], ...messages.slice(1).slice(-199)];
+    try { window.V3Content.write(key,messages); } catch(e) {}
+  };
+  const draw = (text, cls) => {
     const el = document.createElement('div');
     el.className = 'bubble' + (cls ? ' ' + cls : '');
     el.style.whiteSpace = 'pre-line';
@@ -1641,13 +1667,19 @@ function renderContacts() {
     log.scrollTop = log.scrollHeight;
     return el;
   };
+  messages.forEach(message => draw(message.text,message.cls));
+  persist();
+  const post = (text, cls = '') => {
+    messages.push({ text,cls });
+    persist();
+    return draw(text,cls);
+  };
 
   if (pendingOrder) {
     const m = pendingOrder; pendingOrder = null;
-    setTimeout(() => {
-      post(m, 'you');
-      setTimeout(() => { const us = post('', ''); typeInto(us, 'Расчёт получили. Менеджер студии уточнит детали и вернётся с предложением.'); }, 400);
-    }, 900);
+    post(m, 'you');
+    const response = 'Расчёт получили. Менеджер студии уточнит детали и вернётся с предложением.';
+    typeInto(post(response),response);
   }
 
   document.getElementById('form').onsubmit = (e) => {
@@ -1657,7 +1689,8 @@ function renderContacts() {
     if (!v) return;
     post(v, 'you');
     input.value = '';
-    setTimeout(() => { const us = post('', ''); typeInto(us, 'Заявка принята. Менеджер студии свяжется с вами.'); }, 300);
+    const response = 'Заявка принята. Менеджер студии свяжется с вами.';
+    typeInto(post(response),response);
   };
 }
 
@@ -1683,7 +1716,7 @@ function renderCabinet() {
 
   if (cur) {
     box.innerHTML = `<div class="bubble admin-badge" style="color:#f3f3f1;border-color:rgba(255,255,255,.3)">Вы вошли: ${esc(cur.name || cur.login)}</div>
-      <button type="button" class="admin-btn" id="userLogout">Выйти</button>`;
+      <button type="button" class="admin-btn" id="userLogout">Выйти</button>${window.V3Content.gameSummary(cur.login)}`;
     log.innerHTML = '<div class="bubble">Здесь будут ваши проекты и статусы задач.</div>';
     document.getElementById('userLogout').onclick = () => { localStorage.removeItem('v3_cur'); renderCabinet(); };
     return;
@@ -1737,6 +1770,7 @@ function renderCabinet() {
 }
 
 function renderAdmin(box, log) {
+  projects = getProjects();
   const currentP = projects[currentProjectIndex] || projects[0];
   const c = getContactInfo();
   team = getTeam();
@@ -1771,18 +1805,31 @@ function renderAdmin(box, log) {
       <button type="button" id="saveAdminBtn" class="admin-btn" style="flex:1">Сохранить всё</button>
       <button type="button" id="logoutAdminBtn" class="admin-btn" style="width:70px">Выйти</button>
     </div>`;
-  log.innerHTML = '<div class="bubble">Изменения сохраняются на этом устройстве.</div>';
+  log.innerHTML = '<div class="bubble">Изменения и загруженные файлы сохраняются только на этом устройстве.</div>';
+  box.insertAdjacentHTML('beforeend',window.V3Content.gameSummary('VLAD'));
+  window.V3Content.attachAdmin(box,currentP,projects,team);
   const v = id => document.getElementById(id).value;
   document.getElementById('saveAdminBtn').onclick = () => {
+    try {
     currentP.title = v('editTitle'); currentP.img = v('editCover'); currentP.shortText = v('editShort');
     currentP.link = v('editLink'); currentP.desc = v('editDesc'); currentP.free = v('editFree');
     currentP.gallery = v('editGallery').split(',').map(s => s.trim()).filter(Boolean);
+    const previousMedia = window.V3Content.getProjectMedia(currentP);
+    currentP.media = [
+      ...currentP.gallery.map(src => previousMedia.find(m=>m.src===src) || { src,type:/\.(mp4|webm|mov|m4v)(?:[?#]|$)/i.test(src) ? 'video' : 'image',name:'' }),
+      ...previousMedia.filter(m=>m.type==='video' && !currentP.gallery.includes(m.src))
+    ];
+    currentP.links = [...new Set([currentP.link,...v('editMoreLinks').split('\n')].map(url=>url.trim()).filter(url=>/^https?:\/\//i.test(url)))];
     saveProjects(projects);
     team.forEach((m, i) => { m.name = v('tn'+i); m.role = v('tr'+i); m.avatar = v('ta'+i); m.bio = v('tb'+i); });
     saveTeam(team);
     try { localStorage.setItem('v3_contacts', JSON.stringify({ address:v('cAddr'), phone:v('cPhone'), telegram:v('cTg'), whatsapp:v('cWa'), instagram:v('cIg') })); } catch(e){}
     buildRail();
     log.innerHTML = '<div class="bubble" style="border-color:#4ade80;color:#4ade80">Данные успешно сохранены!</div>';
+    } catch(error) {
+      log.innerHTML = '<div class="bubble"></div>';
+      log.firstChild.textContent = error.message;
+    }
   };
   document.getElementById('logoutAdminBtn').onclick = () => { isAdmin = false; renderCabinet(); };
 }
@@ -1790,26 +1837,52 @@ function renderAdmin(box, log) {
 
 document.querySelectorAll('#dock button').forEach(b => b.onclick = () => tab(b.dataset.tab));
 
+// Narrow bridge: local content/game modules do not reach into other UI state.
+window.V3StudioData = {
+  isAdmin:() => isAdmin,
+  getUser:() => isAdmin ? { login:'VLAD',name:'VLAD' } : getCurUser(),
+  saveProjects,
+  saveTeam,
+  selectProject:index => { currentProjectIndex = index; renderCabinet(); }
+};
+
 // Install information is shown once, not over an already-installed app.
 const installWelcome = document.getElementById('installWelcome');
+const installContinuation = new URLSearchParams(location.search).get('install') === 'ios';
+const safariUA = /Safari/i.test(navigator.userAgent) && !/Chrome|CriOS|FxiOS|EdgiOS|OPiOS|Instagram|FBAN|FBAV/i.test(navigator.userAgent);
+const safariInstallURL = 'https://stopsmokemsk-eng.github.io/v3-studio/?install=ios';
 function setInstallPlatform(platform) {
   const ios = platform === 'ios';
   document.getElementById('installIOS').setAttribute('aria-selected', String(ios));
   document.getElementById('installAndroid').setAttribute('aria-selected', String(!ios));
   document.getElementById('installSteps').innerHTML = ios
-    ? '<li><span>Откройте сайт в <a href="https://support.apple.com/guide/iphone/open-as-web-app-iphea86e5236/ios" target="_blank" rel="noreferrer">Safari</a>.</span></li><li><span>Нажмите «Поделиться» и выберите «На экран Домой».</span></li><li><span>Если есть переключатель «Открывать как веб-приложение», включите его. Нажмите «Добавить».</span></li>'
+    ? ((installContinuation || safariUA) ? '<li><span>Вы уже на нужной странице. Нажмите «Поделиться» в Safari.</span></li><li><span>Выберите «На экран Домой».</span></li><li><span>Если есть переключатель «Открывать как веб-приложение», включите его. Нажмите «Добавить».</span></li>' : '<li><span>Откройте нашу страницу в Safari. Инструкция продолжится там автоматически.<br><a class="install-safari" id="openSafari" href="x-safari-https://stopsmokemsk-eng.github.io/v3-studio/?install=ios" target="_blank" rel="noopener">ОТКРЫТЬ SAFARI ↗</a></span></li><li><span>В Safari нажмите «Поделиться» → «На экран Домой» → «Добавить».</span></li><li><span>Запускайте приложение с появившейся иконки.</span></li>') +
+      '<li class="install-fallback" id="safariFallback">Если переход заблокирован: откройте меню текущего приложения и выберите «Открыть в Safari» или «Открыть в браузере». Инструкция остаётся на этой странице, копировать ссылку не нужно.</li>'
     : '<li><span>Откройте сайт в <a href="https://support.google.com/chrome/answer/9658361?hl=en-Gb&co=GENIE.Platform=Android" target="_blank" rel="noreferrer">Chrome</a>.</span></li><li><span>Откройте меню с тремя точками. Выберите «Добавить на главный экран» или «Установить приложение».</span></li><li><span>Подтвердите добавление и откройте приложение с появившейся иконки.</span></li>';
+  const openSafari = document.getElementById('openSafari');
+  if (openSafari) {
+    const appleDevice = /iPad|iPhone|iPod|Macintosh/i.test(navigator.userAgent);
+    if (!appleDevice) openSafari.href = safariInstallURL;
+    openSafari.addEventListener('click',() => {
+      try { const url = new URL(location.href); url.searchParams.set('install','ios'); history.replaceState(null,'',url.href); } catch(e) {}
+      const fallback = document.getElementById('safariFallback');
+      if (fallback) fallback.classList.add('on');
+    });
+  }
 }
 document.getElementById('installIOS').onclick = () => setInstallPlatform('ios');
 document.getElementById('installAndroid').onclick = () => setInstallPlatform('android');
 document.getElementById('installContinue').onclick = () => {
   writeAppFlag('v3_install_guide_seen');
   installWelcome.classList.remove('on');
+  if (installContinuation) {
+    try { const url = new URL(location.href); url.searchParams.delete('install'); history.replaceState(null,'',url.href); } catch(e) {}
+  }
   start.focus();
 };
 setInstallPlatform(/Android/i.test(navigator.userAgent) ? 'android' : 'ios');
 const installedMode = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
-if (!installedMode && !readAppFlag('v3_install_guide_seen')) {
+if (installContinuation || (!installedMode && !readAppFlag('v3_install_guide_seen'))) {
   installWelcome.classList.add('on');
   document.getElementById('installContinue').focus();
 }
