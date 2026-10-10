@@ -1932,8 +1932,10 @@ if (installContinuation || (!installedMode && (inAppInstallBrowser || !readAppFl
   document.getElementById('installContinue').focus();
 }
 
-if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.unregister())).catch(()=>{});
-if (window.caches) caches.keys().then(ks => ks.forEach(k => caches.delete(k))).catch(()=>{});
+try {
+  if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.unregister())).catch(()=>{});
+  if (window.caches) caches.keys().then(ks => ks.forEach(k => caches.delete(k))).catch(()=>{});
+} catch(e) { /* Sandboxed previews may deny access to browser cache APIs. */ }
 </script>
 </body>
 </html>
